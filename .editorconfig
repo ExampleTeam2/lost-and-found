@@ -1,0 +1,33 @@
+# Editorconfig for Python and Jupyter Notebooks
+
+root = true
+
+[*]
+insert_final_newline = true    
+charset = utf-8
+end_of_line = lf 
+
+[*.{ini,py,py.tpl,rst,ipynb}]
+indent_style = space
+indent_size = 2
+
+[*.{sh,bat.tpl,Makefile.tpl}]
+indent_style = tab
+indent_size = 4
+
+[*.yml]
+indent_style = space
+indent_size = 2
+
+[*.toml]
+indent_style = space
+indent_size = 2
+
+[*.json]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+indent_style = space
+indent_size = 2
