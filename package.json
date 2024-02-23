@@ -9,7 +9,7 @@
     "watch": "tsc -w ",
     "start": "tsc && node dist/index.js",
     "scrape:prepare": "playwright install",
-    "scrape": "playwright test --project=playwright.config.ts"
+    "scrape": "playwright test --project=chromium"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.2",
