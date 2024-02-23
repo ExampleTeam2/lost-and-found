@@ -1,7 +1,7 @@
 {
   "name": "dspro2",
   "version": "0.1.0",
-  "main": "dist/index.js",
+  "main": "dist/dspro/index.js",
   "repository": "git@gitlab.com:exampleteam2/dspro2.git",
   "author": "Linus Schlumberger <l@mll.one>",
   "license": "MIT",
