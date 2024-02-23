@@ -7,9 +7,13 @@
   "license": "MIT",
   "scripts": {
     "watch": "tsc -w ",
-    "start": "tsc && node dist/index.js"
+    "start": "tsc && node dist/index.js",
+    "scrape:prepare": "playwright install",
+    "scrape": "playwright test --project=playwright.config.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.41.2",
+    "@types/node": "^20.11.20",
     "typescript": "^5.3.3"
   }
 }

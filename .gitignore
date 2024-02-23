@@ -22,3 +22,7 @@ dist
 .obsidian/themes
 .obsidian/appearance.json
 .obsidian/workspace.json
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
