@@ -8,6 +8,13 @@ Thumbs.db
 # Jupyter
 .ipynb_checkpoints
 
+# Node.js
+node_modules
+yarn-error.log*
+
+# Output
+dist
+
 # Dotenv
 .env
 
