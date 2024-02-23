@@ -5,9 +5,10 @@
   "repository": "git@gitlab.com:exampleteam2/dspro2.git",
   "author": "Linus Schlumberger <l@mll.one>",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "watch": "tsc -w ",
-    "start": "tsc && node dist/index.js",
+    "start": "tsc && node dist/dspro/index.js",
     "scrape:prepare": "playwright install",
     "scrape": "playwright test --project=chromium"
   },
@@ -15,5 +16,8 @@
     "@playwright/test": "^1.41.2",
     "@types/node": "^20.11.20",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
   }
 }

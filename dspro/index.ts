@@ -1,1 +1,3 @@
-console.log('Hello world!');
+import 'dotenv/config';
+
+console.log(`Hello ${process.env.HELLO ?? 'Everyone'}!`);
