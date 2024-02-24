@@ -8,7 +8,7 @@ const LOCATION_FILE = 'geoguessr_location_';
 const LOCATION_FILE_EXTENSION = '.png';
 const RESULT_FILE = 'geoguessr_result_';
 const RESULT_FILE_EXTENSION = '.json';
-const MAX_GAMES = 1;
+const MAX_GAMES = 5;
 
 const getButtonWithText = (page: Page, text: string) => {
   return page.locator('button, a').getByText(text);
@@ -110,6 +110,7 @@ ${viewerSelector} {
 
 const round = async(page: Page) => {
   const roundId = randomUUID();
+  await page.waitForTimeout(1000);
   // Wait for the street view to load
   const viewer = page.locator('.mapsConsumerUiSceneCoreScene__canvas').first();
   await viewer.waitFor({ state: 'visible', timeout: 60000 });
