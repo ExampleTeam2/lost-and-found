@@ -12,6 +12,17 @@ const MAX_ROUNDS = 15;
 const MAX_GAMES = 100;
 const MAX_MINUTES = 1440;
 
+let logProgressInterval: ReturnType<typeof setInterval> | undefined;
+
+// Log a message, print a dot (on the same line) every 10 seconds in a background process to get progress indication until another message is logged
+const log = (message: string) => {
+  console.log(message);
+  if (logProgressInterval) {
+    clearInterval(logProgressInterval);
+  }
+  logProgressInterval = setInterval(() => process.stdout.write('.'), 10000);
+}
+
 const getButtonWithText = (page: Page, text: string) => {
   return page.locator('button, a').getByText(text);
 }
@@ -60,16 +71,16 @@ const removeCookieBanner = async (page: Page) => {
 }
 
 const logIn = async (page: Page) => {
-  console.log('Log in needed');
+  log('Log in needed');
   // Fail the test if the environment variables are not set
   expect(process.env.GEOGUESSR_EMAIL).toBeTruthy();
   expect(process.env.GEOGUESSR_PASSWORD).toBeTruthy();
   // Will never reach this point if the environment variables are not set, but for type checking.
   if (process.env.GEOGUESSR_EMAIL === undefined || process.env.GEOGUESSR_PASSWORD === undefined) return;
-  console.log('Navigating to login page');
+  log('Navigating to login page');
   await page.getByText('Log in').click();
   await page.waitForTimeout(1000);
-  console.log('Entering credentials');
+  log('Entering credentials');
   // Wait for page change
   const email = page.locator('input[name="email"]');
   await email.waitFor({ state: 'visible' });
@@ -78,11 +89,11 @@ const logIn = async (page: Page) => {
   await password.waitFor({ state: 'visible' });
   await password.fill(process.env.GEOGUESSR_PASSWORD);
   await page.waitForTimeout(1000);
-  console.log('Attempting log in');
+  log('Attempting log in');
   await clickButtonWithText(page, 'Log in', -1);
   // Wait for logged in page to load
   await getButtonWithText(page, 'Multiplayer').waitFor({ state: 'visible' });
-  console.log('Logged in successfully');
+  log('Logged in successfully');
   // If logged in, save the cookies
   const cookies = await page.context().cookies();
   fs.writeFile(DATA_PATH + 'cookies.json', JSON.stringify(cookies), (err) => {
@@ -117,7 +128,7 @@ ${viewerSelector} {
 
 const round = async(page: Page) => {
   const roundId = randomUUID();
-  console.log('Starting round - ' + roundId);
+  log('Starting round - ' + roundId);
   await page.waitForTimeout(1000);
   // Wait for the street view to load
   const viewer = page.locator('.mapsConsumerUiSceneCoreScene__canvas').first();
@@ -136,14 +147,14 @@ const round = async(page: Page) => {
   const resultText = await result.textContent();
   // The sentence is like "[.]?[...] right answer was [in | indeed | actually | ...] [country].[...][.]?", parse the country.
   const country = resultText?.split('right answer was')[1].split('.')[0].trim();
-  console.log('It was ' + country);
+  log('It was ' + country);
   fs.writeFile(DATA_PATH + RESULT_FILE + roundId + RESULT_FILE_EXTENSION, JSON.stringify(country), (err) => {
     if (err) console.log(err);
   });
 };
 
 const game = async (page: Page) => {
-  console.log('Starting game');
+  log('Starting game');
   let rounds = 1;
   await round(page);
   await page.waitForTimeout(1000);
@@ -163,7 +174,8 @@ const game = async (page: Page) => {
 }
 
 // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
-test('play country battle royale', async ({ page }) => {
+test('play country battle royal', async ({ page }) => {
+  log('Starting geoguessr');
   // Total test timeout is 10 minutes
   test.setTimeout(60000 * MAX_MINUTES);
   await setCookies(page);
@@ -175,7 +187,7 @@ test('play country battle royale', async ({ page }) => {
     await removeCookieBanner(page);
     await logIn(page);
   } else {
-    console.log('Already logged in');
+    log('Already logged in');
   }
   page.setDefaultTimeout(5000);
   await clickButtonWithText(page, 'Multiplayer', -1);
