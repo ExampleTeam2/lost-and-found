@@ -177,5 +177,6 @@ test('play country battle royale', async ({ page }) => {
   while (games < MAX_GAMES && await clickButtonIfFound(page, 'Play again')) {
     await game(page);
     games++;
+    await page.waitForTimeout(1000);
   }
 });
