@@ -152,7 +152,7 @@ const game = async (page: Page) => {
     await round(page);
     rounds++;
     // Remove footer to improve vision and avoid second "Play again" button
-    await page.locator('.footer').evaluate((el) => el.remove());
+    await page.locator('footer').evaluate((el) => el.remove());
     while (rounds < MAX_ROUNDS && await page.getByText('Next round starts').count() > 0) {
       await page.waitForTimeout(10000);
       await round(page);
