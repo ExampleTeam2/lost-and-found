@@ -4,6 +4,11 @@ import 'dotenv/config';
 import { Page } from 'playwright-core';
 
 const DATA_PATH = 'scraping/data/';
+const LOCATION_FILE = 'geoguessr_location_';
+const LOCATION_FILE_EXTENSION = '.png';
+const RESULT_FILE = 'geoguessr_result_';
+const RESULT_FILE_EXTENSION = '.json';
+const MAX_GAMES = 2;
 
 const getButtonWithText = (page: Page, text: string) => {
   return page.locator('button, a').getByText(text);
@@ -76,6 +81,28 @@ const logIn = async (page: Page) => {
   });
 };
 
+// Random 10 character UUID
+const randomUUID = () => {
+  return 'xxxxxxxxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16));
+};
+
+const round = async(page: Page) => {
+  const roundId = randomUUID();
+  // Wait for the street view to load
+  const viewer = page.locator('.mapsConsumerUiSceneCoreScene__canvas').first();
+  await viewer.waitFor({ state: 'visible', timeout: 60000 });
+  await page.waitForTimeout(10000);
+  await viewer?.screenshot({ path: DATA_PATH + LOCATION_FILE + roundId + LOCATION_FILE_EXTENSION });
+  const result = page.getByText('right answer was');
+  await result.waitFor({ state: 'visible', timeout: 200000 });
+  const resultText = await result.textContent();
+  // The sentence is like "[.]?[...] right answer was [in | indeed | actually | ...] [country].[...][.]?", parse the country.
+  const country = resultText?.split('right answer was')[1].split('.')[0].trim();
+  fs.writeFile(DATA_PATH + RESULT_FILE + roundId + RESULT_FILE_EXTENSION, JSON.stringify(country), (err) => {
+    if (err) console.log(err);
+  });
+};
+
 // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
 test('geoguessr.com', async ({ page }) => {
   // Total test timeout is 10 minutes
@@ -91,17 +118,17 @@ test('geoguessr.com', async ({ page }) => {
   }
   page.setDefaultTimeout(5000);
   await clickButtonWithText(page, 'Multiplayer', -1);
+  await getButtonWithText(page, 'Got it').or(getButtonWithText(page, 'Multiplayer')).nth(0).waitFor({ state: 'visible' });
+  await page.waitForTimeout(1000);
   await clickButtonIfFound(page, 'Got it');
+  await getButtonWithText(page, 'Got it').waitFor({ state: 'hidden' });
   await clickButtonWithText(page, 'Unranked', -1);
   await clickButtonWithText(page, 'Countries', -1);
-  // Wait for the street view to load
-  const viewer = page.locator('.mapsConsumerUiSceneCoreScene__canvas');
-  await viewer.waitFor({ state: 'visible', timeout: 60000 });
-  await page.waitForTimeout(5000);
-  await viewer?.screenshot({ path: DATA_PATH + 'location.png' });
-  const result = page.getByText(' was ');
-  await result.waitFor({ state: 'visible', timeout: 200000 });
-  fs.writeFile(DATA_PATH + 'geoguessr.json', JSON.stringify(await result.textContent()), (err) => {
-    if (err) console.log(err);
-  });
+  let games = 1;
+  await round(page);
+  while (games < MAX_GAMES && await getButtonWithText(page, 'Play again').waitFor({ state: 'visible' })) {
+    await clickButtonWithText(page, 'Play again', -1);
+    await round(page);
+    games++;
+  }
 });

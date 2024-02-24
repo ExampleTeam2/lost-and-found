@@ -19,13 +19,15 @@ dist
 .env
 
 # Cookies
-scraper/data/cookies.json
+scraping/data/cookies.json
 
 # Obsidian
 .obsidian/themes
 .obsidian/appearance.json
 .obsidian/workspace.json
 /test-results/
+
+# Playwright
 /playwright-report/
 /blob-report/
 /playwright/.cache/
