@@ -65,7 +65,7 @@ const logIn = async (page: Page) => {
   expect(process.env.GEOGUESSR_PASSWORD).toBeTruthy();
   // Will never reach this point if the environment variables are not set, but for type checking.
   if (process.env.GEOGUESSR_EMAIL === undefined || process.env.GEOGUESSR_PASSWORD === undefined) return;
-  await page.click('text=Log in');
+  await page.getByText('Log in').click();
   await page.waitForTimeout(1000);
   // Wait for page change
   const email = page.locator('input[name="email"]');
@@ -140,8 +140,11 @@ const game = async (page: Page) => {
   await round(page);
   await page.waitForTimeout(1000);
   if (await clickButtonIfFound(page, 'Spectate')) {
+    await page.waitForTimeout(10000);
     await round(page);
     rounds++;
+    // Remove footer to improve vision and avoid second "Play again" button
+    await page.locator('.footer').evaluate((el) => el.remove());
     while (rounds < MAX_ROUNDS && await page.getByText('Next round starts').count() > 0) {
       await page.waitForTimeout(10000);
       await round(page);
