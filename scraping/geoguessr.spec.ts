@@ -116,7 +116,9 @@ const round = async(page: Page) => {
   await viewer.waitFor({ state: 'visible', timeout: 60000 });
   await page.waitForTimeout(10000);
   const css = await injectCss(page, hideEverythingElseCss);
-  await page.locator('html').dispatchEvent('mouseleave');
+  // Move the mouse to the top right corner to hide the UI (not top left), get the page size dynamically
+  const pageWidth = await page.evaluate(() => window.innerWidth);
+  await page.mouse.move(pageWidth - 1, 1);
   await page.waitForTimeout(1000);
   await viewer?.screenshot({ path: DATA_PATH + LOCATION_FILE + roundId + LOCATION_FILE_EXTENSION });
   await page.waitForTimeout(1000);
