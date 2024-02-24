@@ -18,6 +18,9 @@ dist
 # Dotenv
 .env
 
+# Cookies
+scraper/data/cookies.json
+
 # Obsidian
 .obsidian/themes
 .obsidian/appearance.json

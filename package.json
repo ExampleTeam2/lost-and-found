@@ -10,11 +10,14 @@
     "watch": "tsc -w ",
     "start": "tsc && node dist/dspro/index.js",
     "scrape:prepare": "playwright install",
-    "scrape": "playwright test --project=chromium"
+    "scrape": "playwright test --project=chromium-stealth",
+    "scrape:ui": "playwright test --project=chromium-stealth --ui"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.2",
     "@types/node": "^20.11.20",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "typescript": "^5.3.3"
   },
   "dependencies": {

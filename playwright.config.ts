@@ -1,5 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
+import { chromium } from 'playwright-extra';
+import stealth from 'puppeteer-extra-plugin-stealth';
+
+chromium.use(stealth());
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -28,10 +33,17 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
 
   /* Configure projects for major browsers */
   projects: [
+    // No idea if this acutally works
+    { 
+      name: 'chromium-stealth',
+      use: { ...devices['Desktop Chrome'], ...chromium }
+    },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
