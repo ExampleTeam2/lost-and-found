@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, ElementHandle } from '@playwright/test';
 import fs from 'fs';
 import 'dotenv/config';
 import { Page } from 'playwright-core';
@@ -8,7 +8,7 @@ const LOCATION_FILE = 'geoguessr_location_';
 const LOCATION_FILE_EXTENSION = '.png';
 const RESULT_FILE = 'geoguessr_result_';
 const RESULT_FILE_EXTENSION = '.json';
-const MAX_GAMES = 2;
+const MAX_GAMES = 1;
 
 const getButtonWithText = (page: Page, text: string) => {
   return page.locator('button, a').getByText(text);
@@ -27,7 +27,9 @@ const clickButtonIfFound = async (page: Page, text: string) => {
   const button = getButtonWithText(page, text);
   if (await button.count() > 0) {
     await button.click();
+    return true;
   }
+  return false;
 }
 
 const setCookies = async (page: Page) => {
@@ -81,10 +83,30 @@ const logIn = async (page: Page) => {
   });
 };
 
+// Inject css with a way to remove it again
+const injectCss = async (page: Page, css: string) => {
+  return await page.addStyleTag({ content: css });
+}
+
+const removeElement = async (element: ElementHandle<Node>) => {
+  return await element.evaluate((el) => el.parentNode?.removeChild(el));
+}
+
 // Random 10 character UUID
 const randomUUID = () => {
   return 'xxxxxxxxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16));
 };
+
+const viewerSelector = '.mapsConsumerUiSceneCoreScene__canvas';
+// Use :has() to also exclude other parent elements
+const hideEverythingElseCss = `
+*:not(:has(${viewerSelector})) {
+  display: none !important;
+}
+${viewerSelector} {
+  display: block !important;
+}
+`;
 
 const round = async(page: Page) => {
   const roundId = randomUUID();
@@ -92,7 +114,12 @@ const round = async(page: Page) => {
   const viewer = page.locator('.mapsConsumerUiSceneCoreScene__canvas').first();
   await viewer.waitFor({ state: 'visible', timeout: 60000 });
   await page.waitForTimeout(10000);
+  const css = await injectCss(page, hideEverythingElseCss);
+  await page.locator('html').dispatchEvent('mouseleave');
+  await page.waitForTimeout(1000);
   await viewer?.screenshot({ path: DATA_PATH + LOCATION_FILE + roundId + LOCATION_FILE_EXTENSION });
+  await page.waitForTimeout(1000);
+  await removeElement(css);
   const result = page.getByText('right answer was');
   await result.waitFor({ state: 'visible', timeout: 200000 });
   const resultText = await result.textContent();
@@ -104,7 +131,7 @@ const round = async(page: Page) => {
 };
 
 // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
-test('geoguessr.com', async ({ page }) => {
+test('play country battle royale', async ({ page }) => {
   // Total test timeout is 10 minutes
   test.setTimeout(600000);
   await setCookies(page);
@@ -126,8 +153,8 @@ test('geoguessr.com', async ({ page }) => {
   await clickButtonWithText(page, 'Countries', -1);
   let games = 1;
   await round(page);
-  while (games < MAX_GAMES && await getButtonWithText(page, 'Play again').waitFor({ state: 'visible' })) {
-    await clickButtonWithText(page, 'Play again', -1);
+  await page.waitForTimeout(1000);
+  while (games < MAX_GAMES && await clickButtonIfFound(page, 'Play again')) {
     await round(page);
     games++;
   }
