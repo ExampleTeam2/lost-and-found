@@ -8,6 +8,7 @@ const LOCATION_FILE = 'geoguessr_location_';
 const LOCATION_FILE_EXTENSION = '.png';
 const RESULT_FILE = 'geoguessr_result_';
 const RESULT_FILE_EXTENSION = '.json';
+const MAX_ROUNDS = 10;
 const MAX_GAMES = 5;
 
 const getButtonWithText = (page: Page, text: string) => {
@@ -133,6 +134,22 @@ const round = async(page: Page) => {
   });
 };
 
+const game = async (page: Page) => {
+  let rounds = 1;
+  await round(page);
+  await page.waitForTimeout(1000);
+  if (await clickButtonIfFound(page, 'Spectate')) {
+    await round(page);
+    rounds++;
+    await page.waitForTimeout(1000);
+    while (rounds < MAX_ROUNDS && await page.getByText('Next round starts').count() > 0) {
+      await round(page);
+      rounds++;
+      await page.waitForTimeout(1000);
+    }
+  }
+}
+
 // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
 test('play country battle royale', async ({ page }) => {
   // Total test timeout is 10 minutes
@@ -155,10 +172,10 @@ test('play country battle royale', async ({ page }) => {
   await clickButtonWithText(page, 'Unranked', -1);
   await clickButtonWithText(page, 'Countries', -1);
   let games = 1;
-  await round(page);
+  await game(page);
   await page.waitForTimeout(1000);
   while (games < MAX_GAMES && await clickButtonIfFound(page, 'Play again')) {
-    await round(page);
+    await game(page);
     games++;
   }
 });
