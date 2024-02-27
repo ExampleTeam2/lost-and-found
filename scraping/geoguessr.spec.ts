@@ -13,7 +13,7 @@ const MAX_ROUNDS = 15;
 const MAX_GAMES = 100;
 const MAX_MINUTES = 1440;
 const NUMBER_OF_INSTANCES = process.env.CI ? 5 : 1;
-const STAGGER_INSTANCES = 10000;
+const STAGGER_INSTANCES = 30000;
 
 let logProgressInterval: ReturnType<typeof setInterval> | undefined;
 
@@ -131,9 +131,8 @@ ${viewerSelector} {
 }
 `;
 
-const round = async(page: Page, identifier?: string) => {
-  const roundId = randomUUID();
-  log('Starting round - ' + roundId, identifier);
+const round = async(page: Page, gameId: string, roundNumber: number, identifier?: string) => {
+  log('Starting round - ' + roundNumber, identifier);
   await page.waitForTimeout(1000);
   // Wait for the street view to load
   const viewer = page.locator('.mapsConsumerUiSceneCoreScene__canvas').first();
@@ -144,7 +143,7 @@ const round = async(page: Page, identifier?: string) => {
   const pageWidth = await page.evaluate(() => window.innerWidth);
   await page.mouse.move(pageWidth - 1, 1);
   await page.waitForTimeout(1000);
-  await viewer?.screenshot({ path: DATA_PATH + LOCATION_FILE + roundId + LOCATION_FILE_EXTENSION });
+  await viewer?.screenshot({ path: DATA_PATH + LOCATION_FILE + gameId + '_' + roundNumber + LOCATION_FILE_EXTENSION });
   await page.waitForTimeout(1000);
   await removeElement(css);
   const result = page.getByText('right answer was');
@@ -153,25 +152,29 @@ const round = async(page: Page, identifier?: string) => {
   // The sentence is like "[.]?[...] right answer was [in | indeed | actually | ...] [country].[...][.]?", parse the country.
   const country = resultText?.split('right answer was')[1].split('.')[0].trim();
   log('It was ' + country, identifier);
-  fs.writeFile(DATA_PATH + RESULT_FILE + roundId + RESULT_FILE_EXTENSION, JSON.stringify(country), (err) => {
+  fs.writeFile(DATA_PATH + RESULT_FILE + gameId + '_' + roundNumber + RESULT_FILE_EXTENSION, JSON.stringify(country), (err) => {
     if (err) console.log(err);
   });
 };
 
 const game = async (page: Page, identifier?: string) => {
-  log('Starting game', identifier);
-  let rounds = 1;
-  await round(page, identifier);
+  await page.waitForTimeout(1000);
+  const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
+  log('Starting game - ' + gameId, identifier);
+  // Get the game ID from the URL (https://www.geoguessr.com/de/battle-royale/<ID>)
+  let rounds = 0;
+  await round(page, gameId, rounds, identifier);
   await page.waitForTimeout(1000);
   if (await clickButtonIfFound(page, 'Spectate')) {
+    rounds++;
     await page.waitForTimeout(10000);
-    await round(page, identifier);
+    await round(page, gameId, rounds, identifier);
     rounds++;
     // Remove footer to improve vision and avoid second "Play again" button
     await page.locator('footer').evaluate((el) => el.remove());
     while (rounds < MAX_ROUNDS && await page.getByText('Next round starts').count() > 0) {
       await page.waitForTimeout(10000);
-      await round(page, identifier);
+      await round(page, gameId, rounds, identifier);
       rounds++;
       await page.waitForTimeout(1000);
     }
