@@ -133,18 +133,15 @@ ${viewerSelector} {
 
 const round = async(page: Page, gameId: string, roundNumber: number, identifier?: string) => {
   log('Starting round - ' + roundNumber, identifier);
-  await page.waitForTimeout(1000);
   // Wait for the street view to load
   const viewer = page.locator('.mapsConsumerUiSceneCoreScene__canvas').first();
-  await viewer.waitFor({ state: 'visible', timeout: 60000 });
-  await page.waitForTimeout(10000);
+  await viewer.waitFor({ state: 'visible' });
+  await page.waitForTimeout(5000);
   const css = await injectCss(page, hideEverythingElseCss);
   // Move the mouse to the top right corner to hide the UI (not top left), get the page size dynamically
   const pageWidth = await page.evaluate(() => window.innerWidth);
   await page.mouse.move(pageWidth - 1, 1);
-  await page.waitForTimeout(1000);
   await viewer?.screenshot({ path: DATA_PATH + LOCATION_FILE + gameId + '_' + roundNumber + LOCATION_FILE_EXTENSION });
-  await page.waitForTimeout(1000);
   await removeElement(css);
   const result = page.getByText('right answer was');
   await result.waitFor({ state: 'visible', timeout: 200000 });
@@ -158,7 +155,9 @@ const round = async(page: Page, gameId: string, roundNumber: number, identifier?
 };
 
 const game = async (page: Page, identifier?: string) => {
-  await page.waitForTimeout(1000);
+  await page.getByText('3 Lives').waitFor({ state: 'visible' });
+  await page.getByText('Game starting in').waitFor({ state: 'visible', timeout: 60000 });
+  await page.getByText('Game starting in').waitFor({ state: 'hidden', timeout: 60000 });
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
   log('Starting game - ' + gameId, identifier);
   // Get the game ID from the URL (https://www.geoguessr.com/de/battle-royale/<ID>)
@@ -167,13 +166,15 @@ const game = async (page: Page, identifier?: string) => {
   await page.waitForTimeout(1000);
   if (await clickButtonIfFound(page, 'Spectate')) {
     rounds++;
-    await page.waitForTimeout(10000);
+    await page.getByText('Next round starts in').waitFor({ state: 'visible' });
+    await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
     await round(page, gameId, rounds, identifier);
     rounds++;
     // Remove footer to improve vision and avoid second "Play again" button
     await page.locator('footer').evaluate((el) => el.remove());
     while (rounds < MAX_ROUNDS && await page.getByText('Next round starts').count() > 0) {
-      await page.waitForTimeout(10000);
+      await page.getByText('Next round starts in').waitFor({ state: 'visible' });
+      await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
       await round(page, gameId, rounds, identifier);
       rounds++;
       await page.waitForTimeout(1000);
@@ -185,7 +186,7 @@ describe('Geoguessr', () => {
   for (let i = 0; i < NUMBER_OF_INSTANCES; i++) {
     const identifier = (NUMBER_OF_INSTANCES > 1 ? String(i + 1) : '');
     // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
-    test('play country battle royal' + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
+    test('play countries battle royale' + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
       await page.waitForTimeout(STAGGER_INSTANCES * i);
       log('Starting geoguessr', identifier);
       // Total test timeout is 10 minutes
