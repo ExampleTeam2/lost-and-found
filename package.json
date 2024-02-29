@@ -12,7 +12,8 @@
     "scrape:prepare": "playwright install",
     "scrape": "playwright test --project=chromium-stealth",
     "scrape:ui": "playwright test --project=chromium-stealth --ui",
-    "scrape:deploy": "export CI=true && playwright test --project=chromium-stealth"
+    "scrape:deploy": "export CI=true && playwright test --project=chromium-stealth",
+    "scrape:cleanup": "chmod +x scraping/delete_leftover.sh && ./scraping/delete_leftover.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.2",
