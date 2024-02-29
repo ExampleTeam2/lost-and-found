@@ -227,7 +227,6 @@ const round = async(page: Page, gameId: string, roundNumber: number, identifier?
 const gameIds: string[] = [];
 
 const game = async (page: Page, identifier?: string) => {
-  await page.getByText('3 Lives').waitFor({ state: 'visible' });
   await page.getByText('Game starting in').waitFor({ state: 'visible', timeout: 60000 });
   await page.getByText('Game starting in').waitFor({ state: 'hidden', timeout: 60000 });
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
@@ -286,6 +285,7 @@ describe('Geoguessr', () => {
       await getButtonWithText(page, 'Got it').waitFor({ state: 'hidden' });
       await clickButtonWithText(page, 'Unranked', -1);
       await clickButtonWithText(page, 'Countries', -1);
+      await page.getByText('3 Lives').waitFor({ state: 'visible' });
       let games = 1;
       await game(page, identifier);
       await page.waitForTimeout(3000);
