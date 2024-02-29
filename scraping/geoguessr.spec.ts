@@ -130,7 +130,8 @@ const collectGuesses = (page: Page) => {
   const task = async () => {
     try {
       // Get element 'Already made guesses' if it exists (without waiting), then get its parent and look for the alt of all img contained somewhere within it (can be nested deeper)
-      const incorrectGuessesHeading = (await page.locator('text="Already made guesses"').all())?.[0];
+      const incorrectGuessesHeadings = await page.locator('text="Already made guesses"').all();
+      const incorrectGuessesHeading = incorrectGuessesHeadings[0];
       if (incorrectGuessesHeading) {
         const incorrect = (await incorrectGuessesHeading.evaluate((el): string[] => {
           if (!el.parentElement) {
