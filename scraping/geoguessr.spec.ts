@@ -258,13 +258,15 @@ const game = async (page: Page, identifier?: string) => {
   }
 }
 
+let initial = true
+
 describe('Geoguessr', () => {
   for (let i = 0; i < NUMBER_OF_INSTANCES; i++) {
     const identifier = (NUMBER_OF_INSTANCES > 1 ? String(i + 1) : '');
     // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
     test('play countries battle royale' + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
       test.setTimeout(60000 * MAX_MINUTES);
-      await page.waitForTimeout(STAGGER_INSTANCES * i);
+      await page.waitForTimeout(STAGGER_INSTANCES * (initial ? i : 0));
       log('Starting geoguessr', identifier);
       await setCookies(page);
       await page.goto('https://www.geoguessr.com', { timeout: 60000 });
@@ -296,4 +298,5 @@ describe('Geoguessr', () => {
       }
     });    
   }
+  initial = false;
 });
