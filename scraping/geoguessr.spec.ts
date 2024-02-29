@@ -283,15 +283,15 @@ const play = async (page: Page, identifier: string, i: number, wait: number = i)
   let games = 1;
   const restart = await game(page, identifier);
   if (restart) {
-    await play(page, identifier, i, 1);
-    return;
+    await page.waitForTimeout(STAGGER_INSTANCES);
+    throw new Error('Double-joined game, restarting');
   }
   await page.waitForTimeout(3000);
   while (games < MAX_GAMES && await clickButtonIfFound(page, 'Play again')) {
     const restart = await game(page, identifier);
     if (restart) {
-      await play(page, identifier, i, 1);
-      return;
+      await page.waitForTimeout(STAGGER_INSTANCES);
+      throw new Error('Double-joined game, restarting');
     }
     games++;
     await page.waitForTimeout(3000);
