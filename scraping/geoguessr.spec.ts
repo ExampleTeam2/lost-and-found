@@ -230,11 +230,11 @@ const game = async (page: Page, identifier?: string) => {
   await page.getByText('Game starting in').waitFor({ state: 'visible', timeout: 60000 });
   await page.getByText('Game starting in').waitFor({ state: 'hidden', timeout: 60000 });
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
-  if (gameIds.includes(gameId)) {
+  if (gameIds?.includes(gameId)) {
     await page.waitForTimeout(STAGGER_INSTANCES);
-    throw new Error('Double-joined game, restarting');
+    expect('Double-joined game, restarting').toBeUndefined();
   }
-  gameIds.push(gameId);
+  gameIds?.push(gameId);
   log('Starting game - ' + gameId, identifier);
   // Get the game ID from the URL (https://www.geoguessr.com/de/battle-royale/<ID>)
   let rounds = 0;
