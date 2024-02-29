@@ -256,10 +256,9 @@ describe('Geoguessr', () => {
     const identifier = (NUMBER_OF_INSTANCES > 1 ? String(i + 1) : '');
     // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
     test('play countries battle royale' + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
+      test.setTimeout(60000 * MAX_MINUTES);
       await page.waitForTimeout(STAGGER_INSTANCES * i);
       log('Starting geoguessr', identifier);
-      // Total test timeout is 10 minutes
-      test.setTimeout(60000 * MAX_MINUTES);
       await setCookies(page);
       await page.goto('https://www.geoguessr.com', { timeout: 60000 });
       page.setDefaultTimeout(10000);
