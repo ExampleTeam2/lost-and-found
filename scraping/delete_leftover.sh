@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Directory containing the files
-directory="./data/"
+directory="./scraping/data/"
 
 # Temporary file to hold the list of base IDs
 temp_ids="/tmp/ids_list.txt"
