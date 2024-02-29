@@ -120,6 +120,60 @@ const randomUUID = () => {
   return 'xxxxxxxxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16));
 };
 
+const collectGuesses = (page: Page) => {
+  let intervalId: ReturnType<typeof setInterval> | undefined;
+
+  const data: Record<number, { incorrect: string[] }> = {};
+
+  let index = 0;
+
+  const task = async () => {
+    try {
+      // Get element 'Already made guesses' if it exists (without waiting), then get its parent and look for the alt of all img contained somewhere within it (can be nested deeper)
+      const incorrectGuessesHeading = page.locator('text="Already made guesses"').first();
+      const incorrect = (await incorrectGuessesHeading.evaluate((el): string[] => {
+        if (!el.parentElement) {
+          return [];
+        }
+        return Array.from(el.parentElement.querySelectorAll('img')).map(img => img.getAttribute('alt')).filter(text => text) as string[];
+      }));
+      index++;
+      data[index] = { incorrect };
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  intervalId = setInterval(task, 1000);
+
+  return () => {
+    clearInterval(intervalId);
+    return data;
+  };
+}
+
+const getUsers = (page: Page) => {
+  // Get links with URL like /user/...
+  return page.locator('a[href^="/user/"]');
+};
+
+const getCoordinates = async (page: Page): Promise<[number, number] | undefined> => {
+  // Get link with URL like https://maps.google.com/maps?ll=<lat>,<lon>&... (only if it exists, without waiting)
+  // Make sure the coordinates are not 0,0, if yes then try another link
+  const links = await page.locator('a[href^="https://maps.google.com/maps?ll="]').all().then(result => Promise.all(result.map(link => link.getAttribute('href'))));
+  for (const link of links) {
+    const coordinates = link?.match(/ll=([\d.-]+),([\d.-]+)/);
+    if (coordinates) {
+      const lat = parseFloat(coordinates[1]);
+      const lon = parseFloat(coordinates[2]);
+      if (lat !== 0 || lon !== 0) {
+        return [lat, lon];
+      }
+    }
+  }
+  return undefined;
+};
+
 const viewerSelector = '.mapsConsumerUiSceneCoreScene__canvas';
 // Use :has() to also exclude other parent elements
 const hideEverythingElseCss = `
@@ -136,6 +190,9 @@ const round = async(page: Page, gameId: string, roundNumber: number, identifier?
   // Wait for the street view to load
   const viewer = page.locator('.mapsConsumerUiSceneCoreScene__canvas').first();
   await viewer.waitFor({ state: 'visible' });
+  const startTime = Date.now();
+  const people = await getUsers(page).count();
+  const stopCollectingGuesses = collectGuesses(page);
   await page.waitForTimeout(5000);
   const css = await injectCss(page, hideEverythingElseCss);
   // Move the mouse to the top right corner to hide the UI (not top left), get the page size dynamically
@@ -145,11 +202,21 @@ const round = async(page: Page, gameId: string, roundNumber: number, identifier?
   await removeElement(css);
   const result = page.getByText('right answer was');
   await result.waitFor({ state: 'visible', timeout: 200000 });
+  const duration = (Date.now() - startTime) / 1000;
+  const guesses = await stopCollectingGuesses();
+  const coordinates = await getCoordinates(page);
   const resultText = await result.textContent();
   // The sentence is like "[.]?[...] right answer was [in | indeed | actually | ...] [country].[...][.]?", parse the country.
   const country = resultText?.split('right answer was')[1].split('.')[0].trim();
   log('It was ' + country, identifier);
-  fs.writeFile(DATA_PATH + RESULT_FILE + gameId + '_' + roundNumber + RESULT_FILE_EXTENSION, JSON.stringify(country), (err) => {
+  const resultJson = {
+    country,
+    coordinates,
+    guesses,
+    people,
+    duration
+  }
+  fs.writeFile(DATA_PATH + RESULT_FILE + gameId + '_' + roundNumber + RESULT_FILE_EXTENSION, JSON.stringify(resultJson), (err) => {
     if (err) console.log(err);
   });
 };
