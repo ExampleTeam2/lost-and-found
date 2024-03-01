@@ -39,3 +39,4 @@ scraping/data/cookies.json
 
 # Data
 /scraping/data/
+/analyze/data/
