@@ -14,7 +14,7 @@ const MAX_ROUNDS = 15;
 const MAX_GAMES = 100;
 const MAX_MINUTES = 1440;
 const NUMBER_OF_INSTANCES = process.env.CI ? 5 : 1;
-const STAGGER_INSTANCES = 30000;
+const STAGGER_INSTANCES = 40000;
 
 let logProgressInterval: ReturnType<typeof setInterval> | undefined;
 
@@ -233,10 +233,16 @@ const round = async(page: Page, gameId: string, roundNumber: number, identifier?
 };
 
 const game = async (page: Page, identifier?: string) => {
-  await page.getByText('Game starting in').waitFor({ state: 'visible', timeout: 60000 });
+  await page.getByText('Game starting in').or(page.getByText('Rate limit')).nth(0).waitFor({ state: 'visible', timeout: 60000 });
+  if (await page.getByText('Rate limit').count() > 0) {
+    log('Rate-limited', identifier);
+    await page.waitForTimeout(STAGGER_INSTANCES);
+    expect('Rate-limited, restarting').toBeUndefined();
+  }
   await page.getByText('Game starting in').waitFor({ state: 'hidden', timeout: 60000 });
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
   if (fs.readFileSync(TEMP_PATH + 'games', 'utf8')?.split(/\n/g)?.includes(gameId)) {
+    log('Double-joined game', identifier);
     await page.waitForTimeout(STAGGER_INSTANCES);
     expect('Double-joined game, restarting').toBeUndefined();
   }
