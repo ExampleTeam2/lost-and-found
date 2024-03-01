@@ -31,3 +31,8 @@ scraping/data/cookies.json
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Temp
+
+/tmp/
+/scraping/tmp/

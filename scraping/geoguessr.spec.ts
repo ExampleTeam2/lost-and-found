@@ -5,6 +5,7 @@ import { Page } from 'playwright-core';
 import { describe } from 'node:test';
 
 const DATA_PATH = 'scraping/data/';
+const TEMP_PATH = 'scraping/tmp/';
 const LOCATION_FILE = 'geoguessr_location_';
 const LOCATION_FILE_EXTENSION = '.png';
 const RESULT_FILE = 'geoguessr_result_';
@@ -224,17 +225,17 @@ const round = async(page: Page, gameId: string, roundNumber: number, identifier?
   });
 };
 
-const gameIds: string[] = [];
+fs.writeFileSync(TEMP_PATH + 'games', '');
 
 const game = async (page: Page, identifier?: string) => {
   await page.getByText('Game starting in').waitFor({ state: 'visible', timeout: 60000 });
   await page.getByText('Game starting in').waitFor({ state: 'hidden', timeout: 60000 });
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
-  if (gameIds?.includes(gameId)) {
+  if (fs.readFileSync(TEMP_PATH + 'games', 'utf8')?.split(/\n/g)?.includes(gameId)) {
     await page.waitForTimeout(STAGGER_INSTANCES);
     expect('Double-joined game, restarting').toBeUndefined();
   }
-  gameIds?.push(gameId);
+  fs.appendFileSync(TEMP_PATH + 'games', gameId + '\n');
   log('Starting game - ' + gameId, identifier);
   // Get the game ID from the URL (https://www.geoguessr.com/de/battle-royale/<ID>)
   let rounds = 0;
@@ -258,7 +259,7 @@ const game = async (page: Page, identifier?: string) => {
   }
 }
 
-let initial = true
+fs.writeFileSync(TEMP_PATH + 'initial', 'true');
 
 describe('Geoguessr', () => {
   for (let i = 0; i < NUMBER_OF_INSTANCES; i++) {
@@ -266,7 +267,7 @@ describe('Geoguessr', () => {
     // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
     test('play countries battle royale' + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
       test.setTimeout(60000 * MAX_MINUTES);
-      await page.waitForTimeout(STAGGER_INSTANCES * (initial ? i : 0));
+      await page.waitForTimeout(STAGGER_INSTANCES * (fs.readFileSync(TEMP_PATH + 'initial', 'utf8') === 'true' ? i : 0));
       log('Starting geoguessr', identifier);
       await setCookies(page);
       await page.goto('https://www.geoguessr.com', { timeout: 60000 });
@@ -298,5 +299,5 @@ describe('Geoguessr', () => {
       }
     });    
   }
-  initial = false;
+  fs.writeFileSync(TEMP_PATH + 'initial', 'false');
 });
