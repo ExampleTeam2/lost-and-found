@@ -233,11 +233,17 @@ const round = async(page: Page, gameId: string, roundNumber: number, identifier?
 };
 
 const game = async (page: Page, identifier?: string) => {
-  await page.getByText('Game starting in').waitFor({ state: 'visible', timeout: 60000 });
+  await page.getByText('Game starting in').or(page.getByText('Rate limit')).nth(0).waitFor({ state: 'visible', timeout: 60000 });
+  if (await page.getByText('Rate limit').count() > 0) {
+    await page.waitForTimeout(STAGGER_INSTANCES);
+    log('Rate-limited', identifier);
+    expect('Rate-limited, restarting').toBeUndefined();
+  }
   await page.getByText('Game starting in').waitFor({ state: 'hidden', timeout: 60000 });
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
   if (fs.readFileSync(TEMP_PATH + 'games', 'utf8')?.split(/\n/g)?.includes(gameId)) {
     await page.waitForTimeout(STAGGER_INSTANCES);
+    log('Double-joined game', identifier);
     expect('Double-joined game, restarting').toBeUndefined();
   }
   fs.appendFileSync(TEMP_PATH + 'games', gameId + '\n');
