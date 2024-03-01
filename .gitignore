@@ -31,8 +31,11 @@ scraping/data/cookies.json
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+/scraping/reports/
 
 # Temp
-
 /tmp/
 /scraping/tmp/
+
+# Data
+/scraping/data/

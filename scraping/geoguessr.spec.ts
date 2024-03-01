@@ -121,12 +121,13 @@ const randomUUID = () => {
   return 'xxxxxxxxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16));
 };
 
-const collectGuesses = (page: Page) => {
+const collectGuesses = (page: Page, i?: string) => {
   let intervalId: ReturnType<typeof setInterval> | undefined;
 
   const data: Record<number, { incorrect: string[] }> = {};
 
   let index = 0;
+  let cleared = false;
 
   const task = async () => {
     try {
@@ -144,7 +145,12 @@ const collectGuesses = (page: Page) => {
         data[index] = { incorrect };
       }
     } catch (e) {
-      console.error(e);
+      if (!cleared) {
+        // Generate a timestamp string
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        console.error(`${(i ? i + ' - ' : '')}Error occurred in subtask 'collectGuesses' at ${timestamp}:`);
+        console.error(e);
+      }
     }
   };
 
@@ -152,6 +158,7 @@ const collectGuesses = (page: Page) => {
 
   return () => {
     clearInterval(intervalId);
+    cleared = true;
     return data;
   };
 }
