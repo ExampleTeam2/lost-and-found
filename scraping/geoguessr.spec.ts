@@ -10,9 +10,9 @@ const LOCATION_FILE = 'geoguessr_location_';
 const LOCATION_FILE_EXTENSION = '.png';
 const RESULT_FILE = 'geoguessr_result_';
 const RESULT_FILE_EXTENSION = '.json';
-const MAX_ROUNDS = 15;
-const MAX_GAMES = 100;
-const MAX_MINUTES = 1440;
+const MAX_ROUNDS = process.env.CI ? 100 : 15;
+const MAX_GAMES = process.env.CI ? 100000 : 10;
+const MAX_MINUTES = process.env.CI ? 60 * 24 * 30 : 60;
 const NUMBER_OF_INSTANCES = process.env.CI ? 5 : 1;
 const STAGGER_INSTANCES = 40000;
 
