@@ -299,7 +299,6 @@ const play = async (page: Page, i: number, identifier?: string) => {
   await getButtonWithText(page, 'Got it').waitFor({ state: 'hidden' });
   await clickButtonWithText(page, 'Unranked', -1);
   await clickButtonWithText(page, 'Countries', -1);
-  await page.getByText('3 Lives').waitFor({ state: 'visible' });
   let games = 1;
   await game(page, i, identifier);
   await page.waitForTimeout(3000);
