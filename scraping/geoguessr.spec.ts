@@ -14,7 +14,7 @@ const MAX_ROUNDS = 15;
 const MAX_GAMES = 100;
 const MAX_MINUTES = 1440;
 const NUMBER_OF_INSTANCES = process.env.CI ? 5 : 1;
-const STAGGER_INSTANCES = 30000;
+const STAGGER_INSTANCES = 40000;
 
 let logProgressInterval: ReturnType<typeof setInterval> | undefined;
 
