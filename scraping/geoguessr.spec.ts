@@ -232,19 +232,21 @@ const round = async(page: Page, gameId: string, roundNumber: number, identifier?
   });
 };
 
-const game = async (page: Page, identifier?: string) => {
+const game = async (page: Page, i: number, identifier?: string) => {
   await page.getByText('Game starting in').or(page.getByText('Rate limit')).nth(0).waitFor({ state: 'visible', timeout: 60000 });
   if (await page.getByText('Rate limit').count() > 0) {
     log('Rate-limited', identifier);
     await page.waitForTimeout(STAGGER_INSTANCES);
-    expect('Rate-limited, restarting').toBeUndefined();
+    await play(page, i, identifier);
+    return;
   }
   await page.getByText('Game starting in').waitFor({ state: 'hidden', timeout: 60000 });
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
   if (fs.readFileSync(TEMP_PATH + 'games', 'utf8')?.split(/\n/g)?.includes(gameId)) {
     log('Double-joined game', identifier);
     await page.waitForTimeout(STAGGER_INSTANCES);
-    expect('Double-joined game, restarting').toBeUndefined();
+    await play(page, i, identifier);
+    return;
   }
   fs.appendFileSync(TEMP_PATH + 'games', gameId + '\n');
   log('Starting game - ' + gameId, identifier);
@@ -270,6 +272,42 @@ const game = async (page: Page, identifier?: string) => {
   }
 }
 
+const play = async (page: Page, i: number, identifier?: string) => {
+  await page.waitForTimeout(STAGGER_INSTANCES * (fs.readFileSync(TEMP_PATH + 'initial', 'utf8') === 'true' ? i : 0));
+  if (i === NUMBER_OF_INSTANCES - 1) {
+    fs.writeFileSync(TEMP_PATH + 'initial', 'false');
+  }
+  log('Starting geoguessr', identifier);
+  await setCookies(page);
+  await page.goto('https://www.geoguessr.com', { timeout: 60000 });
+  page.setDefaultTimeout(10000);
+  // Wait for any button to be visible
+  await page.locator('button, a').first().waitFor({ state: 'visible' });
+  if (!(await checkIfLoggedIn(page))) {
+    await removeCookieBanner(page);
+    await logIn(page, identifier);
+  } else {
+    log('Already logged in', identifier);
+  }
+  page.setDefaultTimeout(5000);
+  await clickButtonWithText(page, 'Multiplayer', -1);
+  await getButtonWithText(page, 'Got it').or(getButtonWithText(page, 'Multiplayer')).nth(0).waitFor({ state: 'visible' });
+  await page.waitForTimeout(1000);
+  await clickButtonIfFound(page, 'Got it');
+  await getButtonWithText(page, 'Got it').waitFor({ state: 'hidden' });
+  await clickButtonWithText(page, 'Unranked', -1);
+  await clickButtonWithText(page, 'Countries', -1);
+  await page.getByText('3 Lives').waitFor({ state: 'visible' });
+  let games = 1;
+  await game(page, i, identifier);
+  await page.waitForTimeout(3000);
+  while (games < MAX_GAMES && await clickButtonIfFound(page, 'Play again')) {
+    await game(page, i, identifier);
+    games++;
+    await page.waitForTimeout(3000);
+  }
+};
+
 describe('Geoguessr', () => {
   test.beforeAll(() => {
     if (!fs.existsSync(DATA_PATH)){
@@ -286,39 +324,7 @@ describe('Geoguessr', () => {
     // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
     test('play countries battle royale' + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
       test.setTimeout(60000 * MAX_MINUTES);
-      await page.waitForTimeout(STAGGER_INSTANCES * (fs.readFileSync(TEMP_PATH + 'initial', 'utf8') === 'true' ? i : 0));
-      if (i === NUMBER_OF_INSTANCES - 1) {
-        fs.writeFileSync(TEMP_PATH + 'initial', 'false');
-      }
-      log('Starting geoguessr', identifier);
-      await setCookies(page);
-      await page.goto('https://www.geoguessr.com', { timeout: 60000 });
-      page.setDefaultTimeout(10000);
-      // Wait for any button to be visible
-      await page.locator('button, a').first().waitFor({ state: 'visible' });
-      if (!(await checkIfLoggedIn(page))) {
-        await removeCookieBanner(page);
-        await logIn(page, identifier);
-      } else {
-        log('Already logged in', identifier);
-      }
-      page.setDefaultTimeout(5000);
-      await clickButtonWithText(page, 'Multiplayer', -1);
-      await getButtonWithText(page, 'Got it').or(getButtonWithText(page, 'Multiplayer')).nth(0).waitFor({ state: 'visible' });
-      await page.waitForTimeout(1000);
-      await clickButtonIfFound(page, 'Got it');
-      await getButtonWithText(page, 'Got it').waitFor({ state: 'hidden' });
-      await clickButtonWithText(page, 'Unranked', -1);
-      await clickButtonWithText(page, 'Countries', -1);
-      await page.getByText('3 Lives').waitFor({ state: 'visible' });
-      let games = 1;
-      await game(page, identifier);
-      await page.waitForTimeout(3000);
-      while (games < MAX_GAMES && await clickButtonIfFound(page, 'Play again')) {
-        await game(page, identifier);
-        games++;
-        await page.waitForTimeout(3000);
-      }
-    });    
+      await play(page, i, identifier);
+    });
   }
 });
