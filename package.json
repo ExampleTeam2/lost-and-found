@@ -13,7 +13,8 @@
     "scrape": "playwright test --project=chromium-stealth",
     "scrape:ui": "playwright test --project=chromium-stealth --ui",
     "scrape:deploy": "export CI=true && playwright test --project=chromium-stealth",
-    "scrape:cleanup": "chmod +x scraping/delete_leftover.sh && ./scraping/delete_leftover.sh"
+    "scrape:cleanup": "chmod +x scraping/delete_leftover.sh && ./scraping/delete_leftover.sh",
+    "scrape:count": "ls scraping/data/geoguessr_location* | wc -l"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.2",
