@@ -225,8 +225,6 @@ const round = async(page: Page, gameId: string, roundNumber: number, identifier?
   });
 };
 
-fs.writeFileSync(TEMP_PATH + 'games', '');
-
 const game = async (page: Page, identifier?: string) => {
   await page.getByText('Game starting in').waitFor({ state: 'visible', timeout: 60000 });
   await page.getByText('Game starting in').waitFor({ state: 'hidden', timeout: 60000 });
@@ -259,15 +257,26 @@ const game = async (page: Page, identifier?: string) => {
   }
 }
 
-fs.writeFileSync(TEMP_PATH + 'initial', 'true');
-
 describe('Geoguessr', () => {
+  test.beforeAll(() => {
+    if (!fs.existsSync(DATA_PATH)){
+      fs.mkdirSync(DATA_PATH);
+    }
+    if (!fs.existsSync(TEMP_PATH)){
+      fs.mkdirSync(TEMP_PATH);
+    }
+    fs.appendFileSync(TEMP_PATH + 'games', '');
+    fs.writeFileSync(TEMP_PATH + 'initial', 'true');
+  });
   for (let i = 0; i < NUMBER_OF_INSTANCES; i++) {
     const identifier = (NUMBER_OF_INSTANCES > 1 ? String(i + 1) : '');
     // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
     test('play countries battle royale' + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
       test.setTimeout(60000 * MAX_MINUTES);
       await page.waitForTimeout(STAGGER_INSTANCES * (fs.readFileSync(TEMP_PATH + 'initial', 'utf8') === 'true' ? i : 0));
+      if (i === NUMBER_OF_INSTANCES - 1) {
+        fs.writeFileSync(TEMP_PATH + 'initial', 'false');
+      }
       log('Starting geoguessr', identifier);
       await setCookies(page);
       await page.goto('https://www.geoguessr.com', { timeout: 60000 });
@@ -299,5 +308,4 @@ describe('Geoguessr', () => {
       }
     });    
   }
-  fs.writeFileSync(TEMP_PATH + 'initial', 'false');
 });
