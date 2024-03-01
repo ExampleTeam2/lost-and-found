@@ -236,7 +236,7 @@ const game = async (page: Page, i: number, identifier?: string) => {
   await page.getByText('Game starting in').or(page.getByText('Rate limit')).nth(0).waitFor({ state: 'visible', timeout: 60000 });
   if (await page.getByText('Rate limit').count() > 0) {
     log('Rate-limited', identifier);
-    fs.writeFileSync(TEMP_PATH + 'last-rate-limits', i + '\n');
+    fs.appendFileSync(TEMP_PATH + 'last-rate-limits', i + '\n');
     await page.waitForTimeout(STAGGER_INSTANCES);
     await play(page, i, identifier);
     return;
@@ -245,7 +245,7 @@ const game = async (page: Page, i: number, identifier?: string) => {
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
   if (fs.readFileSync(TEMP_PATH + 'games', 'utf8')?.split(/\n/g)?.includes(gameId)) {
     log('Double-joined game', identifier);
-    fs.writeFileSync(TEMP_PATH + 'last-double-joins', i + '\n');
+    fs.appendFileSync(TEMP_PATH + 'last-double-joins', i + '\n');
     await page.waitForTimeout(STAGGER_INSTANCES);
     await play(page, i, identifier);
     return;
