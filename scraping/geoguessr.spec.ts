@@ -309,16 +309,6 @@ const play = async (page: Page, i: number, identifier?: string) => {
   }
 };
 
-process.on('uncaughtException', (error) => {
-  console.error('Unhandled Exception', error);
-  process.exit(1); // Exits with a status code of 1
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1); // Exits with a status code of 1
-});
-
 describe('Geoguessr', () => {
   test.beforeAll(() => {
     if (!fs.existsSync(DATA_PATH)){
@@ -339,8 +329,22 @@ describe('Geoguessr', () => {
     const identifier = (NUMBER_OF_INSTANCES > 1 ? String(i + 1) : '');
     // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
     test('play countries battle royale' + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
-      test.setTimeout(60000 * MAX_MINUTES);
-      await play(page, i, identifier);
+      try {
+        test.setTimeout(60000 * MAX_MINUTES);
+        await play(page, i, identifier);
+      } catch (e: unknown) {
+        // Generate a timestamp string
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        // If messages includes 'Target crashed', exit program, otherwise log an error message that an Error occurred in this instance at this time and rethrow
+        if (typeof e === 'object' && e instanceof Error && e.message.includes('Target crashed')) {
+          console.error(`${(i ? i + ' - ' : '')}Crash occurred at ${timestamp}, stopping:`);
+          console.error(e);
+          process.exit(1);
+        } else {
+          console.error(`${(i ? i + ' - ' : '')}Error occurred at ${timestamp}:`);
+          throw e;
+        }
+      }
     });
   }
 });
