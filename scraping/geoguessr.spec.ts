@@ -309,6 +309,16 @@ const play = async (page: Page, i: number, identifier?: string) => {
   }
 };
 
+process.on('uncaughtException', (error) => {
+  console.error('Unhandled Exception', error);
+  process.exit(1); // Exits with a status code of 1
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1); // Exits with a status code of 1
+});
+
 describe('Geoguessr', () => {
   test.beforeAll(() => {
     if (!fs.existsSync(DATA_PATH)){
