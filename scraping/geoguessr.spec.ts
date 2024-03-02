@@ -319,10 +319,10 @@ describe('Geoguessr', () => {
     }
     fs.appendFileSync(TEMP_PATH + 'games', '');
     fs.writeFileSync(TEMP_PATH + 'initial', 'true');
-    fs.writeFileSync(TEMP_PATH + 'last-rate-limits', '');
-    fs.writeFileSync(TEMP_PATH + 'last-double-joins', '');
     // Generate a timestamp string
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    fs.appendFileSync(TEMP_PATH + 'last-rate-limits', timestamp + '\n');
+    fs.appendFileSync(TEMP_PATH + 'last-double-joins', timestamp + '\n');
     fs.writeFileSync(TEMP_PATH + 'last-start', timestamp);
   });
   for (let i = 0; i < NUMBER_OF_INSTANCES; i++) {
