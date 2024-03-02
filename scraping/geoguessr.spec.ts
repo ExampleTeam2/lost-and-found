@@ -236,7 +236,7 @@ const game = async (page: Page, i: number, identifier?: string) => {
   await page.getByText('Game starting in').or(page.getByText('Rate limit')).nth(0).waitFor({ state: 'visible', timeout: 60000 });
   if (await page.getByText('Rate limit').count() > 0) {
     log('Rate-limited', identifier);
-    fs.appendFileSync(TEMP_PATH + 'last-rate-limits', i + '\n');
+    fs.appendFileSync(TEMP_PATH + 'rate-limits', i + '\n');
     await page.waitForTimeout(STAGGER_INSTANCES);
     await play(page, i, identifier);
     return;
@@ -245,7 +245,7 @@ const game = async (page: Page, i: number, identifier?: string) => {
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
   if (fs.readFileSync(TEMP_PATH + 'games', 'utf8')?.split(/\n/g)?.includes(gameId)) {
     log('Double-joined game', identifier);
-    fs.appendFileSync(TEMP_PATH + 'last-double-joins', i + '\n');
+    fs.appendFileSync(TEMP_PATH + 'double-joins', i + '\n');
     await page.waitForTimeout(STAGGER_INSTANCES);
     await play(page, i, identifier);
     return;
@@ -321,8 +321,8 @@ describe('Geoguessr', () => {
     fs.writeFileSync(TEMP_PATH + 'initial', 'true');
     // Generate a timestamp string
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    fs.appendFileSync(TEMP_PATH + 'last-rate-limits', timestamp + '\n');
-    fs.appendFileSync(TEMP_PATH + 'last-double-joins', timestamp + '\n');
+    fs.appendFileSync(TEMP_PATH + 'rate-limits', timestamp + '\n');
+    fs.appendFileSync(TEMP_PATH + 'double-joins', timestamp + '\n');
     fs.writeFileSync(TEMP_PATH + 'last-start', timestamp);
   });
   for (let i = 0; i < NUMBER_OF_INSTANCES; i++) {
@@ -337,6 +337,7 @@ describe('Geoguessr', () => {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         // If messages includes 'Target crashed', exit program, otherwise log an error message that an Error occurred in this instance at this time and rethrow
         if (typeof e === 'object' && e instanceof Error && e.message.includes('Target crashed')) {
+          fs.appendFileSync(TEMP_PATH + 'crashes', timestamp + '\n');
           console.error(`${(i ? i + ' - ' : '')}Crash occurred at ${timestamp}, stopping:`);
           console.error(e);
           process.exit(1);
