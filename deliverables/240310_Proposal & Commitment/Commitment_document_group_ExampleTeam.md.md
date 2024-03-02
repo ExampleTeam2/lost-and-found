@@ -1,0 +1,12 @@
+# Commitment Document for DSPRO2 (FS24)
+
+## Group Members
+
+**Linus Schlumberger**
+SHORT DESCRIPTION OF RESPONSIBILITIES
+
+**Lukas Stöckli**
+SHORT DESCRIPTION OF RESPONSIBILITIES
+
+**Yutaro Sigrist**
+SHORT DESCRIPTION OF RESPONSIBILITIES

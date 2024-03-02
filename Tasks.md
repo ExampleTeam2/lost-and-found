@@ -10,6 +10,7 @@ kanban-plugin: basic
 - [ ] decide and vote for best business case #BusinessUnderstanding ^okfbtq
 - [ ] create web scrapper for geoguessr #DataCollecting
 - [ ] collecting data from geoguessr #DataCollecting
+- [ ] create commitment and proposal as markdown file #BusinessUnderstanding
 
 
 ## Current
