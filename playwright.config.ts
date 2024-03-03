@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
 import fs from 'fs';
-import { DATA_PATH, TEMP_PATH, getTimestampString } from './playwright_base_config';
+import { DATA_PATH, MAX_RETRIES, NUMBER_OF_INSTANCES, TEMP_PATH, getTimestampString } from './playwright_base_config';
 
 const timestamp = getTimestampString();
 
@@ -43,9 +43,9 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 1000 : 0,
+  retries: MAX_RETRIES,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 5 : undefined,
+  workers: NUMBER_OF_INSTANCES,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI ? [['json', { outputFile: `./scraping/reports/results_${timestamp}.json` }]] : 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
