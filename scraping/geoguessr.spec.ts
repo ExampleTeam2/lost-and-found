@@ -199,7 +199,7 @@ const round = async(page: Page, gameId: string, roundNumber: number, identifier?
   log('Starting round - ' + roundNumber, identifier);
   // Wait for the street view to load
   const viewer = page.locator('.mapsConsumerUiSceneCoreScene__canvas').first();
-  await viewer.waitFor({ state: 'visible' });
+  await viewer.waitFor({ state: 'visible', timeout: 10000 });
   const startTime = Date.now();
   const people = await getUsers(page).count();
   const stopCollectingGuesses = collectGuesses(page, identifier);
