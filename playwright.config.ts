@@ -17,6 +17,8 @@ const setUpTmp = () => {
   if (!fs.existsSync(TEMP_PATH)){
     fs.mkdirSync(TEMP_PATH);
   }
+  fs.appendFileSync(TEMP_PATH + 'games', '');
+  fs.appendFileSync(TEMP_PATH + 'crashes', '');
   fs.writeFileSync(TEMP_PATH + 'initial', 'true');
   fs.appendFileSync(TEMP_PATH + 'rate-limits', timestamp + '\n');
   fs.appendFileSync(TEMP_PATH + 'double-joins', timestamp + '\n');
