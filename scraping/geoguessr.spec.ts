@@ -110,7 +110,7 @@ const randomUUID = () => {
   return 'xxxxxxxxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16));
 };
 
-const collectGuesses = (page: Page, i?: string) => {
+const collectGuesses = (page: Page, i?: number) => {
   let intervalId: ReturnType<typeof setInterval> | undefined;
 
   const data: Record<number, { incorrect: string[] }> = {};
@@ -187,14 +187,14 @@ ${viewerSelector} {
 }
 `;
 
-const round = async(page: Page, gameId: string, roundNumber: number, identifier?: string) => {
+const round = async(page: Page, gameId: string, roundNumber: number, i?: number, identifier?: string) => {
   log('Starting round - ' + roundNumber, identifier);
   // Wait for the street view to load
   const viewer = page.locator('.mapsConsumerUiSceneCoreScene__canvas').first();
   await viewer.waitFor({ state: 'visible' });
   const startTime = Date.now();
   const people = await getUsers(page).count();
-  const stopCollectingGuesses = collectGuesses(page);
+  const stopCollectingGuesses = collectGuesses(page, i);
   await page.waitForTimeout(5000);
   const css = await injectCss(page, hideEverythingElseCss);
   // Move the mouse to the top right corner to hide the UI (not top left), get the page size dynamically
@@ -245,20 +245,20 @@ const game = async (page: Page, i: number, identifier?: string) => {
   log('Starting game - ' + gameId, identifier);
   // Get the game ID from the URL (https://www.geoguessr.com/de/battle-royale/<ID>)
   let rounds = 0;
-  await round(page, gameId, rounds, identifier);
+  await round(page, gameId, rounds, i, identifier);
   await page.waitForTimeout(1000);
   if (await clickButtonIfFound(page, 'Spectate')) {
     rounds++;
     await page.getByText('Next round starts in').waitFor({ state: 'visible' });
     await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
-    await round(page, gameId, rounds, identifier);
+    await round(page, gameId, rounds, i, identifier);
     rounds++;
     // Remove footer to improve vision and avoid second "Play again" button
     await page.locator('footer').evaluate((el) => el.remove());
     while (rounds < MAX_ROUNDS && await page.getByText('Next round starts').count() > 0) {
       await page.getByText('Next round starts in').waitFor({ state: 'visible' });
       await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
-      await round(page, gameId, rounds, identifier);
+      await round(page, gameId, rounds, i, identifier);
       rounds++;
       await page.waitForTimeout(1000);
     }
