@@ -95,8 +95,12 @@ const logIn = async (page: Page, identifier?: string) => {
   log('Logged in successfully', identifier);
   // If logged in, save the cookies
   const cookies = await page.context().cookies();
-  fs.writeFile(DATA_PATH + 'cookies.json', JSON.stringify(cookies), (err) => {
-    if (err) console.log(err);
+  fs.writeFile(DATA_PATH + 'cookies.json', JSON.stringify(cookies), e => {
+    const timestamp = getTimestampString();
+    if (e) {
+      error(`Error occurred while saving cookies at ${timestamp}:`, identifier);
+      console.error(e);
+    };
   });
 };
 
@@ -222,8 +226,12 @@ const round = async(page: Page, gameId: string, roundNumber: number, identifier?
     people,
     duration
   }
-  fs.writeFile(DATA_PATH + RESULT_FILE + gameId + '_' + roundNumber + RESULT_FILE_EXTENSION, JSON.stringify(resultJson), (err) => {
-    if (err) console.log(err);
+  fs.writeFile(DATA_PATH + RESULT_FILE + gameId + '_' + roundNumber + RESULT_FILE_EXTENSION, JSON.stringify(resultJson), e => {
+    const timestamp = getTimestampString();
+    if (e) {
+      error(`Error occurred while saving game results at ${timestamp}:`, identifier);
+      console.error(e);
+    };
   });
 };
 
@@ -339,6 +347,7 @@ describe('Geoguessr', () => {
           process.exit(1);
         } else {
           error(`Error occurred at ${timestamp}:`, identifier);
+          console.error(e);
           throw e;
         }
       }
