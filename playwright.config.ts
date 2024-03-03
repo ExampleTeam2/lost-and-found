@@ -17,10 +17,10 @@ const setUpTmp = () => {
   if (!fs.existsSync(TEMP_PATH)){
     fs.mkdirSync(TEMP_PATH);
   }
-  fs.appendFileSync(TEMP_PATH + 'games', '');
   fs.writeFileSync(TEMP_PATH + 'initial', 'true');
   fs.appendFileSync(TEMP_PATH + 'rate-limits', timestamp + '\n');
   fs.appendFileSync(TEMP_PATH + 'double-joins', timestamp + '\n');
+  fs.appendFileSync(TEMP_PATH + 'other-restarts', timestamp + '\n');
   fs.appendFileSync(TEMP_PATH + 'starts', timestamp + '\n');
   fs.writeFileSync(TEMP_PATH + 'stop', 'false');
 };

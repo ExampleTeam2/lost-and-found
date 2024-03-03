@@ -304,6 +304,13 @@ const play = async (page: Page, i: number, identifier?: string) => {
     games++;
     await page.waitForTimeout(3000);
   }
+  // Retry if ended early
+  if (games !== MAX_GAMES) {
+    log('Could not start next game', identifier);
+    fs.appendFileSync(TEMP_PATH + 'other-restarts', i + '\n');
+    await page.waitForTimeout(STAGGER_INSTANCES);
+    await play(page, i, identifier);
+  }
 };
 
 describe('Geoguessr', () => {
