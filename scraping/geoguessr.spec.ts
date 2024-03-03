@@ -7,6 +7,10 @@ import { DATA_PATH, LOCATION_FILE, LOCATION_FILE_EXTENSION, MAX_GAMES, MAX_MINUT
 
 let logProgressInterval: ReturnType<typeof setInterval> | undefined;
 
+const error = (message: string, i?: string) => {
+  console.error((i ? i + ' - ' : '') + message);
+}
+
 // Log a message, print a dot (on the same line) every 10 seconds in a background process to get progress indication until another message is logged
 const log = (message: string, i?: string) => {
   console.log((i ? i + ' - ' : '') + message);
@@ -110,7 +114,7 @@ const randomUUID = () => {
   return 'xxxxxxxxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16));
 };
 
-const collectGuesses = (page: Page, i?: number) => {
+const collectGuesses = (page: Page, identifier?: string) => {
   let intervalId: ReturnType<typeof setInterval> | undefined;
 
   const data: Record<number, { incorrect: string[] }> = {};
@@ -139,7 +143,7 @@ const collectGuesses = (page: Page, i?: number) => {
         cleared = true;
       } else if (!cleared) {
         const timestamp = getTimestampString();
-        console.error(`${(i ? i + ' - ' : '')}Error occurred in subtask 'collectGuesses' at ${timestamp}:`);
+        error(`Error occurred in subtask 'collectGuesses' at ${timestamp}:`, identifier);
         console.error(e);
       }
     }
@@ -187,14 +191,14 @@ ${viewerSelector} {
 }
 `;
 
-const round = async(page: Page, gameId: string, roundNumber: number, i?: number, identifier?: string) => {
+const round = async(page: Page, gameId: string, roundNumber: number, identifier?: string) => {
   log('Starting round - ' + roundNumber, identifier);
   // Wait for the street view to load
   const viewer = page.locator('.mapsConsumerUiSceneCoreScene__canvas').first();
   await viewer.waitFor({ state: 'visible' });
   const startTime = Date.now();
   const people = await getUsers(page).count();
-  const stopCollectingGuesses = collectGuesses(page, i);
+  const stopCollectingGuesses = collectGuesses(page, identifier);
   await page.waitForTimeout(5000);
   const css = await injectCss(page, hideEverythingElseCss);
   // Move the mouse to the top right corner to hide the UI (not top left), get the page size dynamically
@@ -245,20 +249,20 @@ const game = async (page: Page, i: number, identifier?: string) => {
   log('Starting game - ' + gameId, identifier);
   // Get the game ID from the URL (https://www.geoguessr.com/de/battle-royale/<ID>)
   let rounds = 0;
-  await round(page, gameId, rounds, i, identifier);
+  await round(page, gameId, rounds, identifier);
   await page.waitForTimeout(1000);
   if (await clickButtonIfFound(page, 'Spectate')) {
     rounds++;
     await page.getByText('Next round starts in').waitFor({ state: 'visible' });
     await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
-    await round(page, gameId, rounds, i, identifier);
+    await round(page, gameId, rounds, identifier);
     rounds++;
     // Remove footer to improve vision and avoid second "Play again" button
     await page.locator('footer').evaluate((el) => el.remove());
     while (rounds < MAX_ROUNDS && await page.getByText('Next round starts').count() > 0) {
       await page.getByText('Next round starts in').waitFor({ state: 'visible' });
       await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
-      await round(page, gameId, rounds, i, identifier);
+      await round(page, gameId, rounds, identifier);
       rounds++;
       await page.waitForTimeout(1000);
     }
@@ -330,11 +334,11 @@ describe('Geoguessr', () => {
         if (typeof e === 'object' && e instanceof Error && e.message.includes('Target crashed')) {
           fs.appendFileSync(TEMP_PATH + 'crashes', timestamp + '\n');
           fs.writeFileSync(TEMP_PATH + 'stop', 'true');
-          console.error(`${(i ? i + ' - ' : '')}Crash occurred at ${timestamp}, stopping:`);
+          error(`Crash occurred at ${timestamp}, stopping:`, identifier);
           console.error(e);
           process.exit(1);
         } else {
-          console.error(`${(i ? i + ' - ' : '')}Error occurred at ${timestamp}:`);
+          error(`Error occurred at ${timestamp}:`, identifier);
           throw e;
         }
       }
