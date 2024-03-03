@@ -2,11 +2,30 @@ import { defineConfig, devices } from '@playwright/test';
 
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
+import fs from 'fs';
+import { DATA_PATH, TEMP_PATH, getTimestampString } from './playwright_base_config';
 
-// Generate a timestamp string
-const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+const timestamp = getTimestampString();
 
 chromium.use(stealth());
+
+const setUpTmp = () => {
+  console.log('Setting up environment...');
+  if (!fs.existsSync(DATA_PATH)){
+    fs.mkdirSync(DATA_PATH);
+  }
+  if (!fs.existsSync(TEMP_PATH)){
+    fs.mkdirSync(TEMP_PATH);
+  }
+  fs.appendFileSync(TEMP_PATH + 'games', '');
+  fs.writeFileSync(TEMP_PATH + 'initial', 'true');
+  fs.appendFileSync(TEMP_PATH + 'rate-limits', timestamp + '\n');
+  fs.appendFileSync(TEMP_PATH + 'double-joins', timestamp + '\n');
+  fs.appendFileSync(TEMP_PATH + 'starts', timestamp + '\n');
+  fs.writeFileSync(TEMP_PATH + 'stop', 'false');
+};
+
+setUpTmp();
 
 /**
  * Read environment variables from file.

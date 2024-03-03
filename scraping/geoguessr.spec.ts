@@ -3,18 +3,7 @@ import fs from 'fs';
 import 'dotenv/config';
 import { Page } from 'playwright-core';
 import { describe } from 'node:test';
-
-const DATA_PATH = 'scraping/data/';
-const TEMP_PATH = 'scraping/tmp/';
-const LOCATION_FILE = 'geoguessr_location_';
-const LOCATION_FILE_EXTENSION = '.png';
-const RESULT_FILE = 'geoguessr_result_';
-const RESULT_FILE_EXTENSION = '.json';
-const MAX_ROUNDS = process.env.CI ? 100 : 15;
-const MAX_GAMES = process.env.CI ? 100000 : 10;
-const MAX_MINUTES = process.env.CI ? 60 * 24 * 14 : 60;
-const NUMBER_OF_INSTANCES = process.env.CI ? 5 : 1;
-const STAGGER_INSTANCES = 40000;
+import { DATA_PATH, LOCATION_FILE, LOCATION_FILE_EXTENSION, MAX_GAMES, MAX_MINUTES, MAX_ROUNDS, NUMBER_OF_INSTANCES, RESULT_FILE, RESULT_FILE_EXTENSION, STAGGER_INSTANCES, TEMP_PATH, getTimestampString } from '../playwright_base_config';
 
 let logProgressInterval: ReturnType<typeof setInterval> | undefined;
 
@@ -149,8 +138,7 @@ const collectGuesses = (page: Page, i?: string) => {
         clearInterval(intervalId);
         cleared = true;
       } else if (!cleared) {
-        // Generate a timestamp string
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const timestamp = getTimestampString();
         console.error(`${(i ? i + ' - ' : '')}Error occurred in subtask 'collectGuesses' at ${timestamp}:`);
         console.error(e);
       }
@@ -275,9 +263,15 @@ const game = async (page: Page, i: number, identifier?: string) => {
       await page.waitForTimeout(1000);
     }
   }
+  if (fs.readFileSync(TEMP_PATH + 'stop', 'utf8') === 'true') {
+    process.exit(1);
+  }
 }
 
 const play = async (page: Page, i: number, identifier?: string) => {
+  if (fs.readFileSync(TEMP_PATH + 'stop', 'utf8') === 'true') {
+    process.exit(1);
+  }
   await page.waitForTimeout(STAGGER_INSTANCES * (fs.readFileSync(TEMP_PATH + 'initial', 'utf8') === 'true' ? i : 0));
   if (i === NUMBER_OF_INSTANCES - 1) {
     fs.writeFileSync(TEMP_PATH + 'initial', 'false');
@@ -313,38 +307,25 @@ const play = async (page: Page, i: number, identifier?: string) => {
 };
 
 describe('Geoguessr', () => {
-  test.beforeAll(() => {
-    if (!fs.existsSync(DATA_PATH)){
-      fs.mkdirSync(DATA_PATH);
-    }
-    if (!fs.existsSync(TEMP_PATH)){
-      fs.mkdirSync(TEMP_PATH);
-    }
-    fs.appendFileSync(TEMP_PATH + 'games', '');
-    fs.writeFileSync(TEMP_PATH + 'initial', 'true');
-    // Generate a timestamp string
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    fs.appendFileSync(TEMP_PATH + 'rate-limits', timestamp + '\n');
-    fs.appendFileSync(TEMP_PATH + 'double-joins', timestamp + '\n');
-    fs.writeFileSync(TEMP_PATH + 'last-start', timestamp);
-  });
   for (let i = 0; i < NUMBER_OF_INSTANCES; i++) {
     const identifier = (NUMBER_OF_INSTANCES > 1 ? String(i + 1) : '');
     // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
     test('play countries battle royale' + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
+      if (fs.readFileSync(TEMP_PATH + 'stop', 'utf8') === 'true') {
+        process.exit(1);
+      }
       try {
         test.setTimeout(60000 * MAX_MINUTES);
         await play(page, i, identifier);
       } catch (e: unknown) {
-        // Generate a timestamp string
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const timestamp = getTimestampString();
         // If messages includes 'Target crashed', exit program, otherwise log an error message that an Error occurred in this instance at this time and rethrow
         if (typeof e === 'object' && e instanceof Error && e.message.includes('Target crashed')) {
           fs.appendFileSync(TEMP_PATH + 'crashes', timestamp + '\n');
+          fs.writeFileSync(TEMP_PATH + 'stop', 'true');
           console.error(`${(i ? i + ' - ' : '')}Crash occurred at ${timestamp}, stopping:`);
           console.error(e);
           process.exit(1);
-         
         } else {
           console.error(`${(i ? i + ' - ' : '')}Error occurred at ${timestamp}:`);
           throw e;
