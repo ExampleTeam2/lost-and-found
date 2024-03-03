@@ -134,7 +134,7 @@ const collectGuesses = (page: Page, i?: string) => {
         data[index] = { incorrect };
       }
     } catch (e) {
-      if (typeof e === 'object' && e instanceof Error && e.message.includes('Test ended')) {
+      if (typeof e === 'object' && e instanceof Error && (e.message.includes('Test ended') || e.message.includes('Target crashed'))) {
         clearInterval(intervalId);
         cleared = true;
       } else if (!cleared) {
