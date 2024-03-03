@@ -145,7 +145,10 @@ const collectGuesses = (page: Page, i?: string) => {
         data[index] = { incorrect };
       }
     } catch (e) {
-      if (!cleared) {
+      if (typeof e === 'object' && e instanceof Error && e.message.includes('Test ended')) {
+        clearInterval(intervalId);
+        cleared = true;
+      } else if (!cleared) {
         // Generate a timestamp string
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         console.error(`${(i ? i + ' - ' : '')}Error occurred in subtask 'collectGuesses' at ${timestamp}:`);
@@ -341,6 +344,7 @@ describe('Geoguessr', () => {
           console.error(`${(i ? i + ' - ' : '')}Crash occurred at ${timestamp}, stopping:`);
           console.error(e);
           process.exit(1);
+         
         } else {
           console.error(`${(i ? i + ' - ' : '')}Error occurred at ${timestamp}:`);
           throw e;
