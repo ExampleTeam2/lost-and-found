@@ -302,10 +302,11 @@ const play = async (page: Page, i: number, identifier?: string) => {
   }
   page.setDefaultTimeout(5000);
   await clickButtonWithText(page, 'Multiplayer', -1);
-  await getButtonWithText(page, 'Got it').or(getButtonWithText(page, 'Unranked')).nth(0).waitFor({ state: 'visible', timeout: 10000 });
+  await getButtonWithText(page, 'Got it').or(getButtonWithText(page, 'Summary')).or(getButtonWithText(page, 'Unranked')).nth(0).waitFor({ state: 'visible', timeout: 10000 });
   await page.waitForTimeout(1000);
   await clickButtonIfFound(page, 'Got it');
-  await getButtonWithText(page, 'Got it').waitFor({ state: 'hidden' });
+  await clickButtonIfFound(page, 'Summary');
+  await getButtonWithText(page, 'Got it').and(getButtonWithText(page, 'Summary')).waitFor({ state: 'hidden' });
   await clickButtonWithText(page, 'Unranked', -1);
   await clickButtonWithText(page, 'Countries', -1);
   let games = 1;
