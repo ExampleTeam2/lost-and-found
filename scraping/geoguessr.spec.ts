@@ -22,8 +22,8 @@ const log = (message: string, i?: string) => {
   }
 }
 
-const getButtonWithText = (page: Page, text: string) => {
-  return page.locator('button, a').getByText(text);
+const getButtonWithText = (page: Page, text: string, only = false) => {
+  return page.locator('button, a').getByText(text, { exact: only });
 }
 
 const clickButtonWithText = async (page: Page, text: string, wait = 0) => {
@@ -35,8 +35,8 @@ const clickButtonWithText = async (page: Page, text: string, wait = 0) => {
   return await button.click();
 }
 
-const clickButtonIfFound = async (page: Page, text: string) => {
-  const button = getButtonWithText(page, text);
+const clickButtonIfFound = async (page: Page, text: string, only = false) => {
+  const button = getButtonWithText(page, text, only);
   if (await button.count() > 0) {
     await button.click();
     return true;
@@ -302,16 +302,17 @@ const play = async (page: Page, i: number, identifier?: string) => {
   }
   page.setDefaultTimeout(5000);
   await clickButtonWithText(page, 'Multiplayer', -1);
-  await getButtonWithText(page, 'Got it').or(getButtonWithText(page, 'Summary')).or(getButtonWithText(page, 'Unranked')).nth(0).waitFor({ state: 'visible', timeout: 10000 });
-  await page.waitForTimeout(1000);
+  await getButtonWithText(page, 'Got it').or(page.getByText('final results')).or(getButtonWithText(page, 'Unranked')).nth(0).waitFor({ state: 'visible', timeout: 10000 });
+  await page.waitForTimeout(3000);
   await clickButtonIfFound(page, 'Got it');
-  await clickButtonIfFound(page, 'Summary');
-  await getButtonWithText(page, 'Got it').and(getButtonWithText(page, 'Summary')).waitFor({ state: 'hidden' });
+  await clickButtonIfFound(page, '×', true);
+  await getButtonWithText(page, 'Got it').waitFor({ state: 'hidden' });
+  await page.getByText('final results').waitFor({ state: 'hidden' });
   await clickButtonWithText(page, 'Unranked', -1);
   await clickButtonWithText(page, 'Countries', -1);
   let games = 1;
   await game(page, i, identifier);
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(1000);
   while (games < MAX_GAMES && await clickButtonIfFound(page, 'Play again')) {
     await game(page, i, identifier);
     games++;
