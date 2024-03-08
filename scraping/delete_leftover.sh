@@ -3,11 +3,16 @@
 # Directory containing the files
 directory="./scraping/data/"
 
-# Temporary file to hold the list of base IDs
-temp_ids="/tmp/ids_list.txt"
+# Temporary directory for the temp file
+temp_dir="./scraping/tmp/"
+# Ensure the temporary directory exists
+mkdir -p "${temp_dir}"
 
-# Extract the unique base IDs from filenames, including '_3', using awk
-ls "${directory}"geoguessr_* | awk -F'[_.]' '{print $(NF-2)"_"$(NF-1)}' | sort -u > "${temp_ids}"
+# Temporary file to hold the list of base IDs
+temp_ids="${temp_dir}ids_list.txt"
+
+# Extract the unique base IDs from filenames, including '_3', using find and awk
+find "${directory}" -name 'geoguessr_*' | awk -F'[_.]' '{print $(NF-2)"_"$(NF-1)}' | sort -u > "${temp_ids}"
 
 # Initialize counter
 delete_count=0
