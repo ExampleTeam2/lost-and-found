@@ -211,7 +211,7 @@ const guess = async (page: Page, force = true) => {
   const button = page.locator('button[title="Keyboard shortcuts"] img');
   // Await if force is enabled
   if (force) {
-    await button.waitFor({ state: 'visible' });
+    await button.waitFor({ state: 'visible', timeout: 10000 });
   }
   // Make sure at least one button is found
   if (await button.count() > 0) {
@@ -340,7 +340,7 @@ const roundMultiplayer = async(page: Page, gameId: string, roundNumber: number, 
 const roundSingleplayer = async(page: Page, gameId: string, roundNumber: number, identifier?: string) => {
   const [startTime] = await roundStartAndCapture(page, 'singleplayer', gameId, roundNumber, identifier);
   await guess(page);
-  await getButtonWithText(page, 'Next').or(await getButtonWithText(page, 'View results')).waitFor({ state: 'visible', timeout: 10000 });
+  await getButtonWithText(page, 'Next').or(await getButtonWithText(page, 'View results')).waitFor({ state: 'visible', timeout: 15000 });
   const duration = (Date.now() - startTime) / 1000;
   const coordinates = await getCoordinates(page, true);
   log('It was ' + coordinates, identifier);
@@ -482,7 +482,7 @@ const playMultiplayer = async (page: Page, i: number, identifier?: string) => {
 
 const playSingleplayer = async (page: Page, i: number, identifier?: string) => {
   await playStart(page, i, identifier);
-  await clickButtonWithText(page, 'Classic Maps', -1);
+  await clickButtonWithText(page, 'Classic Maps', 10000);
   await page.getByText('World', { exact: true }).first().waitFor({ state: 'visible', timeout: 10000 });
   await page.waitForTimeout(1000);
   await clickButtonIfFound(page, 'Play', true, false, true);
