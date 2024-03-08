@@ -19,6 +19,36 @@ delete_count=0
 
 # Iterate over each base ID
 while IFS= read -r id; do
+	# Define the filenames for the location and result files
+    png_file="${directory}geoguessr_location_multiplayer_${id}.png"
+    json_file="${directory}geoguessr_result_multiplayer_${id}.json"
+
+    # Check if both files exist
+    if [ -f "$png_file" ] && [ ! -f "$json_file" ]; then
+        # Delete the PNG file if the JSON file does not exist
+        rm "$png_file"
+        ((delete_count++))
+    elif [ ! -f "$png_file" ] && [ -f "$json_file" ]; then
+        # Delete the JSON file if the PNG file does not exist
+        rm "$json_file"
+        ((delete_count++))
+    fi
+
+	# Define the filenames for the location and result files
+    png_file="${directory}geoguessr_location_singleplayer_${id}.png"
+    json_file="${directory}geoguessr_result_singleplayer_${id}.json"
+
+    # Check if both files exist
+    if [ -f "$png_file" ] && [ ! -f "$json_file" ]; then
+        # Delete the PNG file if the JSON file does not exist
+        rm "$png_file"
+        ((delete_count++))
+    elif [ ! -f "$png_file" ] && [ -f "$json_file" ]; then
+        # Delete the JSON file if the PNG file does not exist
+        rm "$json_file"
+        ((delete_count++))
+    fi
+
     # Define the filenames for the location and result files
     png_file="${directory}geoguessr_location_${id}.png"
     json_file="${directory}geoguessr_result_${id}.json"
