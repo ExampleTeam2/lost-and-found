@@ -207,8 +207,8 @@ const getMapFromElement = async (page: Page, element: Locator) => {
 };
 
 const guess = async (page: Page, force = true) => {
-  // Find button with title "Keyboard shortcuts" and Img in it
-  const button = page.locator('button[title="Keyboard shortcuts"] img');
+  // Find span with text "Map data ©" in it
+  const button = page.locator('span').getByText('Map data ©');
   // Await if force is enabled
   if (force) {
     await button.waitFor({ state: 'visible', timeout: 10000 });
@@ -229,10 +229,8 @@ const guess = async (page: Page, force = true) => {
     await page.locator('button img[alt="Sticky map"]').waitFor({ state: 'visible' });
     // Wait for 1 second
     await page.waitForTimeout(1000);
-    // Find span with text "Map data ©" in it
-    const mapDataButton = page.locator('span').getByText('Map data ©');
     // Get the map element again, because it might have changed
-    const mapElementExpanded = await getMapFromElement(page, mapDataButton);
+    const mapElementExpanded = await getMapFromElement(page, button);
     if (!mapElementExpanded) {
       if (force) {
         expect(mapElementExpanded).toBeTruthy();
