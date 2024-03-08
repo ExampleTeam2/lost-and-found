@@ -360,7 +360,7 @@ const gameStart = async (page: Page, mode: typeof MODE, waitText: string, waitTi
     await (mode === 'singleplayer' ? playSingleplayer(page, i, identifier) : playMultiplayer(page, i, identifier));
     return;
   }
-  await page.getByText(waitText).waitFor({ state: 'hidden', timeout: waitTime });
+  await page.getByText(waitText).nth(0).waitFor({ state: 'hidden', timeout: waitTime });
   // Get the game ID from the URL (https://www.geoguessr.com/de/battle-royale/<ID>)
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
   if (fs.readFileSync(TEMP_PATH + mode + '-games', 'utf8')?.split(/\n/g)?.includes(gameId)) {
