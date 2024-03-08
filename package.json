@@ -16,7 +16,7 @@
     "scrape:ui": "npm run scrape:environment && playwright test --project=chromium-stealth --ui",
     "scrape:deploy": "export CI=true && npm run scrape:environment && playwright test --project=chromium-stealth",
     "scrape:cleanup": "chmod +x scraping/delete_leftover.sh && ./scraping/delete_leftover.sh",
-    "scrape:count": "ls scraping/data/geoguessr_location* | wc -l"
+    "scrape:count": "ls scraping/data/geoguessr_location_singleplayer* | wc -l && ls scraping/data/geoguessr_location_multiplayer* | wc -l"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.2",

@@ -19,11 +19,11 @@ while IFS= read -r id; do
     json_file="${directory}geoguessr_result_${id}.json"
 
     # Check if both files exist
-    if [[ -f "$png_file" && ! -f "$json_file" ]]; then
+    if [ -f "$png_file" ] && [ ! -f "$json_file" ]; then
         # Delete the PNG file if the JSON file does not exist
         rm "$png_file"
         ((delete_count++))
-    elif [[ ! -f "$png_file" && -f "$json_file" ]]; then
+    elif [ ! -f "$png_file" ] && [ -f "$json_file" ]; then
         # Delete the JSON file if the PNG file does not exist
         rm "$json_file"
         ((delete_count++))
