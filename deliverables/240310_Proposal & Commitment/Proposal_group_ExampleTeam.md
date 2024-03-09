@@ -25,12 +25,17 @@ But what should de Model classify? Therefore we did some research and decided us
 
 ## Cloud Service Integration
 
-Describe which tool you plan to use and how. For example, you may decide to do the greatest part of your training on your laptop and just run some final larger runs on the cloud, or maybe do only hyperparameter tuning in the cloud. It is ok if your final approach will be different than what you describe here. The goal of this document is to give you a more concrete starting point. Keep in mind that it is good practice to do some cost management and planning in the cloud, so you can describe how you plan to do this too (very shortly).
+
+
+"Describe which tool you plan to use and how. For example, you may decide to do the greatest part of your training on your laptop and just run some final larger runs on the cloud, or maybe do only hyperparameter tuning in the cloud. It is ok if your final approach will be different than what you describe here. The goal of this document is to give you a more concrete starting point. Keep in mind that it is good practice to do some cost management and planning in the cloud, so you can describe how you plan to do this too (very shortly)."
 
 ## Kanban Tool
 
-Describe shortly which tool you are going to use.
+"Describe shortly which tool you are going to use. -> Obsivian we use..."
 
 ## Experiment Tracking Tool Approach
 
-Describe shortly how you will use the experiment tracking tool and which one you plan to use.
+
+
+
+"Describe shortly how you will use the experiment tracking tool and which one you plan to use. We use wandb.ai"
