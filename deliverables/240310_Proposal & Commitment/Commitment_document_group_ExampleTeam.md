@@ -17,3 +17,5 @@ Sursee, 10.03.2023
 Yutaro is responsible for the Cloud Service aspect of the project. He will compare different solutions available in today’s market and decide which service we will use for the project. His responsibilities also include deciding which parts of the data pipeline will be used on the cloud service platform, and which parts will run locally. Therefore, it is mandatory for him to have an overview of the project’s infrastructure. He will also be responsible for managing the project’s infrastructure, keeping track of costs, usage, monitoring them, and creating reports on the project’s status after reaching various milestones.
 <br>
 Zürich, 10.03.2023
+
+
