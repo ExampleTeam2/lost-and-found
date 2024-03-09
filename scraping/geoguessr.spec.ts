@@ -148,7 +148,7 @@ const collectGuesses = (page: Page, identifier?: string) => {
         data[index] = { incorrect };
       }
     } catch (e) {
-      if (typeof e === 'object' && e instanceof Error && (e.message.includes('Test ended') || e.message.includes('Target crashed'))) {
+      if (typeof e === 'object' && e instanceof Error && (e.message.includes('Test ended') || e.message.includes('Target crashed') || e.message.includes('exited unexpectedly'))) {
         clearInterval(intervalId);
         cleared = true;
       } else if (!cleared) {
@@ -512,7 +512,7 @@ describe('Geoguessr', () => {
       } catch (e: unknown) {
         const timestamp = getTimestampString();
         // If messages includes 'Target crashed', exit program, otherwise log an error message that an Error occurred in this instance at this time and rethrow
-        if (typeof e === 'object' && e instanceof Error && e.message.includes('Target crashed')) {
+        if (typeof e === 'object' && e instanceof Error && (e.message.includes('Target crashed') || e.message.includes('exited unexpectedly'))) {
           fs.appendFileSync(TEMP_PATH + 'crashes', timestamp + '\n');
           fs.writeFileSync(TEMP_PATH + 'stop', 'true');
           error(`Crash occurred at ${timestamp}, stopping:`, identifier);
