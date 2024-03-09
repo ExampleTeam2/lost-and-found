@@ -10,7 +10,7 @@ As group we never have worked a lot with Image Classification nor worked with it
 Instead of facing just one Business Case, the aim of this Image Classification Model is to be a base model for multiple Cases. But for what use will a classifying model for countries or coordinate from images be? 
 - **Helping find missing persons**: It can help find where missing people might be by analyzing pictures shared publicly. The emotional impact of helping reunite families or providing important clues is huge. Especially when the model will be used additionally to the finding process for a police. For missing people, every second counts after a kidnapping, especially when the person is missing internationally.
 - **Supporting Humanitarian Action:** In disaster situations, it could help to quickly identify the most affected areas by analyzing current images from social media or aid organizations. This would improve the coordination of rescue and relief efforts and offer hope and support to those affected.
-- **Find new places to visit:** We all have seen cool places on Instagram or other social platform. But often we don't know where this place is. In this case, our image classifier can help to find out where this image has been taken, and so we can, may visit the place.
+- **Discover New Travel Destinations:** Have you ever come across stunning images of places on Instagram or other social media platforms and wondered where they were taken? Our image classifier can help you with that. By analyzing the image, our classifier can identify the location and provide you with the information you need to plan your next visit to this amazing place. This way, you can discover new and exciting travel destinations that you may have never known about before.
 
 
 But what should de Model classify? Therefore, we did some research and decided us for a Classification Task which could be widely used on different important Use Cases. It should help for example find missing people by analyzing openly published pictures of them after the crime.
@@ -24,9 +24,7 @@ But what should de Model classify? Therefore, we did some research and decided u
 
 "Describe briefly what data you are going to use."
 
-Our Data is are the images from Street View (from Google Maps). Since Google Maps API is very expensive, so we use geoguessr to get to our data. This game use Street View, and you guess the country or the coordinate of this place. In comparison, this game only cost us 5USD/Month for unlimited access. So we used a script to automatic play this game, and get the country and the coordinates and take also a screenshot of the street view. 
-
-This data with the coordinates and countries will be our data for our classifier.
+Our dataset consists of images obtained from Street View on Google Maps. Due to the high cost of Google Maps API, we utilized an alternative approach by using the game Geoguessr, which also uses Street View. This game involves guessing the country or coordinates of a given location. The game offers a cost-effective solution at only $5/Month for unlimited access. We developed a script to automatically play the game, capture the country and coordinate data, and take a screenshot of the Street View image. This data, complete with coordinates and country information, will serve as the basis for our classifier.
 
 ## Cloud Service Integration
 
@@ -35,9 +33,7 @@ This data with the coordinates and countries will be our data for our classifier
 "Describe which tool you plan to use and how. For example, you may decide to do the greatest part of your training on your laptop and just run some final larger runs on the cloud, or maybe do only hyperparameter tuning in the cloud. It is ok if your final approach will be different than what you describe here. The goal of this document is to give you a more concrete starting point. Keep in mind that it is good practice to do some cost management and planning in the cloud, so you can describe how you plan to do this, too (very shortly)."
 
 
-Our goal is to training with small batch sizes locally (also to test our training pipeline), but for the actual training (which are more intense) to use a Cloud Service. But we are not sure now, which cloud service to use. 
-We will do also a cost and performance comparison before decide which cloud service to use.
-All DQA will be done locally on our pc.
+Our plan is to conduct initial training with small batch sizes locally, which will also help us test our training pipeline. However, for more intensive, large-scale training, we intend to use a Cloud Service. Currently, we are undecided on which cloud service to choose. We will conduct a comprehensive comparison of cost and performance before making a decision. All Data Quality Analysis (DQA) tasks will be performed locally on our personal computers.
 
 
 
@@ -49,6 +45,6 @@ The primary advantage of this approach is that we can work with Markdown files i
 ## Experiment Tracking Tool Approach
 
 
-
-
 "Describe shortly how you will use the experiment tracking tool and which one you plan to use. We use wandb.ai"
+
+To keep track of our experiments and ensure reproducibility, we plan to use an experiment tracking tool. Specifically, we will use wandb.ai, a popular tool that allows for easy logging, visualization, and comparison of machine learning experiments. With wandb.ai, we can track our model's performance, hyperparameters, and other relevant metrics. This will enable us to compare different experiments and make informed decisions about which approaches to pursue further. By using wandb.ai, we can ensure that our experiments are well-documented and reproducible, which is essential for both research and development purposes.
