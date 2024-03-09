@@ -8,8 +8,9 @@
 ## Short Project Description
 As group we never have worked a lot with Image Classification nor worked with it. So, we want to create a Image Classification Model, which is based on simple street view Images and predicts by looking at the images the country which the image represents as first step. As second step, the model will be more advanced and the Model predicts the coordinate of the image instead of predicting the right country.
 Instead of facing just one Business Case, the aim of this Image Classification Model is to be a base model for multiple Cases. But for what use will a classifying model for countries or coordinate from images be? 
-- **Helping finding missing persons**: It can help find where missing people might be by analysing pictures shared publicly. The emotional impact of helping reunite families or providing important clues is huge. Especially when the model will be used additionally to the finding process for a police. For missing people every second counts after a kidnapping.
-- **Supporting Humanitarian Action:** In disaster situations, it could help to quickly identify the most affected areas by analysing current images from social media or aid organisations. This would improve the coordination of rescue and relief efforts and offer hope and support to those affected.
+- **Helping find missing persons**: It can help find where missing people might be by analyzing pictures shared publicly. The emotional impact of helping reunite families or providing important clues is huge. Especially when the model will be used additionally to the finding process for a police. For missing people every second counts after a kidnapping, especially when the person is missing internationally.
+- **Supporting Humanitarian Action:** In disaster situations, it could help to quickly identify the most affected areas by analyzing current images from social media or aid organizations. This would improve the coordination of rescue and relief efforts and offer hope and support to those affected.
+- **Find new places to visit:** We all have seen cool places on Instagram or other social platform. But often we don't know where this place is. In this case, our image classifier can help to find out where this image has been taken, and so we can, may visit the place.
 
 
 But what should de Model classify? Therefore we did some research and decided us for a Classification Task which could be widely used on different important Use Cases. It should help for example find missing people by analysing openly published pictures of them after the crime.
@@ -22,6 +23,10 @@ But what should de Model classify? Therefore we did some research and decided us
 ## Data Description
 
 "Describe briefly what data you are going to use."
+
+Our Data is are the images from Street View (from Google Maps). Since Google Maps API is very expensive, so we use geoguessr to get to our data. This game use Street View, and you guess the country or the coordinate of this place. In comparison, this game only cost us 5USD/Month for unlimited access. So we used a script to automatic play this game, and get the country and the coordinates and take also a screenshot of the street view. 
+
+This data with the coordinates and countries will be our data for our classifier.
 
 ## Cloud Service Integration
 
