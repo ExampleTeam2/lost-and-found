@@ -1,31 +1,23 @@
-# Proposal for DSPRO2 (FS24) - 
-
-Proposal for title...
-
-1. From Pixels to Insights: Unleashing the Power of Image Classification
-2. Beyond Borders: Exploring Countries and Coordinates via Images
-3. Mapping the Unseen: A Journey with Image-Based Predictions
+# Proposal for DSPRO2 (FS24) - Lost & Found: Predicting Locations from Images
 
 ## Group Members
  [Linus Schlumberger](https://gitlab.com/Killusions)
  [Lukas Stöckli](https://gitlab.com/Valairaa)
  [Yutaro Sigrist](https://gitlab.com/yusigrist)
- 
 ## Short Project Description
-As group we never have worked a lot with Image Classification nor worked with it. So, we want to create a Image Classification Model, which is based on simple street view Images and predicts by looking at the images the country which the image represents as first step. As second step, the model will be more advanced and the Model predicts the coordinate of the image instead of predicting the right country.
-Instead of addressing just one business case, the goal of this image classification model is to serve as a foundational model for multiple scenarios. But for what main purposes could an image classifier for countries or coordinates be valuable?
+As group we never have worked a lot with Image Classification nor worked with it. So, we want to create an Image Classification Model, which is based on simple street view images and predicts by looking at the images the country which the image represents as first step. As a second step, the model will be more advanced and the Model predicts the coordinate of the image instead of predicting the right country.
+Instead of addressing just one business case, the goal of this Image Classification model is to serve as a foundational model for multiple scenarios. But for what main purposes could an image classifier for countries or coordinates be valuable?
 - **Helping find missing persons**: It can help find where missing people might be by analyzing pictures shared publicly. The emotional impact of helping reunite families or providing important clues is huge. Especially when the model will be used additionally to the finding process for a police. For missing people, every second counts after a kidnapping, especially when the person is missing internationally.
 - **Supporting Humanitarian Action:** In disaster situations, it could help to quickly identify the most affected areas by analyzing current images from social media or aid organizations. This would improve the coordination of rescue and relief efforts and offer hope and support to those affected.
 - **Discover New Travel Destinations:** Have you ever come across stunning images of places on Instagram or other social media platforms and wondered where they were taken? Our image classifier can help you with that. By analyzing the image, our classifier can identify the location and provide you with the information you need to plan your next visit to this amazing place. This way, you can discover new and exciting travel destinations that you may have never known about before.
+- **Classification as a Service**: With this service, we will help other companies or data science projects to label their data. Sometimes companies want to block, permit or deploy individual versions of their applications in different countries. Some countries have more restrictions for deploying applications, therefore the image predictor can help the companies to have the right version on the right devices for these countries. 
 ## Data Description
 Our dataset consists of images obtained from Street View on Google Maps. Due to the high cost of Google Maps API, we utilized an alternative approach by using the game Geoguessr, which also uses Google Street View API. This game involves guessing the country or coordinates of a given location. The game offers a cost-effective solution at only $5/Month for unlimited access. We developed a script to automatically play the game, capture the country and coordinate data, and take a screenshot of the Street View image. This data, complete with coordinates and country information, will serve as the basis dataset for our classifier.
 
 ## Cloud Service Integration
+At the moment, we are utilizing a cloud service for data collection and preprocessing. We have rented a server from Hetzner for web scraping. Currently, we are scraping images from Geoguessr and have accumulated a total of 60,000 images along with their locations in just one week. As part of the preprocessing task, we plan to reduce the size of the images on the server before processing them locally on our laptops. The server costs $5 per month, excluding bandwidth. For bandwidth, we only need to pay after using 20TB of data. Our goal is to avoid reaching this amount of data. The 60,000 images we have now amount to 90GB of data.
 
-"Describe which tool you plan to use and how. For example, you may decide to do the greatest part of your training on your laptop and just run some final larger runs on the cloud, or maybe do only hyperparameter tuning in the cloud. It is ok if your final approach will be different than what you describe here. The goal of this document is to give you a more concrete starting point. Keep in mind that it is good practice to do some cost management and planning in the cloud, so you can describe how you plan to do this, too (very shortly)."
-
-
-Our plan is to conduct initial training with small batch sizes locally, which will also help us test our training pipeline. However, for more intensive, large-scale training, we intend to use a Cloud Service. Currently, we are undecided on which cloud service to choose. We will conduct a comprehensive comparison of cost and performance before making a decision. All Data Quality Analysis (DQA) tasks will be performed locally on our personal computers.
+Our plan for training the model and performing hyperparameter tuning involves using a cloud service due to the large size of the entire dataset. It would be impractical to train the model locally on a laptop. We aim to conduct the more costly trainings on the GPU-Hub at HSLU to save costs. However, we are still undecided about which cloud service to choose. We plan to carry out a thorough comparison of cost and performance before making a decision. All Data Quality Analysis (DQA) tasks will be carried out locally on our personal computers.
 
 ## Kanban Tool
 For our team, it is essential to use a Kanban tool that seamlessly integrates into our workflow and GitLab project. Our goal is to incorporate every document related to this project and store it within the GitLab repository. To achieve this, we utilize a Markdown file, which we enhance with plugins in the Obsidian application.
