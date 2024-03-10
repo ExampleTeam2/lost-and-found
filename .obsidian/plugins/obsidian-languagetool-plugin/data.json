@@ -4,7 +4,7 @@
   "glassBg": false,
   "shouldAutoCheck": true,
   "autoCheckDelay": 3000,
-  "pickyMode": false,
+  "pickyMode": true,
   "staticLanguage": "auto",
   "englishVeriety": "en-US"
 }
