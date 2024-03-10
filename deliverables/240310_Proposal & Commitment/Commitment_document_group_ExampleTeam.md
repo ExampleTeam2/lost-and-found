@@ -18,4 +18,3 @@ Yutaro is responsible for the Cloud Service aspect of the project. He will compa
 <br>
 Zürich, 10.03.2023
 
-
