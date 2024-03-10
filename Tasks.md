@@ -21,6 +21,8 @@ kanban-plugin: basic
 
 ## Current
 
+- [ ] Create a structure for data science project #DataPreparation #DataUnderstanding #Modeling #Evaluation #Deployment
+- [ ] Add sample dataset to GitLab for Data Processing #DataCollecting
 - [ ] Collect 60k images from Geoguessr #DataCollecting
 - [ ] Get Data insights from images #DataUnderstanding
 - [ ] Map coordinates to real coordinates #DataPreparation
