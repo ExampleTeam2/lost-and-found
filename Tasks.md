@@ -6,24 +6,24 @@ kanban-plugin: basic
 
 ## Backlog
 
-- [ ] make proposals of business case #BusinessUnderstanding
-- [ ] decide and vote for best business case #BusinessUnderstanding ^okfbtq
+
+
+## Current
+
 - [ ] create web scrapper for geoguessr #DataCollecting
 - [ ] collecting data from geoguessr #DataCollecting
 - [ ] create commitment and proposal as markdown file #BusinessUnderstanding
 
 
-## Current
-
-
-
 ## Doing
 
+- [ ] decide and vote for best business case #BusinessUnderstanding ^okfbtq
 
 
 ## Done
 
 **Complete**
+- [x] make proposals of business case #BusinessUnderstanding
 
 
 ## Archive
