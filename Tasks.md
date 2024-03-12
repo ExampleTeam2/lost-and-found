@@ -27,7 +27,6 @@ kanban-plugin: basic
 - [ ] Get Data insights from images #DataUnderstanding
 - [ ] Map coordinates to real coordinates #DataPreparation
 - [ ] Map coordinates to countries #DataPreparation
-- [ ] Resize images to usable datatype and filesizes #DataPreparation
 - [ ] Do some research about CNN or other networks which can handle images #Modeling
 
 
@@ -36,11 +35,11 @@ kanban-plugin: basic
 - [ ] Update Scientific Report for DataProcessing, Methods, Model Validation, MLOps #WorkingPermanently
 - [ ] up-to-date kanban board before each coaching session #WorkingPermanently
 - [ ] decide and vote for best business case title #BusinessUnderstanding ^okfbtq
+- [ ] Resize images to usable datatype and filesizes #DataPreparation
 
 
 ## Done
 
-**Complete**
 - [x] Create Proposal and upload it to Ilias #BusinessUnderstanding
 - [x] create commitment and proposal as markdown file #BusinessUnderstanding
 - [x] collecting data from geoguessr #DataCollecting
