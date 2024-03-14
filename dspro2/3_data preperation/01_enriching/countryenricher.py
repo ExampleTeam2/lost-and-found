@@ -7,12 +7,14 @@ import reverse_geocoder as rg
 class CountryEnricher:
     """Enriches JSON files with country information based on coordinates."""
     def __init__(self, input_dir, output_dir):
+        super().__init__()
         self.input_dir = input_dir
         self.output_dir = output_dir
         self.json_files = {}
         self.coordinates = [] # Batching for faster results, 5 x times faster now
         self.file_map = {} # Batching for faster results, 5 x times faster now
         self.pattern = r'singleplayer_(.+?)\.json'
+        self.process()
     
     def load_and_prepare_files(self):
         json_paths = [f for f in os.listdir(self.input_dir) if f.endswith('.json') and 'singleplayer' in f]
