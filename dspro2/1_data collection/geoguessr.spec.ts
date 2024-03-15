@@ -265,6 +265,8 @@ const guess = async (page: Page, force = true) => {
   }
 };
 
+const sidebarId = 'right-bar';
+
 const viewerSelector = '.mapsConsumerUiSceneCoreScene__canvas';
 // Use :has() to also exclude other parent elements
 const hideEverythingElseCss = `
@@ -276,34 +278,72 @@ ${viewerSelector} {
 }
 `;
 
-const roundStartAndCapture = async<const T>(page: Page, mode: typeof MODE, gameId: string, roundNumber: number, identifier?: string, additional: (page: Page, gameId: string, roundNumber: number, identifier?: string) => T = (() => undefined) as () => T): Promise<[number, Awaited<T>]> => {
+const addSidebarCss = `
+body > div {
+  margin-right: 1px !important;
+}
+
+#${sidebarId} {
+  display: block !important;
+  background-color: white !important;
+  position: fixed !important;
+  width: 1px !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  right: 0 !important;
+}
+`;
+
+type ElementPair = [ElementHandle, Locator];
+
+const addSidebar = async (page: Page): Promise<ElementPair> => {
+  const sidebarCss = await injectCss(page, addSidebarCss);
+  // Add fixed sidebar to the page so it can be removed again
+  // The mouse will be rested there
+  await page.evaluate(sidebarId => {
+    const rightBar = document.createElement('div');
+    rightBar.id = sidebarId;
+    document.body.appendChild(rightBar);
+  }, sidebarId);
+  const sidebar = await page.locator('#' + sidebarId).first();
+  // Wait for the sidebar to be visible
+  await sidebar.waitFor({ state: 'visible' });
+  return [sidebarCss, sidebar];
+};
+
+const removeSidebar = async (page: Page, sidebar: ElementPair) => {
+  await removeElement(sidebar[0]);
+  const sidebarHandle = await sidebar[1].elementHandle();
+  expect(sidebarHandle).toBeTruthy();
+  if (sidebarHandle) {
+    await removeElement(sidebarHandle);
+  }
+  // Wait for the sidebar to be removed
+  await sidebar[1].waitFor({ state: 'hidden' });
+};
+
+const roundStartAndCapture = async<const T>(page: Page, mode: typeof MODE, gameId: string, roundNumber: number, identifier?: string, additional: (page: Page, gameId: string, roundNumber: number, identifier?: string) => T = (() => undefined) as () => T): Promise<[number, Awaited<T>, ElementPair?]> => {
   log('Starting round - ' + roundNumber, identifier);
   // Wait for the street view to load
   const viewer = page.locator('.mapsConsumerUiSceneCoreScene__canvas').first();
   await viewer.waitFor({ state: 'visible', timeout: 10000 });
   const startTime = Date.now();
+  const sidebar = mode === 'singleplayer' ? await addSidebar(page) : undefined;
   const additionalResults = await additional?.(page, gameId, roundNumber, identifier);
   await page.waitForTimeout(5000);
-  if (mode === 'singleplayer') {
-    // Move the mouse over the text "World" to hide the UI manually (not just hover)
-    const world = page.getByText('World', { exact: true });
-    // Get the location of the text "World"
-    const worldLocation = await world.boundingBox();
-    // Move the mouse to middle of that text area
-    if (worldLocation) {
-      await page.mouse.move(worldLocation.x + worldLocation.width / 2, worldLocation.y + worldLocation.height / 2);
-          
-    }
-  }
   const css = await injectCss(page, hideEverythingElseCss);
-  if (mode !== 'singleplayer') {
+  if (sidebar) {
+    // Move the mouse over the sidebar on the right (middle and fully to the right)
+    const pageHeight = await page.evaluate(() => window.innerHeight);
+    await page.mouse.move(SINGLEPLAYER_WIDTH - 1, pageHeight / 2);
+  } else if (mode !== 'singleplayer') {
     // Move the mouse to the top right corner to hide the UI (not top left), get the page size dynamically
     const pageWidth = await page.evaluate(() => window.innerWidth);
     await page.mouse.move(pageWidth - 1, 1);
   }
   await viewer?.screenshot({ path: DATA_PATH + LOCATION_FILE + mode + '_' + gameId + '_' + roundNumber + LOCATION_FILE_EXTENSION });
   await removeElement(css);
-  return [startTime, additionalResults];
+  return [startTime, additionalResults, sidebar];
 };
 
 const roundEndAndSave = (mode: typeof MODE, result: unknown, gameId: string, roundNumber: number, identifier?: string) => {
@@ -343,9 +383,12 @@ const roundMultiplayer = async(page: Page, gameId: string, roundNumber: number, 
 };
 
 const roundSingleplayer = async(page: Page, gameId: string, roundNumber: number, identifier?: string) => {
-  const [startTime] = await roundStartAndCapture(page, 'singleplayer', gameId, roundNumber, identifier);
+  const [startTime, _, sidebar] = await roundStartAndCapture(page, 'singleplayer', gameId, roundNumber, identifier);
   await guess(page);
   await getButtonWithText(page, 'Next').or(await getButtonWithText(page, 'View results')).waitFor({ state: 'visible', timeout: 15000 });
+  if (sidebar) {
+    await removeSidebar(page, sidebar);
+  }
   const duration = (Date.now() - startTime) / 1000;
   const coordinates = await getCoordinates(page, true);
   log('It was ' + coordinates, identifier);
