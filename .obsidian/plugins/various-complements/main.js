@@ -2540,6 +2540,9 @@ var AppHelper = class {
   getCurrentOffset(editor) {
     return editor.posToOffset(editor.getCursor());
   }
+  getContentUntilCursor(editor) {
+    return editor.getValue().slice(0, this.getCurrentOffset(editor));
+  }
   getCurrentLine(editor) {
     return editor.getLine(editor.getCursor().line);
   }
@@ -2582,6 +2585,11 @@ var AppHelper = class {
       linkText,
       activeFile.path
     )) == null ? void 0 : _a.path) != null ? _b : null;
+  }
+  inMathBlock(editor) {
+    var _a, _b;
+    const numberOfDollarPair = (_b = (_a = this.getContentUntilCursor(editor).match(/\$\$\n/g)) == null ? void 0 : _a.length) != null ? _b : 0;
+    return numberOfDollarPair % 2 !== 0;
   }
   searchPhantomLinks() {
     return Object.entries(this.unsafeApp.metadataCache.unresolvedLinks).flatMap(
@@ -4417,6 +4425,12 @@ var AutoCompleteSuggest = class _AutoCompleteSuggest extends import_obsidian5.Ed
       );
       return null;
     }
+    if (this.settings.disableSuggestionsInMathBlock && this.appHelper.inMathBlock(editor)) {
+      onReturnNull(
+        `Suggestions are disabled while the cursor is inside a Math block.`
+      );
+      return null;
+    }
     const tokens = this.tokenizer.tokenize(currentLineUntilCursor, true);
     showDebugLog(`tokens is ${tokens}`);
     const tokenized = this.tokenizer.recursiveTokenize(currentLineUntilCursor);
@@ -4723,6 +4737,7 @@ var DEFAULT_SETTINGS = {
   complementAutomatically: true,
   delayMilliSeconds: 0,
   disableSuggestionsDuringImeOn: false,
+  disableSuggestionsInMathBlock: false,
   insertAfterCompletion: true,
   firstCharactersDisableSuggestions: ":/^",
   patternsToSuppressTrigger: ["^~~~.*", "^```.*"],
@@ -4980,6 +4995,14 @@ var VariousComplementsSettingTab = class extends import_obsidian7.PluginSettingT
         this.plugin.settings.disableSuggestionsDuringImeOn
       ).onChange(async (value) => {
         this.plugin.settings.disableSuggestionsDuringImeOn = value;
+        await this.plugin.saveSettings();
+      });
+    });
+    new import_obsidian7.Setting(containerEl).setName("Disable suggestions in the Math block.").setDesc("It doesn't support the inline Math block.").addToggle((tc) => {
+      tc.setValue(
+        this.plugin.settings.disableSuggestionsInMathBlock
+      ).onChange(async (value) => {
+        this.plugin.settings.disableSuggestionsInMathBlock = value;
         await this.plugin.saveSettings();
       });
     });

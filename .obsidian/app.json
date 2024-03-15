@@ -8,6 +8,7 @@
     "downscalePercent": 100
   },
   "spellcheckDictionary": [
-    "geoguessr"
+    "geoguessr",
+    "ExampleTeam"
   ]
 }
