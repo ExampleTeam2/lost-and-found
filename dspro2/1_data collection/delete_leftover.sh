@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Directory containing the files
-directory="./scraping/data/"
+directory="./dspro2/1_data collection/data/"
 
 # Temporary directory for the temp file
-temp_dir="./scraping/tmp/"
+temp_dir="./dspro2/1_data collection/tmp/"
 # Ensure the temporary directory exists
 mkdir -p "${temp_dir}"
 

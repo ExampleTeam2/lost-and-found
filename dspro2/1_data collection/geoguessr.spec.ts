@@ -3,7 +3,7 @@ import fs from 'fs';
 import 'dotenv/config';
 import { Page } from 'playwright-core';
 import { describe } from 'node:test';
-import { DATA_PATH, LOCATION_FILE, LOCATION_FILE_EXTENSION, MAX_GAMES, MAX_MINUTES, MAX_ROUNDS, MODE, NUMBER_OF_INSTANCES, RESULT_FILE, RESULT_FILE_EXTENSION, SINGLEPLAYER_WIDTH, STAGGER_INSTANCES, TEMP_PATH, getTimestampString } from '../playwright_base_config';
+import { DATA_PATH, LOCATION_FILE, LOCATION_FILE_EXTENSION, MAX_GAMES, MAX_MINUTES, MAX_ROUNDS, MODE, NUMBER_OF_INSTANCES, RESULT_FILE, RESULT_FILE_EXTENSION, SINGLEPLAYER_WIDTH, STAGGER_INSTANCES, TEMP_PATH, getTimestampString } from '../../playwright_base_config';
 
 let logProgressInterval: ReturnType<typeof setInterval> | undefined;
 

@@ -1,5 +1,5 @@
-export const DATA_PATH = 'scraping/data/';
-export const TEMP_PATH = 'scraping/tmp/';
+export const DATA_PATH = 'dspro2/1_data collection/data/';
+export const TEMP_PATH = 'dspro2/1_data collection/tmp/';
 export const LOCATION_FILE = 'geoguessr_location_';
 export const LOCATION_FILE_EXTENSION = '.png';
 export const RESULT_FILE = 'geoguessr_result_';
