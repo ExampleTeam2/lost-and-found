@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
-import { MAX_RETRIES, NUMBER_OF_INSTANCES, getTimestampString } from './playwright_base_config';
+import { MAX_RETRIES, NUMBER_OF_INSTANCES, getTimestampString } from './dspro2/1_data collection/playwright_base_config';
 
 const timestamp = getTimestampString();
 
