@@ -37,8 +37,8 @@ class CountryEnricher:
             country_code = result['cc']
             country = pycountry.countries.get(alpha_2=country_code)
             country_name = country.name if country else 'Unknown'
-            self.json_files[image_id]['country_code'] = country_code
             self.json_files[image_id]['country_name'] = country_name
+            self.json_files[image_id]['country_code'] = country_code
     
     def save_enriched_files(self):
         os.makedirs(self.output_dir, exist_ok=True)
