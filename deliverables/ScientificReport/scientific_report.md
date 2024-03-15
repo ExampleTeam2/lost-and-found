@@ -1,7 +1,8 @@
 # Scientific Report
 
 Team name: ExampleTeam
-#### Group Members
+
+**Group Members**
  [Linus Schlumberger](https://gitlab.com/Killusions)
  [Lukas Stöckli](https://gitlab.com/Valairaa)
  [Yutaro Sigrist](https://gitlab.com/yusigrist)
@@ -14,13 +15,11 @@ includeLinks: true
 
 # Literature review
 
-## test 1
-### test 2
-
-#### test 3
-
-## test 4
-
+## Business Understanding
+Follows...
+## Common approaches
+Follows...
+### Common architectures
 Follows...
 
 
@@ -31,6 +30,14 @@ ___
 ___
 
 # Data collection
+
+## test 1
+### test 2
+
+#### test 3
+
+## test 4
+
 
 Follows...
 
