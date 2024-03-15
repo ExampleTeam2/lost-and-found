@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "dspro"
+name = "dspro2"
 version = "0.1.0"
 description = ""
 authors = ["Linus Schlumberger <l@mll.one>"]
