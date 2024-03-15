@@ -291,6 +291,7 @@ body > div {
   top: 0 !important;
   bottom: 0 !important;
   right: 0 !important;
+  margin: 0 !important;
 }
 `;
 
