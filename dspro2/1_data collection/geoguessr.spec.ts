@@ -301,12 +301,19 @@ const addSidebar = async (page: Page): Promise<ElementPair> => {
   const sidebarCss = await injectCss(page, addSidebarCss);
   // Add fixed sidebar to the page so it can be removed again
   // The mouse will be rested there
+  // First remove any potential previous sidebars
+ (await page.locator('#' + sidebarId).all()).forEach(async (el) => {
+    const element = await el.elementHandle();
+    if (element) {
+      await removeElement(element);
+    }
+  });
   await page.evaluate(sidebarId => {
     const rightBar = document.createElement('div');
     rightBar.id = sidebarId;
     document.body.appendChild(rightBar);
   }, sidebarId);
-  const sidebar = await page.locator('#' + sidebarId).first();
+  const sidebar = page.locator('#' + sidebarId).first();
   // Wait for the sidebar to be visible
   await sidebar.waitFor({ state: 'visible' });
   return [sidebarCss, sidebar];
