@@ -12,8 +12,8 @@
     "start": "npm run build && node dist/dspro/index.js",
     "scrape:prepare": "playwright install",
     "scrape:environment": "npm run build && node 'dist/dspro2/1_data collection/playwright_setup_environment.js'",
-    "scrape": "npm run scrape:environment && playwright test --project=chromium-stealth",
-    "scrape:ui": "npm run scrape:environment && playwright test --project=chromium-stealth --ui",
+    "scrape": "npm run scrape:environment && playwright test --config='dspro2/1_data collection/playwright.config.ts' --project=chromium-stealth",
+    "scrape:ui": "npm run scrape:environment && playwright test --config='dspro2/1_data collection/playwright.config.ts' --project=chromium-stealth --ui",
     "scrape:deploy": "export CI=true && npm run scrape:environment && playwright test --project=chromium-stealth",
     "scrape:cleanup": "chmod +x 'dspro2/1_data collection/delete_leftover.sh' && './dspro2/1_data collection/delete_leftover.sh'",
     "scrape:count": "find 'dspro2/1_data collection/data/' -name 'geoguessr_location_singleplayer*' | wc -l && find 'dspro2/1_data collection/data/' -name 'geoguessr_location_multiplayer*' | wc -l"

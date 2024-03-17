@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
-import { MAX_RETRIES, NUMBER_OF_INSTANCES, getTimestampString } from './dspro2/1_data collection/playwright_base_config';
+import { MAX_RETRIES, NUMBER_OF_INSTANCES, getTimestampString } from './playwright_base_config';
 
 const timestamp = getTimestampString();
 
@@ -18,7 +18,7 @@ chromium.use(stealth());
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './dspro2/1_data collection',
+  testDir: './',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -28,7 +28,7 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: NUMBER_OF_INSTANCES,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: process.env.CI ? [['json', { outputFile: `./dspro2/1_data collection/reports/results_${timestamp}.json` }]] : 'html',
+  reporter: process.env.CI ? [['json', { outputFile: `./reports/results_${timestamp}.json` }]] : 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
