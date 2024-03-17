@@ -302,12 +302,12 @@ const addSidebar = async (page: Page): Promise<ElementPair> => {
   // Add fixed sidebar to the page so it can be removed again
   // The mouse will be rested there
   // First remove any potential previous sidebars
- (await page.locator('#' + sidebarId).all()).forEach(async (el) => {
+  await Promise.all((await page.locator('#' + sidebarId).all()).map(async (el) => {
     const element = await el.elementHandle();
     if (element) {
       await removeElement(element);
     }
-  });
+  }));
   await page.evaluate(sidebarId => {
     const rightBar = document.createElement('div');
     rightBar.id = sidebarId;
