@@ -11,6 +11,8 @@ numpy = "^1.26.4"
 python-dotenv = "^1.0.1"
 pandas = "^2.2.1"
 pillow = "^10.2.0"
+reverse-geocoder = "^1.5.1"
+pycountry = "^23.12.11"
 
 
 [tool.poetry.group.dev.dependencies]

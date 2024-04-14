@@ -4,6 +4,7 @@ Thumbs.db
 
 # Python
 .venv
+__pycache__
 
 # Jupyter
 .ipynb_checkpoints
@@ -20,7 +21,7 @@ dist
 
 # Cookies
 scraping/data/cookies.json
-dspro2/1_data collection/data/cookies.json
+dspro2/1_data_collection/data/cookies.json
 
 # Obsidian
 .obsidian/themes
@@ -37,9 +38,9 @@ dspro2/1_data collection/data/cookies.json
 # Temp
 /tmp/
 /scraping/tmp/
-/dspro2/1_data collection/tmp/
+/dspro2/1_data_collection/tmp/
 
 # Data
 /scraping/data/
-/dspro2/1_data collection/data/
+/dspro2/1_data_collection/data/
 /analyze/data/
