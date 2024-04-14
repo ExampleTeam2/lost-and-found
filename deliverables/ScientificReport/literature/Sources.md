@@ -7,6 +7,7 @@
 #### GitHub 
 [GeoGuessr-Inspired Exploration of CNNs: Predicting Street View Image Locations](https://github.com/saleha1wer/Geoguessr-AI)
 [GeoGuessr AI - GitHub](https://github.com/Stelath/geoguessr-ai)
+[Geolocation Estimation](https://tibhannover.github.io/GeoEstimation/)
 
 #### Technology
 [Interesting Research: PIGEON, an AI-based location identifier](https://community.openai.com/t/interesting-research-pigeon-an-ai-based-location-identifier/565550)
@@ -21,3 +22,7 @@
 #### Reddit
 [Ai Learns Geoguessr](https://www.reddit.com/r/learnmachinelearning/comments/1bx56k8/ai_learns_geoguessr/)
 [Ai Learns Geoguessr - YT](https://www.youtube.com/watch?v=coXvaZB0Sx0)
+
+#### Datasets
+[Hundred Million Images for Research](https://research.yahoo.com/news/one-hundred-million-creative-commons-flickr-images-research?guccounter=1)
+[IM2GPS](http://graphics.cs.cmu.edu/projects/im2gps/)
