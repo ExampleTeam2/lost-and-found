@@ -50,26 +50,37 @@ class CountryEnricher:
             match = re.search(self.pattern, file)
             if match:
                 image_id = match.group(1)
-                with open(os.path.join(self.input_dir, file), 'r') as f:
-                    json_data = json.load(f)
-                self.json_files[image_id] = json_data
-                if not self.from_country:
-                  if 'coordinates' in json_data:
-                    coord = tuple(json_data['coordinates'])
-                    self.coordinates.append(coord)
-                    self.file_map[coord] = image_id
-                  else:
-                    raise ValueError(f"Coordinates not found in {image_id}")
-                else:
-                  if 'country' in json_data:
-                    country = json_data['country']
-                    self.raw_countries.append(country)
-                    if country in self.file_map:
-                      self.file_map[country].append(image_id)
+                try:
+                  with open(os.path.join(self.input_dir, file), 'r') as f:
+                    try:
+                      json_data = json.load(f)
+                    except json.JSONDecodeError:
+                      print(f"JSONDecodeError in {file}")
+                      print(f"JSON Data before Error-Handling: {json_data}")
+                      f.seek(0)
+                      json_data = f.read()
+                      print(f"JSON Data after Error-Handling: {json_data}")
+                  self.json_files[image_id] = json_data
+                  if not self.from_country:
+                    if 'coordinates' in json_data:
+                      coord = tuple(json_data['coordinates'])
+                      self.coordinates.append(coord)
+                      self.file_map[coord] = image_id
                     else:
-                      self.file_map[country] = [image_id]
+                      raise ValueError(f"Coordinates not found in {image_id}")
                   else:
-                    raise ValueError(f"Country not found in {image_id}")
+                    if 'country' in json_data:
+                      country = json_data['country']
+                      self.raw_countries.append(country)
+                      if country in self.file_map:
+                        self.file_map[country].append(image_id)
+                      else:
+                        self.file_map[country] = [image_id]
+                    else:
+                      raise ValueError(f"Country not found in {image_id}")
+                except json.JSONDecodeError:
+                  print(f"JSONDecodeError in {file}")
+                  print(f"JSON Data: {json_data}")
     
     def enrich_with_country_info(self):
       if not self.from_country:
