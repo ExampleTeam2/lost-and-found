@@ -43,4 +43,5 @@ dspro2/1_data_collection/data/cookies.json
 # Data
 /scraping/data/
 /dspro2/1_data_collection/data/
+/dspro2/3_data_preparation/01_enriching/data/
 /analyze/data/
