@@ -87,9 +87,11 @@ def map_occurrences_to_files(files, occurrence_map, allow_missing=False):
       # filter out the missing countries
       factors = [x for x in factors if x == x]
     else:
-      raise ValueError('Missing country in one of the maps')
+      #raise ValueError('Missing country in one of the maps')
+      print('Missing country in one of the maps')
   if allow_missing and len(factors) == 0:
-    raise ValueError('No countries in commmon between the maps')
+    #raise ValueError('No countries in commmon between the maps')
+    print('No countries in commmon between the maps')
   # Get the lowest factor
   factor = min(factors)
   # Get the number of files to load by country
@@ -141,20 +143,24 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
         files_to_load = file.read().split('\n')
   except FileNotFoundError:
     if not allow_new_file_creation:
-      raise ValueError('No loading file at location')
+      #raise ValueError('No loading file at location')
+      print('No loading file at location')
     pass
       
   if not len(files_to_load):
-    raise ValueError('No files to load, did you forget to specify the type? Otherwise unpaired files will be ignored')
+    #raise ValueError('No files to load, did you forget to specify the type? Otherwise unpaired files will be ignored')
+    print('No files to load, did you forget to specify the type? Otherwise unpaired files will be ignored')
   
   if not len(all_files):
-    raise ValueError('No files in loading location')
+    #raise ValueError('No files in loading location')
+    print('No files in loading location')
   
   actual_file_locations = []
   
   for file in files_to_load:
     if file not in base_files:
-      raise ValueError('Missing file ' + file)
+      #raise ValueError('Missing file ' + file)
+      print('Missing file ' + file)
     else:
       actual_file_locations.append(all_files[base_files.index(file)])
       
@@ -186,10 +192,13 @@ def update_data_to_load(files_to_keep, old_loading_file = './data_list', new_loa
   
   for file in files_to_load:
     if file not in base_files:
-      raise ValueError('Missing file ' + file)
+      #raise ValueError('Missing file ' + file)
+      print('Missing file ' + file)
       
   if not len(files_to_load):
-    raise ValueError('No files to load, did you forget to specify the type? Otherwise unpaired files will be ignored')
+    #raise ValueError('No files to load, did you forget to specify the type? Otherwise unpaired files will be ignored')
+    print('No files to load')
+    print(files_to_load)
       
   with open(new_loading_file, 'w') as file:
     file.write('\n'.join(files_to_load))
