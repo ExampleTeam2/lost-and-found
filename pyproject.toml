@@ -14,6 +14,7 @@ pillow = "^10.2.0"
 reverse-geocoder = "^1.5.1"
 pycountry = "^23.12.11"
 fuzzywuzzy = "^0.18.0"
+opencv-python = "^4.9.0.80"
 
 
 [tool.poetry.group.dev.dependencies]
