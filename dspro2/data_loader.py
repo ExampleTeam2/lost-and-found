@@ -75,7 +75,7 @@ def _restore_from_fake_locations(files, fake_locations_map):
   return [fake_locations_map.get(file, file) for file in files]
 
 # Takes in a list of files and a occurrence map (from a different_dataset)), create an optimally mapped list of files where the occurrences correspond to the map (or are multiples of them)
-def map_occurrences_to_files(files, occurrence_map, allow_missing=False):
+def map_occurrences_to_files(files, occurrence_map, allow_missing=True):
   # get the occurrences of the files itself
   files_occurrences, countries_to_files, _, _ = get_countries_occurrences_from_files(files)
   # get the factors between each of the countries (nan if not in the map)
@@ -106,7 +106,7 @@ def map_occurrences_to_files(files, occurrence_map, allow_missing=False):
   files_counterparts = _get_files_counterparts(files_to_load, [*files, *countries_to_files.values()])
   return files_counterparts, len(files_to_load)
 
-def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, allow_missing_in_map=False, passthrough_map=False, return_basenames_too=False):
+def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, allow_missing_in_map=True, passthrough_map=False, return_basenames_too=False):
   all_locations = []
   if file_location is not None:
     all_locations.append([file_location, filterText, type])
