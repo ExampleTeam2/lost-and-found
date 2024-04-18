@@ -650,12 +650,15 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       roundLabel = await roundLabel.first();
       if ((await roundLabel.count()) > 0) {
         while (roundLabel) {
-          if (await roundLabel.isVisible()) {
+          try {
             await roundLabel.click();
             break;
-          } else {
+          } catch (e) {
             // Otherwise check parent element
             roundLabel = 'or' in roundLabel ? (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement() : (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement();
+            if (!roundLabel) {
+              console.error(e);
+            }
           }
         }
       }
