@@ -210,7 +210,7 @@ def load_json_file(file):
     return json.load(f)
 
 # load mutliple json files parallelized
-def load_json_files(files, num_workers=4):
+def load_json_files(files, num_workers=16):
   with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
     results = list(executor.map(load_json_file, files))
   return results   

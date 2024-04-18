@@ -1,12 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
 
 import { chromium } from 'playwright-extra';
-import stealth from 'puppeteer-extra-plugin-stealth';
+// import stealth from 'puppeteer-extra-plugin-stealth';
 import { MAX_RETRIES, NUMBER_OF_INSTANCES, getTimestampString } from './playwright_base_config';
 
 const timestamp = getTimestampString();
 
-chromium.use(stealth());
+// chromium.use(stealth());
 
 /**
  * Read environment variables from file.

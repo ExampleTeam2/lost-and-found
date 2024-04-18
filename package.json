@@ -9,9 +9,9 @@
   "scripts": {
     "watch": "tsc -w ",
     "build": "tsc",
-    "start": "npm run build && node dist/dspro/index.js",
+    "start": "npm run build && node dist/index.js",
     "scrape:prepare": "playwright install",
-    "scrape:environment": "npm run build && node 'dist/dspro2/1_data_collection/playwright_setup_environment.js'",
+    "scrape:environment": "npm run build && node 'dist/1_data_collection/playwright_setup_environment.js'",
     "scrape": "npm run scrape:environment && playwright test --config='dspro2/1_data_collection/playwright.config.ts' --project=chromium-stealth",
     "scrape:ui": "npm run scrape:environment && playwright test --config='dspro2/1_data_collection/playwright.config.ts' --project=chromium-stealth --ui",
     "scrape:deploy": "export CI=true && npm run scrape:environment && playwright test --config='dspro2/1_data_collection/playwright.config.ts' --project=chromium-stealth",

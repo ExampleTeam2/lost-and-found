@@ -3,7 +3,7 @@ import fs from 'fs';
 import 'dotenv/config';
 import { Page } from 'playwright-core';
 import { describe } from 'node:test';
-import { DATA_PATH, LOCATION_FILE, LOCATION_FILE_EXTENSION, MAX_GAMES, MAX_MINUTES, MAX_ROUNDS, MODE, NUMBER_OF_INSTANCES, RESULT_FILE, RESULT_FILE_EXTENSION, SINGLEPLAYER_WIDTH, STAGGER_INSTANCES, TEMP_PATH, getTimestampString } from './playwright_base_config';
+import { DATA_PATH, GAMES, LOCATION_FILE, LOCATION_FILE_EXTENSION, MAX_GAMES, MAX_MINUTES, MAX_ROUNDS, MODE, NUMBER_OF_INSTANCES, RESULT_FILE, RESULT_FILE_EXTENSION, SINGLEPLAYER_WIDTH, STAGGER_INSTANCES, TEMP_PATH, getTimestampString } from './playwright_base_config';
 
 let logProgressInterval: ReturnType<typeof setInterval> | undefined;
 
@@ -28,7 +28,6 @@ const getButtonWithText = (page: Page, text: string, only = false) => {
 
 const clickButtonWithText = async (page: Page, text: string, wait = 0) => {
   const button = getButtonWithText(page, text);
-  debugger;
   if (wait) {
     await button.waitFor({ state: 'visible', timeout: wait !== -1 ? wait : undefined });
   }
@@ -63,7 +62,7 @@ const checkIfLoggedIn = async (page: Page) => {
 }
 
 const getCookieBanner = (page: Page) => {
-  return page.locator('#onetrust-consent-sdk');
+  return page.locator('#onetrust-consent-sdk').or(page.locator('#snigel-cmp-framework')).first();
 }
 
 // Create function which checks for a cookie banner and removes it
@@ -71,7 +70,8 @@ const removeCookieBanner = async (page: Page) => {
   // Check if element with id "onetrust-consent-sdk" exists
   const cookieBanner = getCookieBanner(page);
   await cookieBanner.waitFor({ state: 'attached', timeout: 15000 });
-  await clickButtonWithText(page, 'Accept');
+  await getButtonWithText(page, 'Accept').or(page.getByText('Accept all')).first().click();
+  page.waitForTimeout(1000);
   await cookieBanner.evaluate((el) => el.remove());
 }
 
@@ -407,23 +407,27 @@ const roundSingleplayer = async(page: Page, gameId: string, roundNumber: number,
   roundEndAndSave('singleplayer', resultJson, gameId, roundNumber, identifier);
 };
 
-const gameStart = async (page: Page, mode: typeof MODE, waitText: string, waitTime: number, i: number, identifier?: string) => {
-  await page.getByText(waitText).or(page.getByText('Rate limit')).nth(0).waitFor({ state: 'visible', timeout: 60000 });
-  if (await page.getByText('Rate limit').count() > 0) {
-    log('Rate-limited', identifier);
-    fs.appendFileSync(TEMP_PATH + 'rate-limits', i + '\n');
-    await page.waitForTimeout(STAGGER_INSTANCES);
-    await (mode === 'singleplayer' ? playSingleplayer(page, i, identifier) : playMultiplayer(page, i, identifier));
-    return;
+const gameStart = async (page: Page, mode: typeof MODE, waitText: string, waitTime: number, i: number, identifier?: string, resume = true) => {
+  if (!resume || (await page.getByText('World', { exact: true }).count()) === 0) {
+    await page.getByText(waitText).or(page.getByText('Rate limit')).nth(0).waitFor({ state: 'visible', timeout: 60000 });
+    if (await page.getByText('Rate limit').count() > 0) {
+      log('Rate-limited', identifier);
+      fs.appendFileSync(TEMP_PATH + 'rate-limits', i + '\n');
+      await page.waitForTimeout(STAGGER_INSTANCES);
+      await (mode === 'singleplayer' ? playSingleplayer(page, i, identifier) : playMultiplayer(page, i, identifier));
+      return;
+    }
+    await page.getByText(waitText).nth(0).waitFor({ state: 'hidden', timeout: waitTime });
   }
-  await page.getByText(waitText).nth(0).waitFor({ state: 'hidden', timeout: waitTime });
   // Get the game ID from the URL (https://www.geoguessr.com/de/battle-royale/<ID>)
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
   if (fs.readFileSync(TEMP_PATH + mode + '-games', 'utf8')?.split(/\n/g)?.includes(gameId)) {
     log('Double-joined game', identifier);
     fs.appendFileSync(TEMP_PATH + 'double-joins', i + '\n');
-    await page.waitForTimeout(STAGGER_INSTANCES);
-    await (mode === 'singleplayer' ? playSingleplayer(page, i, identifier) : playMultiplayer(page, i, identifier));
+    if (resume) {
+      await page.waitForTimeout(STAGGER_INSTANCES);
+      await (mode === 'singleplayer' ? playSingleplayer(page, i, identifier) : playMultiplayer(page, i, identifier));
+    }
     return;
   }
   fs.appendFileSync(TEMP_PATH + mode + '-games', gameId + '\n');
@@ -460,8 +464,8 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
   }
 };
 
-const gameSingleplayer = async (page: Page, i: number, identifier?: string) => {
-  const gameId = await gameStart(page, 'singleplayer', 'Loading', 10000, i, identifier);
+const gameSingleplayer = async (page: Page, i: number, identifier?: string, resume = true) => {
+  const gameId = await gameStart(page, 'singleplayer', 'Loading', 10000, i, identifier, resume);
   if (!gameId) {
     return;
   }
@@ -545,11 +549,136 @@ const playSingleplayer = async (page: Page, i: number, identifier?: string) => {
   await playGame(page, 'singleplayer', i, identifier);
 };
 
+const getResults = async (page: Page, games: string[], i: number, identifier?: string) => {
+  await playStart(page, i, identifier);
+  await page.waitForTimeout(1000);
+  // load google maps and accept cookies
+  await page.goto('https://www.google.com/maps', { timeout: 60000 });
+  await getButtonWithText(page, 'Accept all').or(getButtonWithText(page, 'Alle akzeptieren')).first().click();
+  await page.waitForTimeout(1000);
+  for (const gameId of games) {
+    log('Loading game - ' + gameId, identifier);
+    await page.goto('https://www.geoguessr.com/results/' + gameId, { timeout: 60000 });
+    await page.waitForTimeout(1000);
+    if (await page.getByText('not found').or(page.getByText('nicht gefunden')).count() > 0) {
+      log('Game not found: ' + gameId);
+      // Go to the next game if the current one is not found
+      break;
+    }
+    while (await page.getByText('finish').or(page.getByText('finished')).or(page.getByText('Ende')).or(page.getByText('beenden')).count() > 0) {
+      // Finish the game first
+      await page.goto('https://www.geoguessr.com/game/' + gameId, { timeout: 60000 });
+      await page.waitForTimeout(1000);
+      try {
+        await gameSingleplayer(page, i, identifier, false);
+      } catch (e) {
+        console.error(e);
+      }
+      await page.goto('https://www.geoguessr.com/results/' + gameId, { timeout: 60000 });
+    }
+    await page.waitForTimeout(1000);
+    // Press view results button
+    const found = await clickButtonIfFound(page, 'View results');
+    if (found) {
+      // Get button right before text Breakdown
+      const breakdownText = await page.getByText('Breakdown', { exact: true });
+      // Get the button one element before the text Breakdown (the button is the last element before the text) using the parent element and then just getting the button element
+      const button = await breakdownText.evaluateHandle((el) => el.parentElement?.querySelector('button'));
+      // Error if the button is not found
+      expect(button).toBeTruthy();
+      // Click the button
+      await button?.asElement()?.click();
+    } else {
+      expect(await page.getByText('World', { exact: true }).count()).toBeGreaterThan(0);
+    }
+    // Get the pins
+    const rounds = Array.from({ length: 5 }, (_, i) => i + 1);
+    const roundLabels = rounds.map(round => page.getByText(String(round), { exact: true }));
+
+    const roundCoordinates: [number, number][] = [];
+
+    let roundsChecked = 0;
+
+    let stopWaiting = () => {};
+
+    const stopWaitingPromise = new Promise<void>((resolve) => {
+      stopWaiting = resolve;
+    });
+
+    // Click it and capture the url it tries to open (done via js, no href, formatted like https://www.google.com/maps?q&layer=c&cbll=66.40950012207031,14.124077796936035&cbp=0,undefined,0,0,undefined)
+    // Can I capture the url it tries to open?
+    page.context().on('page', async page => {
+      // Get the first url of the page from the history
+      let url = page.url();
+      // If the url is a google consent url, click the accept button
+      if (url.startsWith('https://consent.google.com/')) {
+        await getButtonWithText(page, 'Accept all').or(getButtonWithText(page, 'Alle akzeptieren')).first().click();
+        // Wait for the page to load
+        await page.waitForURL(/https:\/\/www\.google\.com\/maps\/@/);
+        url = page.url();
+      }
+      let coordinates = [];
+      if (url.startsWith('https://www.google.com/maps?q&layer=c&cbll=')) {
+        coordinates = url.split('cbll=')[1].split('&')[0].split(',');
+      } else if (url.startsWith('https://www.google.com/maps/@')) {
+        coordinates = url.split('@')[1].split(',');
+      } else {
+        // Close the page
+        page.close();
+        return;
+      }
+      // If the url is a google maps url, save the coordinates
+      const lat = parseFloat(coordinates[0]);
+      const lon = parseFloat(coordinates[1]);
+      if ((lat !== 0 || lon !== 0) && !isNaN(lat) && !isNaN(lon)) {
+        roundCoordinates.push([lat, lon]);
+      }
+      roundsChecked++;
+      if (roundsChecked === rounds.length) {
+        stopWaiting();
+      }
+      // Close the page
+      page.close();
+    });
+    
+    for (const roundLabel of roundLabels) {
+      // log the label element
+      await roundLabel.click();
+    }
+
+    // Wait for the coordinates to be collected
+    await stopWaitingPromise;
+    
+    for (let roundNumber = 0; roundNumber < roundCoordinates.length; roundNumber++) {
+      const coordinates = roundCoordinates[roundNumber];
+      log('It was ' + coordinates, identifier);
+      const resultJson = {
+        coordinates
+      }
+
+      roundEndAndSave('singleplayer', resultJson, gameId, roundNumber, identifier);
+    }
+  }
+}
+
 describe('Geoguessr', () => {
   for (let i = 0; i < NUMBER_OF_INSTANCES; i++) {
     const identifier = (NUMBER_OF_INSTANCES > 1 ? String(i + 1) : '');
+    let gamesToCheck = MODE === 'results' ? GAMES : [];
+    if (gamesToCheck.length) {
+      // Get already checked games by listing files in data folder
+      let checkedGames = fs.readdirSync(DATA_PATH).filter(file => file.startsWith(RESULT_FILE) && file.endsWith(RESULT_FILE_EXTENSION)).map(file => file.slice(RESULT_FILE.length, -RESULT_FILE_EXTENSION.length));
+      // Get only games that start with "singleplayer_", then remove that.
+      checkedGames = checkedGames.filter(game => game.startsWith('singleplayer_')).map(game => game.slice('singleplayer_'.length, -'_1'.length));
+      // Filter out already checked games
+      gamesToCheck = gamesToCheck.filter(game => !checkedGames.includes(game));
+      // Segment into runners
+      const runnerIndex = Math.round(gamesToCheck.length / NUMBER_OF_INSTANCES) * i;
+      const runnerIndexEnd = i === NUMBER_OF_INSTANCES - 1 ? gamesToCheck.length : Math.round(gamesToCheck.length / NUMBER_OF_INSTANCES) * (i + 1);
+      gamesToCheck = gamesToCheck.slice(runnerIndex, runnerIndexEnd);
+    }
     // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
-    test('play ' + (MODE === 'singleplayer' ? 'world' : 'countries battle royale') + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
+    test('play ' + (MODE === 'singleplayer' ? 'world' : MODE === 'multiplayer' ? 'countries battle royale' : 'results') + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
       if (fs.readFileSync(TEMP_PATH + 'stop', 'utf8') === 'true') {
         process.exit(1);
       }
@@ -559,7 +688,7 @@ describe('Geoguessr', () => {
       }
       try {
         test.setTimeout(60000 * MAX_MINUTES);
-        await (MODE === 'singleplayer' ? playSingleplayer(page, i, identifier) : playMultiplayer(page, i, identifier));
+        await (MODE === 'singleplayer' ? playSingleplayer(page, i, identifier) : MODE === 'multiplayer' ? playMultiplayer(page, i, identifier) : getResults(page, gamesToCheck, i, identifier));
       } catch (e: unknown) {
         const timestamp = getTimestampString();
         // If messages includes 'Target crashed', exit program, otherwise log an error message that an Error occurred in this instance at this time and rethrow
