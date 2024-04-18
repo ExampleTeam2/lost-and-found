@@ -46,6 +46,7 @@ class CountryEnricher:
     
     def load_and_prepare_files(self):
         json_paths = [f for f in os.listdir(self.input_dir) if f.endswith('.json') and self.mode in f]
+        had_error = False
         for file in json_paths:
             match = re.search(self.pattern, file)
             if match:
@@ -79,8 +80,11 @@ class CountryEnricher:
                     else:
                       raise ValueError(f"Country not found in {image_id}")
                 except json.JSONDecodeError:
+                  had_error = True
                   print(f"JSONDecodeError in {file}")
                   print(f"JSON Data: {json_data}")
+        if had_error:
+          raise ValueError("JSONDecodeError in one or more files")
     
     def enrich_with_country_info(self):
       if not self.from_country:
