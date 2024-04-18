@@ -595,6 +595,8 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
     const rounds = Array.from({ length: 5 }, (_, i) => i + 1);
     const roundLabels = rounds.map(round => page.getByText(String(round), { exact: true }));
 
+    const oneOfLabels: Locator | undefined = roundLabels.reduce((acc: Locator | undefined, label) => acc ? acc.or(label) : label, undefined);
+
     const roundCoordinates: [number, number][] = [];
 
     let roundsChecked = 0;
@@ -640,10 +642,13 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       // Close the page
       page.close();
     });
+
+    await oneOfLabels?.first().waitFor({ state: 'visible' });
     
     for (const roundLabel of roundLabels) {
-      // log the label element
-      await roundLabel.click();
+      if ((await roundLabel.count()) > 0) {
+        await roundLabel.first().click();
+      }
     }
 
     // Wait for the coordinates to be collected
