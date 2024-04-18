@@ -645,9 +645,19 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
 
     await oneOfLabels?.first().waitFor({ state: 'visible' });
     
-    for (const roundLabel of roundLabels) {
+    let roundLabel: Locator | ElementHandle<HTMLElement> | null = null;
+    for (roundLabel of roundLabels) {
+      roundLabel = await roundLabel.first();
       if ((await roundLabel.count()) > 0) {
-        await roundLabel.first().click();
+        while (roundLabel) {
+          if (await roundLabel.isVisible()) {
+            await roundLabel.click();
+            break;
+          } else {
+            // Otherwise check parent element
+            roundLabel = 'or' in roundLabel ? (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement() : (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement();
+          }
+        }
       }
     }
 
