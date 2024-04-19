@@ -611,8 +611,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
     // Get the pins
     const rounds = Array.from({ length: 5 }, (_, i) => i + 1);
     // Get labels with label as text and data-qa="correct-location-marker" (first data-qa="correct-location-marker", then the text
-    console.log(await page.locator('css=[data-qa="correct-location-marker"]').count());
-    const roundLabels = rounds.map(round => page.locator('css=[data-qa="correct-location-marker"]').getByText(String(round), { exact: true }));
+    const roundLabels = rounds.map(round => page.locator('css=[data-qa="correct-location-marker"]').filter({ hasText: new RegExp(`^${round}$`) }));
 
     const roundCoordinates: [number, number][] = [];
 
