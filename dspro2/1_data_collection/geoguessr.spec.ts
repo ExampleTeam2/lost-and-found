@@ -349,20 +349,10 @@ const getCoordinatesFromPin = async (page: Page, gameId: string, identifier?: st
   const handlePopup = async (popup: Page, index: number) => {
     await popup.waitForLoadState();
     // Get the first url of the page from the history
-    let url = popup.url();
-    // If the url is a google consent url, click the accept button
-    if (url.startsWith('https://consent.google.com/')) {
-      await getButtonWithText(popup, 'Accept all').or(getButtonWithText(popup, 'Alle akzeptieren')).first().click();
-      // Wait for the page to load
-      await popup.waitForURL(/https:\/\/www\.google\.com\/maps\/@/);
-      url = popup.url();
-    }
+    const url = popup.url();
     let coordinates = [];
     if (url.startsWith('https://www.google.com/maps?q&layer=c&cbll=')) {
       coordinates = url.split('cbll=')[1].split('&')[0].split(',');
-    } else if (url.startsWith('https://www.google.com/maps/@')) {
-      log('Potentially incorrect label' + (all ? ' ' + (index + 1) : '') + ' for ' + gameId, identifier);
-      coordinates = url.split('@')[1].split(',');
     } else {
       // Close the page
       await popup.close();
@@ -638,6 +628,7 @@ const playMultiplayer = async (page: Page, i: number, identifier?: string) => {
 };
 
 const playSingleplayer = async (page: Page, i: number, identifier?: string) => {
+  await acceptGoogleCookies(page);
   await playStart(page, i, identifier);
   await clickButtonWithText(page, 'Classic Maps', 10000);
   await page.getByText('World', { exact: true }).first().waitFor({ state: 'visible', timeout: 10000 });
@@ -646,13 +637,17 @@ const playSingleplayer = async (page: Page, i: number, identifier?: string) => {
   await playGame(page, 'singleplayer', i, identifier);
 };
 
-const getResults = async (page: Page, games: string[], i: number, identifier?: string) => {
-  await playStart(page, i, identifier);
-  await page.waitForTimeout(1000);
+const acceptGoogleCookies = async (page: Page) => {
   // load google maps and accept cookies
   await page.goto('https://www.google.com/maps', { timeout: 60000 });
   await getButtonWithText(page, 'Accept all').or(getButtonWithText(page, 'Alle akzeptieren')).first().click();
   await page.waitForTimeout(1000);
+};
+
+const getResults = async (page: Page, games: string[], i: number, identifier?: string) => {
+  await playStart(page, i, identifier);
+  await page.waitForTimeout(1000);
+  await acceptGoogleCookies(page);
   for (const gameId of games) {
     log('Loading game - ' + gameId, identifier);
     await page.goto('https://www.geoguessr.com/results/' + gameId, { timeout: 60000 });
