@@ -641,7 +641,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       if (url.startsWith('https://www.google.com/maps?q&layer=c&cbll=')) {
         coordinates = url.split('cbll=')[1].split('&')[0].split(',');
       } else if (url.startsWith('https://www.google.com/maps/@')) {
-        log('Potentially incorrect label for ' + gameId, identifier);
+        log('Potentially incorrect label ' + index + ' for ' + gameId, identifier);
         coordinates = url.split('@')[1].split(',');
       } else {
         // Close the page
@@ -676,9 +676,15 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
         while (count < 10 && roundLabel) {
           count++;
           try {
-            const roundLabelBounds = await roundLabel.boundingBox();
-            await roundLabel.click({ timeout: 1000, position: { x: 0, y: (roundLabelBounds?.height ?? 0) / 2 } });
-            found = true;
+            try {
+              await roundLabel.click({ timeout: 1000 });
+              found = true;
+            } catch (e) {
+              log('Could not click label ' + index + ': ' + gameId, identifier);
+              const roundLabelBounds = await roundLabel.boundingBox();
+              await roundLabel.click({ timeout: 1000, position: { x: 0, y: (roundLabelBounds?.height ?? 0) / 2 } });
+              found = true;
+            }
           } catch (e) {
             log('Could not click label ' + index + ': ' + gameId, identifier);
             // Otherwise check parent element
