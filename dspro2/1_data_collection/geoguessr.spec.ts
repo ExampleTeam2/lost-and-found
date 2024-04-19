@@ -407,7 +407,7 @@ const roundSingleplayer = async(page: Page, gameId: string, roundNumber: number,
   roundEndAndSave('singleplayer', resultJson, gameId, roundNumber, identifier);
 };
 
-const gameStart = async (page: Page, mode: typeof MODE, waitText: string, waitTime: number, i: number, identifier?: string, resume = true) => {
+const gameStart = async (page: Page, mode: typeof MODE, waitText: string, waitTime: number, i: number, identifier?: string, resume = false) => {
   if (!resume || (await page.getByText('World', { exact: true }).count()) === 0) {
     await page.getByText(waitText).or(page.getByText('Rate limit')).nth(0).waitFor({ state: 'visible', timeout: 60000 });
     if (await page.getByText('Rate limit').count() > 0) {
@@ -464,12 +464,12 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
   }
 };
 
-const gameSingleplayer = async (page: Page, i: number, identifier?: string, resume = true) => {
+const gameSingleplayer = async (page: Page, i: number, identifier?: string, resume = false, roundNumber = 0) => {
   const gameId = await gameStart(page, 'singleplayer', 'Loading', 10000, i, identifier, resume);
   if (!gameId) {
     return;
   }
-  let rounds = 0;
+  let rounds = roundNumber;
   await roundSingleplayer(page, gameId, rounds, identifier);
   rounds++;
   await page.waitForTimeout(1000);
@@ -565,16 +565,32 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       // Go to the next game if the current one is not found
       break;
     }
-    while (await page.getByText('finish').or(page.getByText('finished')).or(page.getByText('Ende')).or(page.getByText('beenden')).count() > 0) {
+    let count = 0;
+    while (count < 10 && await page.getByText('finish').or(page.getByText('finished')).or(page.getByText('Ende')).or(page.getByText('beenden')).count() > 0) {
+      count++;
       // Finish the game first
       await page.goto('https://www.geoguessr.com/game/' + gameId, { timeout: 60000 });
       await page.waitForTimeout(1000);
+      const roundLabelText = await page.getByText('Round').or(page.getByText('Runde')).first();
+      // Get the text one element after the text Round (the button is the next element after the text) using the parent element and then just getting the last element
+      const roundText = await (await roundLabelText.evaluateHandle((el) => el.parentElement?.lastElementChild))?.asElement()?.textContent();
+      // Error if the text is not found
+      expect(roundText).toBeTruthy();
+      // Get the text of the element
+      const roundNumber = parseInt(roundText?.split(/\s/g)[1] ?? '');
+      // Error if the round number is not found
+      expect(roundNumber).toBeTruthy();
       try {
-        await gameSingleplayer(page, i, identifier, false);
+        await gameSingleplayer(page, i, identifier, true, roundNumber);
+        count = 0;
       } catch (e) {
         console.error(e);
       }
       await page.goto('https://www.geoguessr.com/results/' + gameId, { timeout: 60000 });
+    }
+    if (count >= 10) {
+      log('Could not finish game: ' + gameId);
+      break;
     }
     await page.waitForTimeout(1000);
     // Press view results button
@@ -649,7 +665,9 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
     for (roundLabel of roundLabels) {
       roundLabel = await roundLabel.first();
       if ((await roundLabel.count()) > 0) {
-        while (roundLabel) {
+        let count = 0;
+        while (count < 10 && roundLabel) {
+          count++;
           try {
             await roundLabel.click();
             break;
