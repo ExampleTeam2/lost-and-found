@@ -356,6 +356,7 @@ const getCoordinatesFromPin = async (page: Page, gameId: string, identifier?: st
     } else {
       // Close the page
       await popup.close();
+      expect('Label' + (all ? ' ' + index : '') + ' in game ' + gameId).toBe('Google Maps URL, could not find coordinates');
       return;
     }
     // If the url is a google maps url, save the coordinates
@@ -481,9 +482,7 @@ const roundSingleplayer = async(page: Page, gameId: string, roundNumber: number,
     await removeSidebar(page, sidebar);
   }
   const duration = (Date.now() - startTime) / 1000;
-  const roundCoordinates = await getCoordinatesFromPin(page, gameId, identifier, false);
-  expect(roundCoordinates.length).toBe(1);
-  const coordinates = roundCoordinates[0];
+  const coordinates = (await getCoordinatesFromPin(page, gameId, identifier, false))[0];
   log('It was ' + coordinates, identifier);
   const resultJson = {
     coordinates,
@@ -702,8 +701,6 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
     }
 
     const roundCoordinates = await getCoordinatesFromPin(page, gameId, identifier, true);
-
-    expect(roundCoordinates.length).toBe(5);
 
     for (let roundNumber = 0; roundNumber < roundCoordinates.length; roundNumber++) {
       const coordinates = roundCoordinates[roundNumber];
