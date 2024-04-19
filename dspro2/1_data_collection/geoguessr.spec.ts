@@ -330,6 +330,99 @@ const removeSidebar = async (page: Page, sidebar: ElementPair) => {
   await sidebar[1].waitFor({ state: 'hidden' });
 };
 
+const getCoordinatesFromPin = async (page: Page, gameId: string, identifier?: string, all = false) => {
+  // Get the pins
+  const rounds = all ? Array.from({ length: 5 }, (_, i) => i + 1) : [false];
+  // Get labels with label as text and data-qa="correct-location-marker" (first data-qa="correct-location-marker", then the text
+  const roundLabels = rounds.map(round => {
+    let loc = page.locator('css=[data-qa="correct-location-marker"]');
+    if (round) {
+      loc = loc.filter({ hasText: new RegExp(`^${round}$`) });
+    }
+    return loc;
+  });
+
+  const roundCoordinates: [number, number][] = [];
+
+  // Click it and capture the url it tries to open (done via js, no href, formatted like https://www.google.com/maps?q&layer=c&cbll=66.40950012207031,14.124077796936035&cbp=0,undefined,0,0,undefined)
+  // Can I capture the url it tries to open?
+  const handlePopup = async (popup: Page, index: number) => {
+    await popup.waitForLoadState();
+    // Get the first url of the page from the history
+    let url = popup.url();
+    // If the url is a google consent url, click the accept button
+    if (url.startsWith('https://consent.google.com/')) {
+      await getButtonWithText(popup, 'Accept all').or(getButtonWithText(popup, 'Alle akzeptieren')).first().click();
+      // Wait for the page to load
+      await popup.waitForURL(/https:\/\/www\.google\.com\/maps\/@/);
+      url = popup.url();
+    }
+    let coordinates = [];
+    if (url.startsWith('https://www.google.com/maps?q&layer=c&cbll=')) {
+      coordinates = url.split('cbll=')[1].split('&')[0].split(',');
+    } else if (url.startsWith('https://www.google.com/maps/@')) {
+      log('Potentially incorrect label' + (all ? ' ' + (index + 1) : '') + ' for ' + gameId, identifier);
+      coordinates = url.split('@')[1].split(',');
+    } else {
+      // Close the page
+      await popup.close();
+      return;
+    }
+    // If the url is a google maps url, save the coordinates
+    const lat = parseFloat(coordinates[0]);
+    const lon = parseFloat(coordinates[1]);
+    if ((lat !== 0 || lon !== 0) && !isNaN(lat) && !isNaN(lon)) {
+      roundCoordinates[index] = [lat, lon];
+    }
+    // Close the page
+    await popup.close();
+  };
+
+  // Hide all the labels of roundLabels
+  for (let roundLabel of roundLabels) {
+    await roundLabel.waitFor({ state: 'visible' });
+    if (all) {
+      await roundLabel.evaluate((el) => el.style.display = 'none');
+    }
+  }
+  
+  let index = 0;
+  for (const roundLabel of roundLabels) {
+    index++;
+    if (all) {
+      // Show the label
+      await roundLabel.evaluate((el) => el.style.display = '');
+      // Make sure the label is visible
+      await roundLabel.waitFor({ state: 'visible' });
+    }
+    let currentRoundLabel: Locator | ElementHandle<HTMLElement> | null = roundLabel;
+    const popup = page.waitForEvent('popup');
+    let found = false;
+    try {
+      await currentRoundLabel.click({ timeout: 1000 });
+      found = true;
+    } catch (e) {
+      log('Could not click label' + (all ? ' ' + index : '') + ': ' + gameId, identifier);
+      // Otherwise check parent element
+      console.error(e);
+      break;
+    }
+
+    if (all) {
+      // Hide the label
+      await roundLabel.evaluate((el) => el.style.display = 'none');
+    }
+    
+    if (found) {
+      await handlePopup(await popup, index - 1);
+    } else {
+      expect('Label' + (all ? ' ' + index : '') + ' in game ' + gameId).toBe('Clickable labels, could not click label' + (all ? ' ' + index : ''));
+    }
+  }
+
+  return roundCoordinates;
+}
+
 const roundStartAndCapture = async<const T>(page: Page, mode: typeof MODE, gameId: string, roundNumber: number, identifier?: string, additional: (page: Page, gameId: string, roundNumber: number, identifier?: string) => T = (() => undefined) as () => T): Promise<[number, Awaited<T>, ElementPair?]> => {
   log('Starting round - ' + roundNumber, identifier);
   // Wait for the street view to load
@@ -398,7 +491,9 @@ const roundSingleplayer = async(page: Page, gameId: string, roundNumber: number,
     await removeSidebar(page, sidebar);
   }
   const duration = (Date.now() - startTime) / 1000;
-  const coordinates = await getCoordinates(page, true);
+  const roundCoordinates = await getCoordinatesFromPin(page, gameId, identifier, true);
+  expect(roundCoordinates.length).toBe(1);
+  const coordinates = roundCoordinates[0];
   log('It was ' + coordinates, identifier);
   const resultJson = {
     coordinates,
@@ -610,82 +705,8 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
     } else {
       expect(await page.getByText('World', { exact: true }).count()).toBeGreaterThan(0);
     }
-    // Get the pins
-    const rounds = Array.from({ length: 5 }, (_, i) => i + 1);
-    // Get labels with label as text and data-qa="correct-location-marker" (first data-qa="correct-location-marker", then the text
-    const roundLabels = rounds.map(round => page.locator('css=[data-qa="correct-location-marker"]').filter({ hasText: new RegExp(`^${round}$`) }));
 
-    const roundCoordinates: [number, number][] = [];
-
-    // Click it and capture the url it tries to open (done via js, no href, formatted like https://www.google.com/maps?q&layer=c&cbll=66.40950012207031,14.124077796936035&cbp=0,undefined,0,0,undefined)
-    // Can I capture the url it tries to open?
-    const handlePopup = async (popup: Page, index: number) => {
-      await popup.waitForLoadState();
-      // Get the first url of the page from the history
-      let url = popup.url();
-      // If the url is a google consent url, click the accept button
-      if (url.startsWith('https://consent.google.com/')) {
-        await getButtonWithText(popup, 'Accept all').or(getButtonWithText(popup, 'Alle akzeptieren')).first().click();
-        // Wait for the page to load
-        await popup.waitForURL(/https:\/\/www\.google\.com\/maps\/@/);
-        url = popup.url();
-      }
-      let coordinates = [];
-      if (url.startsWith('https://www.google.com/maps?q&layer=c&cbll=')) {
-        coordinates = url.split('cbll=')[1].split('&')[0].split(',');
-      } else if (url.startsWith('https://www.google.com/maps/@')) {
-        log('Potentially incorrect label ' + (index + 1) + ' for ' + gameId, identifier);
-        coordinates = url.split('@')[1].split(',');
-      } else {
-        // Close the page
-        await popup.close();
-        return;
-      }
-      // If the url is a google maps url, save the coordinates
-      const lat = parseFloat(coordinates[0]);
-      const lon = parseFloat(coordinates[1]);
-      if ((lat !== 0 || lon !== 0) && !isNaN(lat) && !isNaN(lon)) {
-        roundCoordinates[index] = [lat, lon];
-      }
-      // Close the page
-      await popup.close();
-    };
-
-    // Hide all the labels of roundLabels
-    for (let roundLabel of roundLabels) {
-      await roundLabel.waitFor({ state: 'visible' });
-      await roundLabel.evaluate((el) => el.style.display = 'none');
-    }
-    
-    let index = 0;
-    for (const roundLabel of roundLabels) {
-      index++;
-      // Show the label
-      await roundLabel.evaluate((el) => el.style.display = '');
-      // Make sure the label is visible
-      await roundLabel.waitFor({ state: 'visible' });
-      let currentRoundLabel: Locator | ElementHandle<HTMLElement> | null = roundLabel;
-      const popup = page.waitForEvent('popup');
-      let found = false;
-      try {
-        await currentRoundLabel.click({ timeout: 1000 });
-        found = true;
-      } catch (e) {
-        log('Could not click label ' + index + ': ' + gameId, identifier);
-        // Otherwise check parent element
-        console.error(e);
-        break;
-      }
-
-      // Hide the label
-      await roundLabel.evaluate((el) => el.style.display = 'none');
-      
-      if (found) {
-        await handlePopup(await popup, index - 1);
-      } else {
-        expect('Label ' + index + ' in game ' + gameId).toBe('Clickable labels, could not click label ' + index);
-      }
-    }
+    const roundCoordinates = await getCoordinatesFromPin(page, gameId, identifier, true);
 
     expect(roundCoordinates.length).toBe(5);
 
