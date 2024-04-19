@@ -567,6 +567,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
     }
     let count = 0;
     while (count < 10 && await page.getByText('finish').or(page.getByText('finished')).or(page.getByText('Ende')).or(page.getByText('beenden')).count() > 0) {
+      log('Finishing game: ' + gameId);
       count++;
       // Finish the game first
       await page.goto('https://www.geoguessr.com/game/' + gameId, { timeout: 60000 });
@@ -662,7 +663,9 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
     await oneOfLabels?.first().waitFor({ state: 'visible' });
     
     let roundLabel: Locator | ElementHandle<HTMLElement> | null = null;
+    let index = 0;
     for (roundLabel of roundLabels) {
+      index++;
       roundLabel = await roundLabel.first();
       if ((await roundLabel.count()) > 0) {
         let count = 0;
@@ -672,6 +675,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
             await roundLabel.click({ timeout: 1000 });
             break;
           } catch (e) {
+            log('Could not click label ' + index + ': ' + gameId);
             // Otherwise check parent element
             roundLabel = 'or' in roundLabel ? (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement() : (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement();
             if (!roundLabel) {
