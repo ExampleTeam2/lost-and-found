@@ -581,7 +581,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       // Error if the round number is not found
       expect(roundNumber).toBeTruthy();
       try {
-        await gameSingleplayer(page, i, identifier, true, roundNumber);
+        await gameSingleplayer(page, i, identifier, true, roundNumber - 1);
         count = 0;
       } catch (e) {
         console.error(e);
