@@ -722,7 +722,7 @@ describe('Geoguessr', () => {
     let gamesToCheck = MODE === 'results' ? GAMES : [];
     if (gamesToCheck.length) {
       // Get already checked games by listing files in data folder
-      let checkedGames = fs.readFileSync(TEMP_PATH + 'results-games', 'utf8')?.split(/\n/g).filter(file => file.startsWith(RESULT_FILE) && file.endsWith(RESULT_FILE_EXTENSION)).map(file => file.slice(RESULT_FILE.length, -RESULT_FILE_EXTENSION.length));
+      let checkedGames = fs.readFileSync(TEMP_PATH + 'results-games', 'utf8')?.split(/\n/g).filter(file => file);
       // Get only games that start with "singleplayer_", then remove that.
       checkedGames = checkedGames.filter(game => game.startsWith('singleplayer_')).map(game => game.slice('singleplayer_'.length, -'_1'.length));
       // Filter out already checked games
