@@ -582,13 +582,13 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       expect(roundNumber).toBeTruthy();
       try {
         await gameSingleplayer(page, i, identifier, true, roundNumber - 1);
-        count = 0;
+        count = 11;
       } catch (e) {
         console.error(e);
       }
       await page.goto('https://www.geoguessr.com/results/' + gameId, { timeout: 60000 });
     }
-    if (count >= 10) {
+    if (count === 10) {
       log('Could not finish game: ' + gameId);
       break;
     }
