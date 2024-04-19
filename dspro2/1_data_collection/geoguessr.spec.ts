@@ -578,7 +578,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       // Error if the text is not found
       expect(roundText).toBeTruthy();
       // Get the text of the element
-      const roundNumber = parseInt(roundText?.split(/\s/g)[1] ?? '');
+      const roundNumber = parseInt(roundText?.split(/\s/g)[0] ?? '');
       // Error if the round number is not found
       expect(roundNumber).toBeTruthy();
       try {
