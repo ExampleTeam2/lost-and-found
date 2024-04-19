@@ -626,15 +626,16 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
 
     // Click it and capture the url it tries to open (done via js, no href, formatted like https://www.google.com/maps?q&layer=c&cbll=66.40950012207031,14.124077796936035&cbp=0,undefined,0,0,undefined)
     // Can I capture the url it tries to open?
-    page.context().on('page', async page => {
+    const handlePopup = async (popup: Page) => {
+      await popup.waitForLoadState();
       // Get the first url of the page from the history
-      let url = page.url();
+      let url = popup.url();
       // If the url is a google consent url, click the accept button
       if (url.startsWith('https://consent.google.com/')) {
-        await getButtonWithText(page, 'Accept all').or(getButtonWithText(page, 'Alle akzeptieren')).first().click();
+        await getButtonWithText(popup, 'Accept all').or(getButtonWithText(popup, 'Alle akzeptieren')).first().click();
         // Wait for the page to load
-        await page.waitForURL(/https:\/\/www\.google\.com\/maps\/@/);
-        url = page.url();
+        await popup.waitForURL(/https:\/\/www\.google\.com\/maps\/@/);
+        url = popup.url();
       }
       let coordinates = [];
       if (url.startsWith('https://www.google.com/maps?q&layer=c&cbll=')) {
@@ -644,7 +645,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
         coordinates = url.split('@')[1].split(',');
       } else {
         // Close the page
-        page.close();
+        popup.close();
         return;
       }
       // If the url is a google maps url, save the coordinates
@@ -658,8 +659,8 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
         stopWaiting();
       }
       // Close the page
-      page.close();
-    });
+      popup.close();
+    };
 
     await oneOfLabels?.first().waitFor({ state: 'visible' });
     
@@ -669,24 +670,28 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       index++;
       roundLabel = await roundLabel.first();
       if ((await roundLabel.count()) > 0) {
+        const popup = await page.waitForEvent('popup');
         let count = 0;
+        let found = false;
         while (count < 10 && roundLabel) {
           count++;
           try {
             await roundLabel.click({ timeout: 1000, force: true });
-            break;
+            found = true;
           } catch (e) {
             log('Could not click label ' + index + ': ' + gameId, identifier);
             // Otherwise check parent element
-            roundLabel = 'or' in roundLabel ? (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement() : (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement();
+            roundLabel = (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement();
             if (!roundLabel) {
-              count = 10;
               console.error(e);
             }
+            break;
           }
         }
-
-        if (count === 10) {
+        
+        if (found) {
+          handlePopup(await popup);
+        } else {
           expect('Label ' + index + ' in game ' + gameId).toBe('Clickable labels, could not click label ' + index);
         }
       }
