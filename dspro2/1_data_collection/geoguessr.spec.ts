@@ -626,7 +626,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
 
     // Click it and capture the url it tries to open (done via js, no href, formatted like https://www.google.com/maps?q&layer=c&cbll=66.40950012207031,14.124077796936035&cbp=0,undefined,0,0,undefined)
     // Can I capture the url it tries to open?
-    const handlePopup = async (popup: Page) => {
+    const handlePopup = async (popup: Page, index: number) => {
       await popup.waitForLoadState();
       // Get the first url of the page from the history
       let url = popup.url();
@@ -652,7 +652,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       const lat = parseFloat(coordinates[0]);
       const lon = parseFloat(coordinates[1]);
       if ((lat !== 0 || lon !== 0) && !isNaN(lat) && !isNaN(lon)) {
-        roundCoordinates.push([lat, lon]);
+        roundCoordinates[index] = [lat, lon];
       }
       roundsChecked++;
       if (roundsChecked === rounds.length) {
@@ -669,38 +669,36 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
     for (roundLabel of roundLabels) {
       index++;
       roundLabel = await roundLabel.first();
-      if ((await roundLabel.count()) > 0) {
-        const popup = page.waitForEvent('popup');
-        let count = 0;
-        let found = false;
-        while (count < 10 && roundLabel) {
-          count++;
+      const popup = page.waitForEvent('popup');
+      let count = 0;
+      let found = false;
+      while (count < 10 && roundLabel) {
+        count++;
+        try {
           try {
-            try {
-              await roundLabel.click({ timeout: 1000 });
-              found = true;
-            } catch (e) {
-              log('Could not click label ' + index + ': ' + gameId, identifier);
-              const roundLabelBounds = await roundLabel.boundingBox();
-              await roundLabel.click({ timeout: 1000, position: { x: 0, y: (roundLabelBounds?.height ?? 0) / 2 } });
-              found = true;
-            }
+            await roundLabel.click({ timeout: 1000 });
+            found = true;
           } catch (e) {
             log('Could not click label ' + index + ': ' + gameId, identifier);
-            // Otherwise check parent element
-            roundLabel = 'or' in roundLabel ? (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement() : (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement();
-            if (!roundLabel) {
-              console.error(e);
-              break;
-            }
+            const roundLabelBounds = await roundLabel.boundingBox();
+            await roundLabel.click({ timeout: 1000, position: { x: 0, y: (roundLabelBounds?.height ?? 0) / 2 } });
+            found = true;
+          }
+        } catch (e) {
+          log('Could not click label ' + index + ': ' + gameId, identifier);
+          // Otherwise check parent element
+          roundLabel = 'or' in roundLabel ? (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement() : (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement();
+          if (!roundLabel) {
+            console.error(e);
+            break;
           }
         }
-        
-        if (found) {
-          await handlePopup(await popup);
-        } else {
-          expect('Label ' + index + ' in game ' + gameId).toBe('Clickable labels, could not click label ' + index);
-        }
+      }
+      
+      if (found) {
+        await handlePopup(await popup, index - 1);
+      } else {
+        expect('Label ' + index + ' in game ' + gameId).toBe('Clickable labels, could not click label ' + index);
       }
     }
 
@@ -709,7 +707,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
     
     for (let roundNumber = 0; roundNumber < roundCoordinates.length; roundNumber++) {
       const coordinates = roundCoordinates[roundNumber];
-      log('It was ' + coordinates, identifier);
+      log((roundNumber + 1) + ' was ' + coordinates, identifier);
       const resultJson = {
         coordinates
       }
