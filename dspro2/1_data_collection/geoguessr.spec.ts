@@ -686,6 +686,8 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       }
     }
 
+    expect(roundCoordinates.length).toBe(5);
+
     for (let roundNumber = 0; roundNumber < roundCoordinates.length; roundNumber++) {
       const coordinates = roundCoordinates[roundNumber];
       log((roundNumber + 1) + ' was ' + coordinates, identifier);
