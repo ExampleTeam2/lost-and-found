@@ -645,7 +645,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
         coordinates = url.split('@')[1].split(',');
       } else {
         // Close the page
-        popup.close();
+        await popup.close();
         return;
       }
       // If the url is a google maps url, save the coordinates
@@ -659,7 +659,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
         stopWaiting();
       }
       // Close the page
-      popup.close();
+      await popup.close();
     };
 
     await oneOfLabels?.first().waitFor({ state: 'visible' });
@@ -691,7 +691,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
         }
         
         if (found) {
-          handlePopup(await popup);
+          await handlePopup(await popup);
         } else {
           expect('Label ' + index + ' in game ' + gameId).toBe('Clickable labels, could not click label ' + index);
         }
