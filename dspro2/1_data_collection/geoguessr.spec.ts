@@ -390,7 +390,7 @@ const getCoordinatesFromPin = async (page: Page, gameId: string, identifier?: st
     const popup = page.waitForEvent('popup');
     let found = false;
     try {
-      await currentRoundLabel.click({ timeout: 1000 });
+      await currentRoundLabel.click({ timeout: 10000 });
       found = true;
     } catch (e) {
       log('Could not click label' + (all ? ' ' + index : '') + ': ' + gameId, identifier);
