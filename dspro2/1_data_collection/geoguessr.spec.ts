@@ -390,7 +390,7 @@ const roundMultiplayer = async(page: Page, gameId: string, roundNumber: number, 
   roundEndAndSave('multiplayer', resultJson, gameId, roundNumber, identifier);
 };
 
-const roundSingleplayer = async(page: Page, gameId: string, roundNumber: number, identifier?: string) => {
+const roundSingleplayer = async(page: Page, gameId: string, roundNumber: number, identifier?: string, resume = false) => {
   const [startTime, _, sidebar] = await roundStartAndCapture(page, 'singleplayer', gameId, roundNumber, identifier);
   await guess(page);
   await getButtonWithText(page, 'Next').or(await getButtonWithText(page, 'View results')).waitFor({ state: 'visible', timeout: 15000 });
@@ -404,7 +404,9 @@ const roundSingleplayer = async(page: Page, gameId: string, roundNumber: number,
     coordinates,
     duration
   }
-  roundEndAndSave('singleplayer', resultJson, gameId, roundNumber, identifier);
+  if (!resume) {
+    roundEndAndSave('singleplayer', resultJson, gameId, roundNumber, identifier);
+  }
 };
 
 const gameStart = async (page: Page, mode: typeof MODE, waitText: string, waitTime: number, i: number, identifier?: string, resume = false) => {
@@ -470,11 +472,11 @@ const gameSingleplayer = async (page: Page, i: number, identifier?: string, resu
     return;
   }
   let rounds = roundNumber;
-  await roundSingleplayer(page, gameId, rounds, identifier);
+  await roundSingleplayer(page, gameId, rounds, identifier, resume);
   rounds++;
   await page.waitForTimeout(1000);
   while (rounds < MAX_ROUNDS && await clickButtonIfFound(page, 'Next')) {
-    await roundSingleplayer(page, gameId, rounds, identifier);
+    await roundSingleplayer(page, gameId, rounds, identifier, resume);
     rounds++;
     await page.waitForTimeout(1000);
   }
