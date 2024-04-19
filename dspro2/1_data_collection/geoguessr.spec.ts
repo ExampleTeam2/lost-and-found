@@ -670,7 +670,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       index++;
       roundLabel = await roundLabel.first();
       if ((await roundLabel.count()) > 0) {
-        const popup = await page.waitForEvent('popup');
+        const popup = page.waitForEvent('popup');
         let count = 0;
         let found = false;
         while (count < 10 && roundLabel) {
