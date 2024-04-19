@@ -491,7 +491,7 @@ const roundSingleplayer = async(page: Page, gameId: string, roundNumber: number,
     await removeSidebar(page, sidebar);
   }
   const duration = (Date.now() - startTime) / 1000;
-  const roundCoordinates = await getCoordinatesFromPin(page, gameId, identifier, true);
+  const roundCoordinates = await getCoordinatesFromPin(page, gameId, identifier, false);
   expect(roundCoordinates.length).toBe(1);
   const coordinates = roundCoordinates[0];
   log('It was ' + coordinates, identifier);
