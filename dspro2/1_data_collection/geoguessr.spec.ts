@@ -676,7 +676,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
         while (count < 10 && roundLabel) {
           count++;
           try {
-            await roundLabel.click({ timeout: 1000, force: true });
+            await roundLabel.click({ timeout: 1000 });
             found = true;
           } catch (e) {
             log('Could not click label ' + index + ': ' + gameId, identifier);
