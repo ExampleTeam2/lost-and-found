@@ -669,7 +669,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
         while (count < 10 && roundLabel) {
           count++;
           try {
-            await roundLabel.click();
+            await roundLabel.click({ timeout: 1000 });
             break;
           } catch (e) {
             // Otherwise check parent element
