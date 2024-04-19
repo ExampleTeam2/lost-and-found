@@ -682,11 +682,11 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
           } catch (e) {
             log('Could not click label ' + index + ': ' + gameId, identifier);
             // Otherwise check parent element
-            roundLabel = (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement();
+            roundLabel = 'or' in roundLabel ? (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement() : (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement();
             if (!roundLabel) {
               console.error(e);
+              break;
             }
-            break;
           }
         }
         
