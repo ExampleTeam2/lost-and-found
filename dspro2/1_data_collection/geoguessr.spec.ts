@@ -641,7 +641,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       if (url.startsWith('https://www.google.com/maps?q&layer=c&cbll=')) {
         coordinates = url.split('cbll=')[1].split('&')[0].split(',');
       } else if (url.startsWith('https://www.google.com/maps/@')) {
-        log('Potentially incorrect label ' + index + ' for ' + gameId, identifier);
+        log('Potentially incorrect label ' + (index + 1) + ' for ' + gameId, identifier);
         coordinates = url.split('@')[1].split(',');
       } else {
         // Close the page
@@ -688,7 +688,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
           log('Could not click label ' + index + ': ' + gameId, identifier);
           // Otherwise check parent element
           roundLabel = 'or' in roundLabel ? (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement() : (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement();
-          if (!roundLabel) {
+          if (!roundLabel || count === 10) {
             console.error(e);
             break;
           }
