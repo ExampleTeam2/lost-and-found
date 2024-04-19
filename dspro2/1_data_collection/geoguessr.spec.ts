@@ -685,11 +685,11 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
             }
           }
         }
-      }
-    }
 
-    if (count === 10) {
-      expect('Labels in game ' + gameId).toBe('Clickable labels, could not click label ' + index);
+        if (count === 10) {
+          expect('Label ' + index + ' in game ' + gameId).toBe('Clickable labels, could not click label ' + index);
+        }
+      }
     }
 
     // Wait for the coordinates to be collected
