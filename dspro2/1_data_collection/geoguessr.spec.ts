@@ -561,13 +561,13 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
     await page.goto('https://www.geoguessr.com/results/' + gameId, { timeout: 60000 });
     await page.waitForTimeout(1000);
     if (await page.getByText('not found').or(page.getByText('nicht gefunden')).count() > 0) {
-      log('Game not found: ' + gameId);
+      log('Game not found: ' + gameId, identifier);
       // Go to the next game if the current one is not found
       break;
     }
     let count = 0;
     while (count < 10 && await page.getByText('finish').or(page.getByText('finished')).or(page.getByText('Ende')).or(page.getByText('beenden')).count() > 0) {
-      log('Finishing game: ' + gameId);
+      log('Finishing game: ' + gameId, identifier);
       count++;
       // Finish the game first
       await page.goto('https://www.geoguessr.com/game/' + gameId, { timeout: 60000 });
@@ -590,7 +590,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       await page.goto('https://www.geoguessr.com/results/' + gameId, { timeout: 60000 });
     }
     if (count === 10) {
-      log('Could not finish game: ' + gameId);
+      log('Could not finish game: ' + gameId, identifier);
       break;
     }
     await page.waitForTimeout(1000);
@@ -640,6 +640,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       if (url.startsWith('https://www.google.com/maps?q&layer=c&cbll=')) {
         coordinates = url.split('cbll=')[1].split('&')[0].split(',');
       } else if (url.startsWith('https://www.google.com/maps/@')) {
+        log('Potentially incorrect label for ' + gameId, identifier);
         coordinates = url.split('@')[1].split(',');
       } else {
         // Close the page
@@ -675,7 +676,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
             await roundLabel.click({ timeout: 1000 });
             break;
           } catch (e) {
-            log('Could not click label ' + index + ': ' + gameId);
+            log('Could not click label ' + index + ': ' + gameId, identifier);
             // Otherwise check parent element
             roundLabel = 'or' in roundLabel ? (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement() : (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement();
             if (!roundLabel) {
