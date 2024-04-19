@@ -610,19 +610,11 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
     }
     // Get the pins
     const rounds = Array.from({ length: 5 }, (_, i) => i + 1);
-    const roundLabels = rounds.map(round => page.getByText(String(round), { exact: true }));
-
-    const oneOfLabels: Locator | undefined = roundLabels.reduce((acc: Locator | undefined, label) => acc ? acc.or(label) : label, undefined);
+    // Get labels with label as text and data-qa="correct-location-marker" (first data-qa="correct-location-marker", then the text
+    console.log(await page.locator('css=[data-qa="correct-location-marker"]').count());
+    const roundLabels = rounds.map(round => page.locator('css=[data-qa="correct-location-marker"]').getByText(String(round), { exact: true }));
 
     const roundCoordinates: [number, number][] = [];
-
-    let roundsChecked = 0;
-
-    let stopWaiting = () => {};
-
-    const stopWaitingPromise = new Promise<void>((resolve) => {
-      stopWaiting = resolve;
-    });
 
     // Click it and capture the url it tries to open (done via js, no href, formatted like https://www.google.com/maps?q&layer=c&cbll=66.40950012207031,14.124077796936035&cbp=0,undefined,0,0,undefined)
     // Can I capture the url it tries to open?
@@ -654,46 +646,38 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       if ((lat !== 0 || lon !== 0) && !isNaN(lat) && !isNaN(lon)) {
         roundCoordinates[index] = [lat, lon];
       }
-      roundsChecked++;
-      if (roundsChecked === rounds.length) {
-        stopWaiting();
-      }
       // Close the page
       await popup.close();
     };
 
-    await oneOfLabels?.first().waitFor({ state: 'visible' });
+    // Hide all the labels of roundLabels
+    for (let roundLabel of roundLabels) {
+      await roundLabel.waitFor({ state: 'visible' });
+      await roundLabel.evaluate((el) => el.style.display = 'none');
+    }
     
-    let roundLabel: Locator | ElementHandle<HTMLElement> | null = null;
     let index = 0;
-    for (roundLabel of roundLabels) {
+    for (const roundLabel of roundLabels) {
       index++;
-      roundLabel = await roundLabel.first();
+      // Show the label
+      await roundLabel.evaluate((el) => el.style.display = '');
+      // Make sure the label is visible
+      await roundLabel.waitFor({ state: 'visible' });
+      let currentRoundLabel: Locator | ElementHandle<HTMLElement> | null = roundLabel;
       const popup = page.waitForEvent('popup');
-      let count = 0;
       let found = false;
-      while (count < 10 && roundLabel) {
-        count++;
-        try {
-          try {
-            await roundLabel.click({ timeout: 1000 });
-            found = true;
-          } catch (e) {
-            log('Could not click label ' + index + ': ' + gameId, identifier);
-            const roundLabelBounds = await roundLabel.boundingBox();
-            await roundLabel.click({ timeout: 1000, position: { x: 0, y: (roundLabelBounds?.height ?? 0) / 2 } });
-            found = true;
-          }
-        } catch (e) {
-          log('Could not click label ' + index + ': ' + gameId, identifier);
-          // Otherwise check parent element
-          roundLabel = 'or' in roundLabel ? (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement() : (await roundLabel.evaluateHandle((el) => el.parentElement)).asElement();
-          if (!roundLabel || count === 10) {
-            console.error(e);
-            break;
-          }
-        }
+      try {
+        await currentRoundLabel.click({ timeout: 1000 });
+        found = true;
+      } catch (e) {
+        log('Could not click label ' + index + ': ' + gameId, identifier);
+        // Otherwise check parent element
+        console.error(e);
+        break;
       }
+
+      // Hide the label
+      await roundLabel.evaluate((el) => el.style.display = 'none');
       
       if (found) {
         await handlePopup(await popup, index - 1);
@@ -702,9 +686,6 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
       }
     }
 
-    // Wait for the coordinates to be collected
-    await stopWaitingPromise;
-    
     for (let roundNumber = 0; roundNumber < roundCoordinates.length; roundNumber++) {
       const coordinates = roundCoordinates[roundNumber];
       log((roundNumber + 1) + ' was ' + coordinates, identifier);
