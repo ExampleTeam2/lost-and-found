@@ -585,13 +585,13 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
         await gameSingleplayer(page, i, identifier, true, roundNumber - 1);
         count = 11;
       } catch (e) {
+        log('Could not finish game: ' + gameId, identifier);
         console.error(e);
       }
       await page.goto('https://www.geoguessr.com/results/' + gameId, { timeout: 60000 });
     }
     if (count === 10) {
-      log('Could not finish game: ' + gameId, identifier);
-      break;
+      expect('Game ' + gameId).toBe('finished, could not finnish game ' + gameId);
     }
     await page.waitForTimeout(1000);
     // Press view results button
@@ -674,6 +674,7 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
           count++;
           try {
             await roundLabel.click({ timeout: 1000 });
+            count = 11;
             break;
           } catch (e) {
             log('Could not click label ' + index + ': ' + gameId, identifier);
@@ -685,6 +686,10 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
           }
         }
       }
+    }
+
+    if (count === 10) {
+      expect('Labels in game ' + gameId).toBe('Clickable labels, could not click label ' + index);
     }
 
     // Wait for the coordinates to be collected
