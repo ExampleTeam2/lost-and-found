@@ -683,8 +683,7 @@ const getResult = async (page: Page, gameId: string, i: number, identifier?: str
     if (count === 10) {
       expect('Game ' + gameId).toBe('finished, could not finnish game ' + gameId);
     }
-    await page.waitForTimeout(1000);
-    // Press view results button
+    // Press view results buttons
     const found = await clickButtonIfFound(page, 'View results');
     if (found) {
       // Get button right before text Breakdown
