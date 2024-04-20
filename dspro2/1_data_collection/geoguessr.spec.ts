@@ -364,6 +364,7 @@ const getCoordinatesFromPin = async (page: Page, gameId: string, identifier?: st
     if ((lat !== 0 || lon !== 0) && !isNaN(lat) && !isNaN(lon)) {
       roundCoordinates[index] = [lat, lon];
     } else {
+      await popup.close();
       expect('Coordinates of ' + (all ? ' ' + index : '') + ' in game ' + gameId).toBe('Valid coordinates');
     }
     // Close the page
