@@ -34,8 +34,6 @@ while IFS= read -r base; do
     # Extract the game ID from the base name
     game_id=$(echo "$base" | awk -F'_' '{print $(NF)}')  # Assuming the game ID is the second-last element
 
-	echo ä
-
     # Array to check completeness of the sequence
     complete=(0 0 0 0 0)
 
