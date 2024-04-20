@@ -346,7 +346,6 @@ const getCoordinatesFromPin = async (page: Page, gameId: string, identifier?: st
 
   // Click it and capture the url it tries to open (done via js, no href, formatted like https://www.google.com/maps?q&layer=c&cbll=66.40950012207031,14.124077796936035&cbp=0,undefined,0,0,undefined)
   const handlePopup = async (popup: Page, index: number) => {
-    await popup.waitForLoadState();
     // Get the first url of the page from the history
     const url = popup.url();
     let coordinates = [];
