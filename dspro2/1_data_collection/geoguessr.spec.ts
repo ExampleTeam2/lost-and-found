@@ -395,7 +395,11 @@ const getCoordinatesFromPin = async (page: Page, gameId: string, identifier?: st
     } catch (e) {
       log('Could not click label' + (all ? ' ' + index : '') + ': ' + gameId, identifier);
       // Otherwise check parent element
-      console.error(e);
+      if (typeof e === 'object' && e instanceof Error && (e.message.includes('Target crashed') || e.message.includes('exited unexpectedly'))) {
+        throw e;
+      } else {
+        console.error(e);
+      }
       break;
     }
 
@@ -507,10 +511,10 @@ const gameStart = async (page: Page, mode: typeof MODE, waitText: string, waitTi
   }
   // Get the game ID from the URL (https://www.geoguessr.com/de/battle-royale/<ID>)
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
-  if (fs.readFileSync(TEMP_PATH + mode + '-games', 'utf8')?.split(/\n/g)?.includes(gameId)) {
+  if (!resume && fs.readFileSync(TEMP_PATH + mode + '-games', 'utf8')?.split(/\n/g)?.includes(gameId)) {
     log('Double-joined game', identifier);
     fs.appendFileSync(TEMP_PATH + 'double-joins', i + '\n');
-    if (resume) {
+    if (!resume) {
       await page.waitForTimeout(STAGGER_INSTANCES);
       await (mode === 'singleplayer' ? playSingleplayer(page, i, identifier) : playMultiplayer(page, i, identifier));
     }
@@ -643,18 +647,14 @@ const acceptGoogleCookies = async (page: Page) => {
   await page.waitForTimeout(1000);
 };
 
-const getResults = async (page: Page, games: string[], i: number, identifier?: string) => {
-  await playStart(page, i, identifier);
-  await page.waitForTimeout(1000);
-  await acceptGoogleCookies(page);
-  for (const gameId of games) {
-    log('Loading game - ' + gameId, identifier);
+const getResult = async (page: Page, gameId: string, i: number, identifier?: string) => {
+  log('Loading game - ' + gameId, identifier);
     await page.goto('https://www.geoguessr.com/results/' + gameId, { timeout: 60000 });
     await page.waitForTimeout(1000);
     if (await page.getByText('not found').or(page.getByText('nicht gefunden')).count() > 0) {
       log('Game not found: ' + gameId, identifier);
       // Go to the next game if the current one is not found
-      break;
+      return;
     }
     let count = 0;
     while (count < 10 && await page.getByText('finish').or(page.getByText('finished')).or(page.getByText('Ende')).or(page.getByText('beenden')).count() > 0) {
@@ -677,7 +677,11 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
         count = 11;
       } catch (e) {
         log('Could not finish game: ' + gameId, identifier);
-        console.error(e);
+        if (typeof e === 'object' && e instanceof Error && (e.message.includes('Target crashed') || e.message.includes('exited unexpectedly'))) {
+          throw e;
+        } else {
+          console.error(e);
+        }
       }
       await page.goto('https://www.geoguessr.com/results/' + gameId, { timeout: 60000 });
     }
@@ -713,6 +717,18 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
     }
 
     fs.appendFileSync(TEMP_PATH + 'results-games', gameId + '\n');
+
+    if (fs.readFileSync(TEMP_PATH + 'stop', 'utf8') === 'true') {
+      process.exit(1);
+    }
+  };
+
+const getResults = async (page: Page, games: string[], i: number, identifier?: string) => {
+  await playStart(page, i, identifier);
+  await page.waitForTimeout(1000);
+  await acceptGoogleCookies(page);
+  for (const gameId of games) {
+    await getResult(page, gameId, i, identifier);
   }
 }
 
