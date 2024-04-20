@@ -345,7 +345,6 @@ const getCoordinatesFromPin = async (page: Page, gameId: string, identifier?: st
   const roundCoordinates: [number, number][] = [];
 
   // Click it and capture the url it tries to open (done via js, no href, formatted like https://www.google.com/maps?q&layer=c&cbll=66.40950012207031,14.124077796936035&cbp=0,undefined,0,0,undefined)
-  // Can I capture the url it tries to open?
   const handlePopup = async (popup: Page, index: number) => {
     await popup.waitForLoadState();
     // Get the first url of the page from the history
@@ -394,13 +393,7 @@ const getCoordinatesFromPin = async (page: Page, gameId: string, identifier?: st
       found = true;
     } catch (e) {
       log('Could not click label' + (all ? ' ' + index : '') + ': ' + gameId, identifier);
-      // Otherwise check parent element
-      if (typeof e === 'object' && e instanceof Error && (e.message.includes('Target crashed') || e.message.includes('exited unexpectedly'))) {
-        throw e;
-      } else {
-        console.error(e);
-      }
-      break;
+      throw e;
     }
 
     if (all) {
