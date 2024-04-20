@@ -738,9 +738,9 @@ describe('Geoguessr', () => {
     let gamesToCheck = MODE === 'results' ? GAMES : [];
     if (gamesToCheck.length) {
       // Get already checked games by listing files in data folder
-      let checkedGames = fs.readFileSync(TEMP_PATH + 'results-games', 'utf8')?.split(/\n/g).filter(file => file);
+      let checkedGames = new Set(fs.readFileSync(TEMP_PATH + 'results-games', 'utf8')?.split(/\n/g).filter(file => file));
       // Filter out already checked games
-      gamesToCheck = gamesToCheck.filter(game => !checkedGames.includes(game));
+      gamesToCheck = gamesToCheck.filter(game => !checkedGames.has(game));
       // Segment into runners
       const runnerIndex = Math.round(gamesToCheck.length / NUMBER_OF_INSTANCES) * i;
       const runnerIndexEnd = i === NUMBER_OF_INSTANCES - 1 ? gamesToCheck.length : Math.round(gamesToCheck.length / NUMBER_OF_INSTANCES) * (i + 1);
