@@ -26,8 +26,8 @@ const getButtonWithText = (page: Page, text: string, only = false) => {
   return page.locator('button, a').getByText(text, { exact: only });
 }
 
-const clickButtonWithText = async (page: Page, text: string, wait = 0) => {
-  const button = getButtonWithText(page, text);
+const clickButtonWithText = async (page: Page, text: string, wait = 0, only = false) => {
+  const button = getButtonWithText(page, text, only);
   if (wait) {
     await button.waitFor({ state: 'visible', timeout: wait !== -1 ? wait : undefined });
   }
@@ -261,7 +261,7 @@ const guess = async (page: Page, force = true) => {
     // Click the mouse
     await page.mouse.click(pointX, pointY);
     // Click the guess button
-    await clickButtonWithText(page, 'Guess');
+    await clickButtonWithText(page, 'Guess', undefined, true);
   }
 };
 
