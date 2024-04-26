@@ -2,9 +2,7 @@ import os
 import json
 import concurrent
 import math
-
-def _get_id_from_file(file):
-  return ''.join(file.split('_')[-2:-1]).split('.')[0]
+import random
 
 def _get_counterpart(file):
   # Get the counterpart of a file (json or png)
@@ -106,7 +104,11 @@ def map_occurrences_to_files(files, occurrence_map, allow_missing=False):
   files_counterparts = _get_files_counterparts(files_to_load, [*files, *countries_to_files.values()])
   return files_counterparts, len(files_to_load)
 
-def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, allow_missing_in_map=False, passthrough_map=False, return_basenames_too=False):
+# Get file paths of data to load, using multiple locations and optionally a map.
+# If ran for a second time, it will use the previous files and otherwise error.
+# The limit will automatically be shuffled (but returned in same order).
+# If no shuffle seed is given they will be returned in the original order.
+def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, return_basenames_too=False):
   all_locations = []
   if file_location is not None:
     all_locations.append([file_location, filterText, type])
@@ -130,7 +132,13 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   if countries_map and not passthrough_map:
     all_files, _ = map_occurrences_to_files(all_files, countries_map, allow_missing=allow_missing_in_map)
   if limit:
-    all_files = all_files[:limit]
+    random.seed(shuffle_seed if shuffle_seed is not None else 42)
+    random_perm_files = random.sample(all_files, len(all_files))
+    limited_files = random_perm_files[:limit]
+    all_files = [file for file in all_files if file in limited_files]
+  if shuffle_seed is not None:
+    random.seed(shuffle_seed)
+    random.shuffle(all_files)
     
   all_files = _restore_from_fake_locations(all_files, fake_locations_map)
     
