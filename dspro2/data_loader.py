@@ -188,7 +188,7 @@ def _get_files_and_ensure_download(download_link, file_location, json_file_locat
       continue
     # Download the file
     files_to_download.append(file)
-  _download_files(download_link, files_to_download)
+  _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location)
   return _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type)
 
 # Get file paths of data to load, using multiple locations and optionally a map.
