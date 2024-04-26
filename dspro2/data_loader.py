@@ -202,7 +202,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
     download_link = os.environ.get('DOWNLOAD_LINK')
     if not download_link:
       download_link = None
-  all_files, fake_locations_map = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type) if download_link is None else _get_files_and_ensure_download(download_link, file_location, filterText, type)
+  all_files, fake_locations_map = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type) if download_link is None else _get_files_and_ensure_download(download_link, file_location, json_file_location, image_file_location, filterText, type)
   if countries_map and not passthrough_map:
     all_files, _ = map_occurrences_to_files(all_files, countries_map, allow_missing=allow_missing_in_map)
   if limit:
