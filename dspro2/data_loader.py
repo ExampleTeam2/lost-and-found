@@ -3,6 +3,7 @@ import json
 import concurrent
 import math
 import random
+import shutil
 import urllib3
 
 def _get_counterpart(file):
@@ -152,12 +153,17 @@ def _get_list_from_download_link(download_link, filterText='singleplayer', type=
 def _get_download_link_from_for_files(download_link, files_to_download):
   return [[download_link + '/' + file, file] for file in files_to_download]
 
+def _download_single_file(file_url_to_download, current_location, file_name):
+  with urllib3.request('GET', file_url_to_download, preload_content=False) as r, open(os.path.join(current_location, file_name), 'wb') as out_file:       
+    shutil.copyfileobj(r, out_file)
+
 def _download_files_direct(download_link, files_to_download, current_location, num_connections=16):
   actual_download_links_and_files = _get_download_link_from_for_files(download_link, files_to_download)
   with concurrent.futures.ThreadPoolExecutor(max_workers=num_connections) as executor:
-    list(executor.map(lambda x: urllib3.request.urlretrieve(x[0], os.path.join(current_location, x[1])), actual_download_links_and_files))
+    list(executor.map(lambda x: _download_single_file(x[0], current_location, x[1]), actual_download_links_and_files))
 
 def _download_files(download_link, files_to_download, file_location, json_file_location = None, image_file_location = None):
+  print('Downloading ' + str(len(files_to_download)) + ' files')
   files_to_normal_location = []
   files_to_json_location = []
   files_to_image_location = []
@@ -178,9 +184,9 @@ def _download_files(download_link, files_to_download, file_location, json_file_l
   pass
 
 def _get_files_and_ensure_download(download_link, file_location, json_file_location = None, image_file_location = None, filterText='singleplayer', type=''):
-  all_files = _get_list_from_download_link(download_link)
+  all_files = _get_list_from_download_link(download_link, filterText, type)
   local_files, _ = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type)
-  local_basename_files = set([os.path.basename(file) for file in local_files])
+  local_basename_files = set([file for file in local_files])
   # Check if file with same basename is already in the file_location, otherwise download
   files_to_download = []
   for file in all_files:
