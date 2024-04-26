@@ -67,11 +67,20 @@ def _get_files_counterparts(files, all_files):
       files_counterparts.append(file)
   return files_counterparts
 
+# Replace one start of the file with another
+def _convert_to_single_fake_location(file, start, new_start):
+  fake_file = file.replace(start, new_start)
+
 # Replace one start of the file with another and create a map from the original files to the new ones, then return the new files and the map
 def _convert_to_fake_locations(files, start, new_start):
-  fake_files = [file.replace(start, new_start) for file in files]
+  fake_files = [_convert_to_single_fake_location(file, start, new_start) for file in files]
   fake_locations_map = {new_file: file for file, new_file in zip(files, fake_files)}
   return fake_files, fake_locations_map
+
+def _convert_to_fake_location_and_map(file, start, new_start, map):
+  fake_file = _convert_to_single_fake_location(file, start, new_start)
+  map[fake_file] = file
+  return fake_file
 
 # From a list of files and a map, restore the original locations
 def _restore_from_fake_locations(files, fake_locations_map):
@@ -109,7 +118,7 @@ def map_occurrences_to_files(files, occurrence_map, allow_missing=False):
   files_counterparts = _get_files_counterparts(files_to_load, [*files, *countries_to_files.values()])
   return files_counterparts, len(files_to_load)
 
-def _get_list_from_local_dir(file_location, json_file_location = None, image_file_location = None, filterText='singleplayer', type=''):
+def _get_list_from_local_dir(file_location, json_file_location = None, image_file_location = None, filterText='singleplayer', type='', additional_files=[]):
   all_locations = []
   if file_location is not None:
     all_locations.append([file_location, filterText, type])
@@ -128,19 +137,35 @@ def _get_list_from_local_dir(file_location, json_file_location = None, image_fil
       # extend fake_locations_maps with current_fake_locations_map
       fake_locations_map.update(current_fake_locations_map)
     all_files.extend(current_files)
+  # add additional files (remote)
+  for file, current_location in additional_files:
+    if file not in all_files:
+      if current_location != file_location and type == '' and file_location is not None:
+        fake_file = _convert_to_fake_location_and_map(file, current_location, file_location, fake_locations_map)
+        all_files.append(fake_file)
+      else:
+        all_files.append(file)
   if not type:
     all_files = _remove_unpaired_files(all_files)
-  return all_files, fake_locations_map
+  print(('All local files: ' if not len(additional_files) else 'All combined files: ') + str(len(all_files)))
+  return all_files, fake_locations_map, []
 
 def _get_list_from_html_file(download_link):
   # get list of files from nginx or apache html file
   http = urllib3.PoolManager()
   response = http.request('GET', download_link)
   html = response.data.decode('utf-8')
+  print('Got files list from remote')
   files = []
-  for line in html.split('\n'):
+  if not html:
+    raise ValueError("No response from remote server")
+  for line in html.split('<a'):
     if 'href=' in line:
-      file = line.split('href="')[1].split('"')[0]
+      if not 'href="' in line and '"' in line[len('href='):]:
+        raise ValueError("Invalid line in remote response: " + line)
+      file = line.split('href="')[-1].split('"')[0]
+      if not file:
+        raise ValueError("Invalid link in remote response: " + line.split('href="')[-1])
       file_name = file.split('/')[-1] if '/' in file else file
       if file_name:
         files.append(file_name)
@@ -151,17 +176,32 @@ def _get_list_from_download_link(download_link, filterText='singleplayer', type=
   all_files = [file for file in full_list if filterText in file and file.endswith(type)]
   if not type:
     all_files = _remove_unpaired_files(all_files)
+  print('All remote files: ' + str(len(all_files)))
   return all_files
 
-def _get_download_link_from_for_files(download_link, files_to_download):
+def _get_download_location_of_file(file_name, current_location):
+  return os.path.join(current_location, file_name)
+
+def _get_download_locations_of_files(files, file_location, json_file_location = None, image_file_location = None):
+  all_files = []
+  for file in files:
+    if json_file_location is not None:
+      all_files.append([os.path.abspath(_get_download_location_of_file(file, json_file_location)), json_file_location])
+    if image_file_location is not None:
+      all_files.append([os.path.abspath(_get_download_location_of_file(file, json_file_location)), image_file_location])
+    else:
+      all_files.append([os.path.abspath(_get_download_location_of_file(file, file_location)), file_location])
+  return all_files
+
+def _get_download_link_from_files(download_link, files_to_download):
   return [[download_link + '/' + file, file] for file in files_to_download]
 
 def _download_single_file(file_url_to_download, current_location, file_name):
-  with urllib3.request('GET', file_url_to_download, preload_content=False) as r, open(os.path.join(current_location, file_name), 'wb') as out_file:       
+  with urllib3.request('GET', file_url_to_download, preload_content=False) as r, open(_get_download_location_of_file(file_name, current_location), 'wb') as out_file:       
     shutil.copyfileobj(r, out_file)
 
 def _download_files_direct(download_link, files_to_download, current_location, num_connections=16):
-  actual_download_links_and_files = _get_download_link_from_for_files(download_link, files_to_download)
+  actual_download_links_and_files = _get_download_link_from_files(download_link, files_to_download)
   with concurrent.futures.ThreadPoolExecutor(max_workers=num_connections) as executor:
     list(executor.map(lambda x: _download_single_file(x[0], current_location, x[1]), actual_download_links_and_files))
 
@@ -186,7 +226,7 @@ def _download_files(download_link, files_to_download, file_location, json_file_l
     _download_files_direct(download_link, files_to_image_location, image_file_location)
   pass
 
-def _get_files_and_ensure_download(download_link, file_location, json_file_location = None, image_file_location = None, filterText='singleplayer', type=''):
+def _get_files_and_ensure_download(download_link, file_location, json_file_location = None, image_file_location = None, filterText='singleplayer', type='', pre_download=False):
   all_files = _get_list_from_download_link(download_link, filterText, type)
   local_files, _ = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type)
   local_basename_files = set([file for file in local_files])
@@ -197,34 +237,63 @@ def _get_files_and_ensure_download(download_link, file_location, json_file_locat
       continue
     # Download the file
     files_to_download.append(file)
+  if pre_download:
+    _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location)
+  return _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type, _get_download_locations_of_files(files_to_download, file_location, json_file_location, image_file_location)), files_to_download
+
+def _download_missing(all_files, download_link, downloadable_files, fake_locations_map, file_location, json_file_location = None, image_file_location = None):
+  # map fake locations to real locations
+  all_files = _restore_from_fake_locations(all_files, fake_locations_map)
+  files_to_download = [file for file in downloadable_files if file not in all_files]
   _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location)
-  return _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type)
+  
+def _process_in_pairs(all_files, type='', limit=0, shuffle_seed=None):
+  processed_files
+  if type:
+    random.seed(shuffle_seed if shuffle_seed is not None else 42)
+    random_perm_files = random.sample(all_files, len(all_files))
+    processed_files = random_perm_files[:limit] if limit else random_perm_files
+  else:
+    # individually and with same seed to keep pairs
+    json_files = sorted([file for file in all_files if file.endswith('.json')])
+    image_files = sorted([file for file in all_files if file.endswith('.png')])
+    random.seed(shuffle_seed if shuffle_seed is not None else 42)
+    random_perm_json_files = random.sample(json_files, len(json_files))
+    processed_json_files = random_perm_json_files[:limit] if limit else random_perm_json_files
+    random.seed(shuffle_seed if shuffle_seed is not None else 42)
+    random_perm_image_files = random.sample(image_files, len(image_files))
+    processed_image_files = random_perm_image_files[:limit] if limit else random_perm_image_files
+    processed_files = processed_json_files + processed_image_files
+  return processed_files
 
 # Get file paths of data to load, using multiple locations and optionally a map.
 # If ran for a second time, it will use the previous files and otherwise error.
 # The limit will automatically be shuffled (but returned in same order).
 # If no shuffle seed is given they will be returned in the original order.
+# If not just one type is loaded, the limit will be applied per pair of files.
+# The shuffle (if enabled) will also be applied per pair of files.
 # If a download link is uses, it will be used instead of the file location and the files will be downloaded to the file location.
 # Set the download link to "env" to use the environment variable "DOWNLOAD_LINK" as the download link.
-def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, return_basenames_too=False):
+# If a countries map is given, the files will automatically be pre-downloaded.
+def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, return_basenames_too=False):
   if download_link == 'env':
     download_link = os.environ.get('DOWNLOAD_LINK')
     if not download_link:
       download_link = None
-  all_files, fake_locations_map = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type) if download_link is None else _get_files_and_ensure_download(download_link, file_location, json_file_location, image_file_location, filterText, type)
+  all_files, fake_locations_map = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type) if download_link is None else _get_files_and_ensure_download(download_link, file_location, json_file_location, image_file_location, filterText, type, pre_download=(pre_download or countries_map is not None))
   if countries_map and not passthrough_map:
     all_files, _ = map_occurrences_to_files(all_files, countries_map, allow_missing=allow_missing_in_map)
   if limit:
-    random.seed(shuffle_seed if shuffle_seed is not None else 42)
-    random_perm_files = random.sample(all_files, len(all_files))
-    limited_files = random_perm_files[:limit]
+    limited_files = _process_in_pairs(all_files, type, limit, shuffle_seed)
     all_files = [file for file in all_files if file in limited_files]
   if shuffle_seed is not None:
-    random.seed(shuffle_seed)
-    random.shuffle(all_files)
+    all_files = _process_in_pairs(all_files, type, limit, shuffle_seed)
+      
+  if download_link is not None and not pre_download:
+    _download_missing(all_files, download_link, all_files, fake_locations_map, file_location, json_file_location, image_file_location)
     
   all_files = _restore_from_fake_locations(all_files, fake_locations_map)
-    
+
   base_files = list([os.path.basename(file) for file in all_files])
   files_to_load = base_files
   
