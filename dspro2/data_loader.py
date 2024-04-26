@@ -3,6 +3,7 @@ import json
 import concurrent
 import math
 import random
+import urllib3
 
 def _get_counterpart(file):
   # Get the counterpart of a file (json or png)
@@ -128,8 +129,18 @@ def _get_list_from_local_dir(file_location, json_file_location = None, image_fil
   return all_files, fake_locations_map
 
 def _get_list_from_html_file(download_link):
-  raise NotImplementedError('Not implemented yet')
-  return []
+  # get list of files from nginx or apache html file
+  http = urllib3.PoolManager()
+  response = http.request('GET', download_link)
+  html = response.data.decode('utf-8')
+  files = []
+  for line in html.split('\n'):
+    if 'href=' in line:
+      file = line.split('href="')[1].split('"')[0]
+      file_name = file.split('/')[-1] if '/' in file else file
+      if file_name:
+        files.append(file_name)
+  return files
 
 def _get_list_from_download_link(download_link, filterText='singleplayer', type=''):
   full_list = _get_list_from_html_file(download_link)
@@ -138,9 +149,13 @@ def _get_list_from_download_link(download_link, filterText='singleplayer', type=
     all_files = _remove_unpaired_files(all_files)
   return all_files
 
-def _download_files_direct(download_link, files_to_download, current_location):
-  raise NotImplementedError('Not implemented yet')
-  pass
+def _get_download_link_from_for_files(download_link, files_to_download):
+  return [[download_link + '/' + file, file] for file in files_to_download]
+
+def _download_files_direct(download_link, files_to_download, current_location, num_connections=16):
+  actual_download_links_and_files = _get_download_link_from_for_files(download_link, files_to_download)
+  with concurrent.futures.ThreadPoolExecutor(max_workers=num_connections) as executor:
+    list(executor.map(lambda x: urllib3.request.urlretrieve(x[0], os.path.join(current_location, x[1])), actual_download_links_and_files))
 
 def _download_files(download_link, files_to_download, file_location, json_file_location = None, image_file_location = None):
   files_to_normal_location = []
