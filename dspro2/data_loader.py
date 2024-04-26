@@ -292,9 +292,8 @@ def _get_files_and_ensure_download(download_link, file_location, json_file_locat
 
 def _download_missing(all_files, download_link, downloadable_files, fake_locations_map, file_location, json_file_location = None, image_file_location = None):
   # map fake locations to real locations
-  all_files = _restore_from_fake_locations(all_files, fake_locations_map)
   files_to_download = [file for file in all_files if file in downloadable_files]
-  base_files_to_download = list([os.path.basename(file) for file in files_to_download])
+  base_files_to_download = list([os.path.basename(file) for file in _restore_from_fake_locations(files_to_download, fake_locations_map)])
   _download_files(download_link, base_files_to_download, file_location, json_file_location, image_file_location)
   
 def _process_in_pairs(all_files, type='', limit=None, shuffle_seed=None):
