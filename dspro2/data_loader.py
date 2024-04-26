@@ -106,7 +106,7 @@ def map_occurrences_to_files(files, occurrence_map, allow_missing=False):
   files_counterparts = _get_files_counterparts(files_to_load, [*files, *countries_to_files.values()])
   return files_counterparts, len(files_to_load)
 
-def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, allow_missing_in_map=False, passthrough_map=False, return_basenames_too=False):
+def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, allow_missing_in_map=False, passthrough_map=False, return_basenames_too=False):
   all_locations = []
   if file_location is not None:
     all_locations.append([file_location, filterText, type])
@@ -173,7 +173,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   return actual_file_locations
 
 # Update data based on factors
-def update_data_to_load(files_to_keep, old_loading_file = './data_list', new_loading_file = './updated_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0):
+def update_data_to_load(files_to_keep, old_loading_file = './data_list', new_loading_file = './updated_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0):
   _, previous_files_to_load = get_data_to_load(old_loading_file, file_location, json_file_location, image_file_location, filterText, type, limit, allow_new_file_creation=False, return_basenames_too=True)
   files_to_load = []
   base_files_to_keep = list([os.path.basename(file) for file in files_to_keep])
@@ -216,7 +216,7 @@ def load_json_files(files, num_workers=16):
   return results   
 
 # get countries occurrences from multiplayer games
-def get_countries_occurrences(loading_file = './countries_map_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/data'), filterText='multiplayer'):
+def get_countries_occurrences(loading_file = './countries_map_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), filterText='multiplayer'):
   multiplayer = get_data_to_load(loading_file=loading_file, file_location=file_location, filterText=filterText, type='json')
   # map data
   countries, countries_to_files, files_to_countries, num_games = get_countries_occurrences_from_files(multiplayer)

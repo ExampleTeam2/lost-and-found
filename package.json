@@ -17,8 +17,8 @@
     "scrape:deploy": "export CI=true && npm run scrape:environment && playwright test --config='dspro2/1_data_collection/playwright.config.ts' --project=chromium-stealth",
     "scrape:cleanup": "chmod +x 'dspro2/1_data_collection/delete_leftover.sh' && './dspro2/1_data_collection/delete_leftover.sh'",
     "scrape:cleanup:incomplete": "chmod +x 'dspro2/1_data_collection/delete_non_complete.sh' && './dspro2/1_data_collection/delete_non_complete.sh'",
-    "scrape:count": "find 'dspro2/1_data_collection/data/' -name 'geoguessr_result_singleplayer*' | wc -l && find 'dspro2/1_data_collection/data/' -name 'geoguessr_result_multiplayer*' | wc -l",
-    "scrape:count:images": "find 'dspro2/1_data_collection/data/' -name 'geoguessr_location_singleplayer*' | wc -l && find 'dspro2/1_data_collection/data/' -name 'geoguessr_location_multiplayer*' | wc -l"
+    "scrape:count": "find 'dspro2/1_data_collection/.data/' -name 'geoguessr_result_singleplayer*' | wc -l && find 'dspro2/1_data_collection/.data/' -name 'geoguessr_result_multiplayer*' | wc -l",
+    "scrape:count:images": "find 'dspro2/1_data_collection/.data/' -name 'geoguessr_location_singleplayer*' | wc -l && find 'dspro2/1_data_collection/.data/' -name 'geoguessr_location_multiplayer*' | wc -l"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.2",

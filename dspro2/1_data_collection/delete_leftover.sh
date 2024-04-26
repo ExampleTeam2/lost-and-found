@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Directory containing the files
-directory="./dspro2/1_data_collection/data/"
+directory="./dspro2/1_data_collection/.data/"
 
 # Temporary directory for the temp file
 temp_dir="./dspro2/1_data_collection/tmp/"
