@@ -181,7 +181,12 @@ def _get_files_and_ensure_download(download_link, file_location, json_file_locat
 # The limit will automatically be shuffled (but returned in same order).
 # If no shuffle seed is given they will be returned in the original order.
 # If a download link is uses, it will be used instead of the file location and the files will be downloaded to the file location.
+# Set the download link to "env" to use the environment variable "DOWNLOAD_LINK" as the download link.
 def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, return_basenames_too=False):
+  if download_link == 'env':
+    download_link = os.environ.get('DOWNLOAD_LINK')
+    if not download_link:
+      download_link = None
   all_files, fake_locations_map = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type) if download_link is None else _get_files_and_ensure_download(download_link, file_location, filterText, type)
   if countries_map and not passthrough_map:
     all_files, _ = map_occurrences_to_files(all_files, countries_map, allow_missing=allow_missing_in_map)
