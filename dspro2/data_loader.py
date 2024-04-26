@@ -139,7 +139,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   
   try:
     if os.stat(loading_file):
-      with open(loading_file, 'r') as file:
+      with open(loading_file, 'r', encoding='utf8') as file:
         files_to_load = file.read().split('\n')
   except FileNotFoundError:
     if not allow_new_file_creation:
@@ -164,7 +164,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
     else:
       actual_file_locations.append(all_files[base_files.index(file)])
       
-  with open(loading_file, 'w') as file:
+  with open(loading_file, 'w', encoding='utf8') as file:
     file.write('\n'.join(files_to_load))
     
   if return_basenames_too:
@@ -185,7 +185,7 @@ def update_data_to_load(files_to_keep, old_loading_file = './data_list', new_loa
       
   try:
     if os.stat(new_loading_file):
-      with open(new_loading_file, 'r') as file:
+      with open(new_loading_file, 'r', encoding='utf8') as file:
         files_to_load = file.read().split('\n')
   except FileNotFoundError:
     pass
@@ -200,13 +200,13 @@ def update_data_to_load(files_to_keep, old_loading_file = './data_list', new_loa
     print('No files to load')
     print(files_to_load)
       
-  with open(new_loading_file, 'w') as file:
+  with open(new_loading_file, 'w', encoding='utf8') as file:
     file.write('\n'.join(files_to_load))
 
 
 # load a single json file
 def load_json_file(file):
-  with open(file, 'r') as f:
+  with open(file, 'r', encoding='utf8') as f:
     return json.load(f)
 
 # load mutliple json files parallelized
