@@ -60,7 +60,7 @@ class CountryEnricher:
                     print(error)
                     f.seek(0)
                     print(f.read())
-                    break
+                    continue
                 self.json_files[image_id] = json_data
                 if not self.from_country:
                   if 'coordinates' in json_data:
