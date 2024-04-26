@@ -10,9 +10,7 @@ kanban-plugin: basic
 - [ ] Plan Cloud-Service task and compare it with all services, also with costs #BusinessUnderstanding
 - [ ] Create Data Processing Part for Sceintific Report #DataPreparation
 - [ ] Create Methods we used for decision makings and include them into the Scientific Report #DataCollecting  #DataPreparation #Modeling
-- [ ] Create CNN-Architecture for the Model #Modeling
 - [ ] Setup wand.db Experiment tracking for Model Training #Modeling
-- [ ] Create midterm presentation
 - [ ] Setup wand.db Experiment tracking for Model Validation #Evaluation
 - [ ] Create Model Validation Part for Sceintific Report #Evaluation
 - [ ] Create MLOps Part for Sceintific Report #Deployment
@@ -21,12 +19,8 @@ kanban-plugin: basic
 
 ## Current
 
-- [ ] Create a structure for data science project #DataPreparation #DataUnderstanding #Modeling #Evaluation #Deployment
-- [ ] Add sample dataset to GitLab for Data Processing #DataCollecting
-- [ ] Collect 60k images from Geoguessr #DataCollecting
-- [ ] Get Data insights from images #DataUnderstanding
-- [ ] Map coordinates to real coordinates #DataPreparation
-- [ ] Map coordinates to countries #DataPreparation
+- [ ] Create CNN-Architecture for the Model #Modeling
+- [ ] Create Baseline Model #Modeling
 - [ ] Do some research about CNN or other networks which can handle images #Modeling
 
 
@@ -34,13 +28,20 @@ kanban-plugin: basic
 
 - [ ] Update Scientific Report for DataProcessing, Methods, Model Validation, MLOps #WorkingPermanently
 - [ ] up-to-date kanban board before each coaching session #WorkingPermanently
-- [ ] decide and vote for best business case title #BusinessUnderstanding ^okfbtq
-- [ ] Resize images to usable datatype and filesizes #DataPreparation
+- [ ] Get Data insights from images #DataUnderstanding
 
 
 ## Done
 
+- [ ] Create a structure for data science project #DataPreparation #DataUnderstanding #Modeling #Evaluation #Deployment
+- [ ] Map coordinates to real coordinates #DataPreparation
+- [ ] Map coordinates to countries #DataPreparation
+- [ ] Add sample dataset to GitLab for Data Processing #DataCollecting
+- [ ] Collect 60k images from Geoguessr #DataCollecting
+- [ ] Resize images to usable datatype and filesizes #DataPreparation
+- [ ] decide and vote for best business case title #BusinessUnderstanding ^okfbtq
 - [x] Create Proposal and upload it to Ilias #BusinessUnderstanding
+- [ ] Create midterm presentation
 - [x] create commitment and proposal as markdown file #BusinessUnderstanding
 - [x] collecting data from geoguessr #DataCollecting
 - [x] create web scrapper for geoguessr #DataCollecting
