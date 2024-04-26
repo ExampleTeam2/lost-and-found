@@ -332,6 +332,9 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   all_files, fake_locations_map, downloadable_files = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type) if download_link is None else _get_files_and_ensure_download(download_link, file_location, json_file_location, image_file_location, filterText, type, pre_download=(pre_download or countries_map is not None))
   if countries_map and not passthrough_map:
     all_files, _ = map_occurrences_to_files(all_files, countries_map, allow_missing=allow_missing_in_map)
+    
+  if limit and len(all_files) < (limit * 2 if not type else limit):
+    raise ValueError('Can not set limit higher than the number of files available, remember that the limit is per pair of files if not just one type is loaded')
   
   if limit:
     limited_files = _process_in_pairs(all_files, type, limit, shuffle_seed)
@@ -351,6 +354,8 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
     if os.stat(loading_file):
       with open(loading_file, 'r', encoding='utf8') as file:
         files_to_load = file.read().split('\n')
+        if limit and len(files_to_load) < (limit * 2 if not type else limit):
+          raise ValueError('Can not set limit higher than the number of files in the loading file, remember that the limit is per pair of files if not just one type is loaded')
   except FileNotFoundError:
     if not allow_new_file_creation:
       raise ValueError('No loading file at location')
@@ -364,9 +369,16 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   
   actual_file_locations = []
   
+  allowed_missing_files = len(base_files) - limit if limit else 0
+  previous_missing_files = 0
+  
   for file in files_to_load:
     if file not in base_files:
-      raise ValueError('Missing file ' + file)
+      previous_missing_files += 1
+      if previous_missing_files > allowed_missing_files:
+        raise ValueError('Missing file ' + file)
+      else:
+        continue
     else:
       actual_file_locations.append(all_files[base_files.index(file)])
       
