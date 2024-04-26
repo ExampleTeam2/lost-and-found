@@ -36,6 +36,9 @@ def get_countries_occurrences_from_files(files):
   countries_to_files = {}
   files_to_countries = {}
   for file, game in zip(multiplayer, multiplayer_data):
+      if 'country_name' not in game and 'country' not in game:
+        print('Country name not found in game: ' + file)
+        continue
       country = game['country_name']
       if country in countries:
           countries[country] += 1
