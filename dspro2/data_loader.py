@@ -104,11 +104,7 @@ def map_occurrences_to_files(files, occurrence_map, allow_missing=False):
   files_counterparts = _get_files_counterparts(files_to_load, [*files, *countries_to_files.values()])
   return files_counterparts, len(files_to_load)
 
-# Get file paths of data to load, using multiple locations and optionally a map.
-# If ran for a second time, it will use the previous files and otherwise error.
-# The limit will automatically be shuffled (but returned in same order).
-# If no shuffle seed is given they will be returned in the original order.
-def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, return_basenames_too=False):
+def _get_list_from_local_dir(file_location, json_file_location = None, image_file_location = None, filterText='singleplayer', type=''):
   all_locations = []
   if file_location is not None:
     all_locations.append([file_location, filterText, type])
@@ -129,6 +125,64 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
     all_files.extend(current_files)
   if not type:
     all_files = _remove_unpaired_files(all_files)
+  return all_files, fake_locations_map
+
+def _get_list_from_html_file(download_link):
+  raise NotImplementedError('Not implemented yet')
+  return []
+
+def _get_list_from_download_link(download_link, filterText='singleplayer', type=''):
+  full_list = _get_list_from_html_file(download_link)
+  all_files = [file for file in full_list if filterText in file and file.endswith(type)]
+  if not type:
+    all_files = _remove_unpaired_files(all_files)
+  return all_files
+
+def _download_files_direct(download_link, files_to_download, current_location):
+  raise NotImplementedError('Not implemented yet')
+  pass
+
+def _download_files(download_link, files_to_download, file_location, json_file_location = None, image_file_location = None):
+  files_to_normal_location = []
+  files_to_json_location = []
+  files_to_image_location = []
+  if json_file_location is not None:
+    files_to_json_location = [file for file in files_to_download if file.endswith('.json')]
+  else:
+    files_to_normal_location = [file for file in files_to_download if file.endswith('.json')]
+  if image_file_location is not None:
+    files_to_image_location = [file for file in files_to_download if file.endswith('.png')]
+  else:
+    files_to_normal_location = [file for file in files_to_download if file.endswith('.png')]
+  if len(files_to_normal_location):
+    _download_files_direct(download_link, files_to_normal_location, file_location)
+  if len(files_to_json_location):
+    _download_files_direct(download_link, files_to_json_location, json_file_location)
+  if len(files_to_image_location):
+    _download_files_direct(download_link, files_to_image_location, image_file_location)
+  pass
+
+def _get_files_and_ensure_download(download_link, file_location, json_file_location = None, image_file_location = None, filterText='singleplayer', type=''):
+  all_files = _get_list_from_download_link(download_link)
+  local_files, _ = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type)
+  local_basename_files = set([os.path.basename(file) for file in local_files])
+  # Check if file with same basename is already in the file_location, otherwise download
+  files_to_download = []
+  for file in all_files:
+    if os.path.basename(file) in local_basename_files:
+      continue
+    # Download the file
+    files_to_download.append(file)
+  _download_files(download_link, files_to_download)
+  return _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type)
+
+# Get file paths of data to load, using multiple locations and optionally a map.
+# If ran for a second time, it will use the previous files and otherwise error.
+# The limit will automatically be shuffled (but returned in same order).
+# If no shuffle seed is given they will be returned in the original order.
+# If a download link is uses, it will be used instead of the file location and the files will be downloaded to the file location.
+def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, return_basenames_too=False):
+  all_files, fake_locations_map = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type) if download_link is None else _get_files_and_ensure_download(download_link, file_location, filterText, type)
   if countries_map and not passthrough_map:
     all_files, _ = map_occurrences_to_files(all_files, countries_map, allow_missing=allow_missing_in_map)
   if limit:
