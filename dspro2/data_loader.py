@@ -18,7 +18,7 @@ def _get_counterpart(file):
   return counterpart
 
 # Get rid of unpaired files (where only either json or png is present)
-def _final_clean_and_pair_files(files):
+def _remove_unpaired_files(files):
   print('Filtering out unpaired files')
   file_dict = {}
   paired_files = []
@@ -35,16 +35,19 @@ def _final_clean_and_pair_files(files):
   print('Filtered out ' + str(len(files) - len(paired_files)) + ' unpaired files')
   return paired_files
 
-def get_countries_occurrences_from_files(files):
+def get_countries_occurrences_from_files(files, basenames_to_locations_map=None):
   # filter out-non json files
-  multiplayer = list(filter(lambda x: x.endswith('.json'), files))
+  json_files = list(filter(lambda x: x.endswith('.json'), files))
+  json_files_full_paths = json_files
+  if basenames_to_locations_map:
+    json_files_full_paths = _map_to_locations(json_files, basenames_to_locations_map)
   # load all multiplayer data
-  multiplayer_data = load_json_files(multiplayer)
+  json_data = load_json_files(json_files_full_paths)
   # get all countries with their number of games
   countries = {}
   countries_to_files = {}
   files_to_countries = {}
-  for file, game in zip(multiplayer, multiplayer_data):
+  for file, game in zip(json_files, json_data):
       if 'country_name' not in game and 'country' not in game:
         print('Country name not found in game: ' + file)
         continue
@@ -62,7 +65,7 @@ def get_countries_occurrences_from_files(files):
   sorted_countries = sorted(countries.items(), key=lambda x: x[1], reverse=True)
   # Update the dict to keep the order
   countries = dict(sorted_countries)
-  return countries, countries_to_files, files_to_countries, len(multiplayer_data) 
+  return countries, countries_to_files, files_to_countries, len(json_data) 
 
 # Assuming either just json or png is give, also return the others (in a flat list all together)
 def _get_files_counterparts(files, all_files):
@@ -77,23 +80,25 @@ def _get_files_counterparts(files, all_files):
   return files_counterparts
 
 # Replace one start of the file with another
-def _convert_to_single_fake_location(file, start, new_start):
-  return file.replace(start, new_start)
+def _get_basename(file):
+  return os.path.basename(file)
 
 # Replace one start of the file with another and create a map from the original files to the new ones, then return the new files and the map
-def _convert_to_fake_locations(files, start, new_start):
-  fake_files = [_convert_to_single_fake_location(file, start, new_start) for file in files]
-  fake_locations_map = {new_file: file for file, new_file in zip(files, fake_files)}
-  return fake_files, fake_locations_map
+def _map_to_basenames(files, basenames_to_locations_map={}):
+  basenames = [_get_basename(file) for file in files]
+  for file, basename in zip(files, basenames):
+    if basename not in basenames_to_locations_map:
+      basenames_to_locations_map[basename] = file
+  return basenames, basenames_to_locations_map
 
 # From a list of files and a map, restore the original locations
-def _restore_from_fake_locations(files, fake_locations_map):
-  return [fake_locations_map.get(file, file) for file in files]
+def _map_to_locations(files, basenames_to_locations_map):
+  return [basenames_to_locations_map.get(file, file) for file in files]
 
 # Takes in a list of files and a occurrence map (from a different_dataset)), create an optimally mapped list of files where the occurrences correspond to the map (or are multiples of them)
-def map_occurrences_to_files(files, occurrence_map, allow_missing=False):
+def map_occurrences_to_files(files, occurrence_map, allow_missing=False, basenames_to_locations_map=None):
   # get the occurrences of the files itself
-  files_occurrences, countries_to_files, _, _ = get_countries_occurrences_from_files(files)
+  files_occurrences, countries_to_files, _, _ = get_countries_occurrences_from_files(files, basenames_to_locations_map=basenames_to_locations_map)
   # get the factors between each of the countries (nan if not in the map)
   all_countries = [*occurrence_map.keys(), *files_occurrences.keys()]
   factors = [(occurrence_map[country] / files_occurrences[country]) if (country in occurrence_map and country in files_occurrences) else float('nan') for country in all_countries]
@@ -120,44 +125,6 @@ def map_occurrences_to_files(files, occurrence_map, allow_missing=False):
   files_counterparts = _get_files_counterparts(files_to_load, [*files, *countries_to_files.values()])
   return files_counterparts, len(files_to_load)
 
-def _get_list_from_local_dir(file_location, json_file_location = None, image_file_location = None, filterText='singleplayer', type='', additional_files=[], fake_locations_map={}, final_clean_and_pair=True):
-  all_locations = []
-  if file_location is not None:
-    all_locations.append([file_location, filterText, type])
-  if json_file_location is not None and type != 'png':
-    all_locations.append([json_file_location, filterText, 'json'])
-  if image_file_location is not None and type != 'json':
-    all_locations.append([image_file_location, filterText, 'png'])
-  all_files = []
-  for location, current_filter, current_type in all_locations:
-    current_files = list([file.path for file in os.scandir(location)])
-    if filterText:
-      current_files = list(filter(lambda x: current_filter in x and x.endswith(current_type), current_files))
-    if file_location != location and type == '' and file_location is not None:
-      current_files, current_fake_locations_map = _convert_to_fake_locations(current_files, location, file_location)
-      # extend fake_locations_maps with current_fake_locations_map
-      fake_locations_map.update(current_fake_locations_map)
-    all_files.extend(current_files)
-  # add additional files (remote)
-  all_files.extend(additional_files)
-  
-  # Filter None values        
-  all_files = [file for file in all_files if file is not None]
-  
-  # Remove duplicates
-  all_files_dedup = []
-  all_files_dedup_set = set()
-  for file in all_files:
-    if file not in all_files_dedup_set:
-      all_files_dedup.append(file)
-      all_files_dedup_set.add(file)
-  all_files = all_files_dedup
-  
-  if not type and final_clean_and_pair:
-    all_files = _final_clean_and_pair_files(all_files)
-  print(('Filtered ' if final_clean_and_pair else 'Original ') + ('local files: ' if not len(additional_files) else 'combined files: ') + str(len(all_files)))
-  return all_files, fake_locations_map, []
-
 def _get_list_from_html_file(download_link):
   # get list of files from nginx or apache html file
   http = urllib3.PoolManager()
@@ -182,59 +149,33 @@ def _get_list_from_html_file(download_link):
   print('Parsed files list from remote')
   return files
 
-def _get_list_from_download_link(download_link, filterText='singleplayer', type=''):
+def _get_list_from_download_link(download_link, filter_text='singleplayer', type=''):
   full_list = _get_list_from_html_file(download_link)
-  all_files = [file for file in full_list if filterText in file and file.endswith(type)]
-  print('All remote files: ' + str(len(all_files)))
+  all_files = [file for file in full_list if filter_text in file and file.endswith(type)]
   return all_files
 
-def _get_download_location_of_file(file_name, current_location):
+def _get_full_file_location(file_name, current_location):
   return os.path.join(current_location, file_name)
 
-def _get_fake_download_locations_of_files(files, file_location, json_file_location = None, image_file_location = None, type=''):
-  json_files_to_map = []
-  image_files_to_map = []
-  regular_files_to_map = []
-  for file in files:
-    if json_file_location is not None and file.endswith('.json'):
-      json_files_to_map.append(file)
-    elif image_file_location is not None and file.endswith('.png'):
-      image_files_to_map.append(file)
+def _map_download_locations_of_files(files, file_location, json_file_location = None, image_file_location = None, basenames_to_locations_map = {}):
+  basenames = [_get_basename(file) for file in files]
+  for basename in basenames:
+    if json_file_location is not None and basename.endswith('.json'):
+      file_path = _get_full_file_location(basename, json_file_location)
+    elif image_file_location is not None and basename.endswith('.png'):
+      file_path = _get_full_file_location(basename, image_file_location)
     else:
-      regular_files_to_map.append(file)
+      file_path = _get_full_file_location(basename, file_location)
+    if basename not in basenames_to_locations_map:
+      basenames_to_locations_map[basename] = file_path
   
-  all_files = []
-  fake_locations_map = {}
-  json_file_paths = []
-  for file in json_files_to_map:
-    json_file_paths.append(_get_download_location_of_file(file, json_file_location))
-  if len(json_file_paths) and file_location != json_file_location and type == '' and file_location is not None:
-    fake_file_path, current_fake_locations_map = _convert_to_fake_locations(json_file_paths, json_file_location, file_location)
-    fake_locations_map.update(current_fake_locations_map)
-    all_files.extend(fake_file_path)
-  else:
-    all_files.extend(json_file_paths)
-        
-  image_file_paths = []
-  for file in image_files_to_map:
-    image_file_paths.append(_get_download_location_of_file(file, image_file_location))
-  if len(image_file_paths) and file_location != image_file_location and type == '' and file_location is not None:
-    fake_file_path, current_fake_locations_map = _convert_to_fake_locations(image_file_paths, image_file_location, file_location)
-    fake_locations_map.update(current_fake_locations_map)
-    all_files.extend(fake_file_path)
-  else:
-    all_files.extend(image_file_paths)
-    
-  for file in regular_files_to_map:
-    all_files.append(_get_download_location_of_file(file, file_location))
-  
-  return all_files, fake_locations_map
+  return basenames, basenames_to_locations_map
 
 def _get_download_link_from_files(download_link, files_to_download):
   return [[download_link + '/' + file, file] for file in files_to_download]
 
 def _download_single_file(file_url_to_download, current_location, file_name):
-  with urllib3.request('GET', file_url_to_download, preload_content=False) as r, open(_get_download_location_of_file(file_name, current_location), 'wb') as out_file:       
+  with urllib3.request('GET', file_url_to_download, preload_content=False) as r, open(_get_full_file_location(file_name, current_location), 'wb') as out_file:       
     shutil.copyfileobj(r, out_file)
 
 def _download_files_direct(download_link, files_to_download, current_location, num_connections=16, start_file=0):
@@ -271,49 +212,114 @@ def _download_files(download_link, files_to_download, file_location, json_file_l
     _download_files_direct(download_link, files_to_image_location, image_file_location, start_file=len(files_to_normal_location) + len(files_to_json_location))
   pass
 
-def _get_files_and_ensure_download(download_link, file_location, json_file_location = None, image_file_location = None, filterText='singleplayer', type='', pre_download=False):
-  all_files = _get_list_from_download_link(download_link, filterText, type)
-  local_files, _, _ = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type, final_clean_and_pair=False)
-  local_basename_files = set([os.path.basename(file) for file in local_files])
-  # Check if file with same basename is already in the file_location, otherwise download
-  files_to_download = []
-  for file in all_files:
-    if os.path.basename(file) in local_basename_files:
-      continue
-    # Download the file
-    files_to_download.append(file)
-  if pre_download:
-    _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location)
-  else:
-    print('Not yet downloaded files: ' + str(len(files_to_download)))
-  fake_download_locations, fake_locations_map = _get_fake_download_locations_of_files(files_to_download, file_location, json_file_location, image_file_location)
-  all_files, fake_locations_map, _ = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type, fake_download_locations, fake_locations_map)
-  return all_files, fake_locations_map, fake_download_locations
+def _get_non_downloaded_files_list(remote_files, local_files):
+  local_files_set = set(local_files)
+  return [file for file in remote_files if file not in local_files_set]
 
-def _download_missing(all_files, download_link, downloadable_files, fake_locations_map, file_location, json_file_location = None, image_file_location = None):
-  # map fake locations to real locations
-  files_to_download = [file for file in all_files if file in downloadable_files]
-  base_files_to_download = list([os.path.basename(file) for file in _restore_from_fake_locations(files_to_download, fake_locations_map)])
-  _download_files(download_link, base_files_to_download, file_location, json_file_location, image_file_location)
+# Separate files into files from previous list (data_list) and new files
+def split_files(files, first_files=[]):
+  if not len(first_files):
+    return files, []
+  first_files_set = set(first_files)
+  files_set = set(files)
+  first_matching_files = sorted(list(files_set & first_files_set))
+  second_matching_files = sorted(list(files_set - first_files_set))
+  return first_matching_files, second_matching_files
+
+# Shuffle files, but keep files from the previous list (data_list) in the first part and new files in the second part to keep it more stable
+def shuffle_files(files, seed, first_files=[]):
+  first_files, second_files = split_files(files, first_files)
+  random.seed(seed)
+  first_files_perm = random.sample(first_files, len(first_files))
+  second_files_perm = random.sample(second_files, len(second_files)) if len(second_files) else []
+  return first_files_perm + second_files_perm
   
-def _process_in_pairs(all_files, type='', limit=None, shuffle_seed=None):
+def _process_in_pairs(all_files, type='', limit=None, shuffle_seed=None, additional_order=[]):
   processed_files = []
   if type:
-    random.seed(shuffle_seed if shuffle_seed is not None else 42)
-    random_perm_files = random.sample(sorted(all_files), len(all_files))
+    random_perm_files = shuffle_files(all_files, shuffle_seed if shuffle_seed is not None else 42, additional_order)
     processed_files = random_perm_files[:limit] if limit else random_perm_files
   else:
     # individually and with same seed to keep pairs
-    json_files = sorted([file for file in all_files if file.endswith('.json')])
-    image_files = sorted([file for file in all_files if file.endswith('.png')])
-    random.seed(shuffle_seed if shuffle_seed is not None else 42)
-    random_perm_json_files = random.sample(json_files, len(json_files))
+    json_files = [file for file in all_files if file.endswith('.json')]
+    image_files = [file for file in all_files if file.endswith('.png')]
+    random_perm_json_files = shuffle_files(json_files, shuffle_seed if shuffle_seed is not None else 42, additional_order)
     processed_json_files = random_perm_json_files[:limit] if limit else random_perm_json_files
-    random.seed(shuffle_seed if shuffle_seed is not None else 42)
-    random_perm_image_files = random.sample(image_files, len(image_files))
+    random_perm_image_files = shuffle_files(image_files, shuffle_seed if shuffle_seed is not None else 42, additional_order)
     processed_image_files = random_perm_image_files[:limit] if limit else random_perm_image_files
     processed_files = processed_json_files + processed_image_files
   return processed_files
+
+def _get_list_from_local_dir(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', basenames_to_locations_map={}):
+  all_files = []
+  if file_location is not None:
+    all_files.extend(list([file.path for file in os.scandir(file_location)]))
+  if json_file_location is not None and type != 'png':
+    json_files = list([file.path for file in os.scandir(json_file_location)])
+    json_files = [file for file in json_files if file.endswith('.json')]
+    all_files.extend(json_files)
+  if image_file_location is not None and type != 'json':
+    image_files = list([file.path for file in os.scandir(image_file_location)])
+    image_files = [file for file in image_files if file.endswith('.png')]
+    all_files.extend(image_files)
+    
+  all_files = list(filter(lambda x: filter_text in x and x.endswith(type), all_files))
+    
+  all_files, basenames_to_locations_map = _map_to_basenames(all_files, basenames_to_locations_map)
+  
+  # Filter None values        
+  all_files = [file for file in all_files if file is not None]
+  
+  print('All local files: ' + str(len(all_files)))
+  return all_files, basenames_to_locations_map
+
+def _get_list_from_remote(download_link, file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', basenames_to_locations_map={}):
+  all_files = _get_list_from_download_link(download_link, filter_text, type)
+  basenames, basenames_to_locations_map = _map_download_locations_of_files(all_files, file_location, json_file_location, image_file_location, basenames_to_locations_map)
+  
+  print('All remote files: ' + str(len(all_files)))
+  return basenames, basenames_to_locations_map
+
+def _get_files_list(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', download_link=None, pre_download=False, from_remote_only=False):
+  basenames_to_locations_map={}
+  basenames = []
+  remote_files = []
+  local_files = []
+  non_downloaded_files = []
+  if download_link is not None:
+    remote_files, basenames_to_locations_map = _get_list_from_remote(download_link, file_location, json_file_location, image_file_location, filter_text, type, basenames_to_locations_map)
+    basenames.extend(remote_files)
+  elif from_remote_only:
+    raise ValueError('No download link given')
+  if not from_remote_only:
+    local_files, basenames_to_locations_map = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filter_text, type, basenames_to_locations_map)
+    basenames.extend(local_files)
+    
+  if len(remote_files):
+    non_downloaded_files = _get_non_downloaded_files_list(remote_files, local_files)
+    if pre_download and len(non_downloaded_files):
+      _download_files(download_link, non_downloaded_files, file_location, json_file_location, image_file_location)
+      
+  # Remove duplicates
+  basenames_dedup = []
+  basenames_dedup_set = set()
+  for basename in basenames:
+    if basename not in basenames_dedup_set:
+      basenames_dedup.append(basename)
+      basenames_dedup_set.add(basename)
+  basenames = basenames_dedup
+  
+  # Remove unpaired files
+  if not type:
+    basenames = _remove_unpaired_files(basenames)
+    
+  print('Relevant files: ' + str(len(basenames)))  
+  return basenames, basenames_to_locations_map, non_downloaded_files
+
+def _resolve_env_variable(var, env_name):
+  if var == 'env':
+    var = os.environ.get(env_name)
+  return var
 
 # Get file paths of data to load, using multiple locations and optionally a map.
 # If ran for a second time, it will use the previous files and otherwise error.
@@ -322,65 +328,86 @@ def _process_in_pairs(all_files, type='', limit=None, shuffle_seed=None):
 # If not just one type is loaded, the limit will be applied per pair of files.
 # The shuffle (if enabled) will also be applied per pair of files.
 # If a download link is uses, it will be used instead of the file location and the files will be downloaded to the file location.
+# Set the file location to "env" to use the environment variable "FILE_LOCATION" as the file location.
+# Set the json file location to "env" to use the environment variable "JSON_FILE_LOCATION" as the json file location.
+# Set the image file location to "env" to use the environment variable "IMAGE_FILE_LOCATION" as the image file location.
 # Set the download link to "env" to use the environment variable "DOWNLOAD_LINK" as the download link.
 # If a countries map is given, the files will automatically be pre-downloaded.
-def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, return_basenames_too=False):
-  if download_link == 'env':
-    download_link = os.environ.get('DOWNLOAD_LINK')
-    if not download_link:
-      download_link = None
-  all_files, fake_locations_map, downloadable_files = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filterText, type) if download_link is None else _get_files_and_ensure_download(download_link, file_location, json_file_location, image_file_location, filterText, type, pre_download=(pre_download or countries_map is not None))
-  if countries_map and not passthrough_map:
-    all_files, _ = map_occurrences_to_files(all_files, countries_map, allow_missing=allow_missing_in_map)
-    
-  if limit and len(all_files) < (limit * 2 if not type else limit):
-    raise ValueError('Can not set limit higher than the number of files available, remember that the limit is per pair of files if not just one type is loaded')
+def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, return_basenames_too=False):
+  download_link = _resolve_env_variable(download_link, 'DOWNLOAD_LINK')
+  file_location = _resolve_env_variable(file_location, 'FILE_LOCATION')
+  json_file_location = _resolve_env_variable(json_file_location, 'JSON_FILE_LOCATION')
+  image_file_location = _resolve_env_variable(image_file_location, 'IMAGE_FILE_LOCATION')
   
-  if limit:
-    limited_files = _process_in_pairs(all_files, type, limit, shuffle_seed)
-    all_files = [file for file in all_files if file in limited_files]
-  if shuffle_seed is not None:
-    all_files = _process_in_pairs(all_files, type, None, shuffle_seed)
-    
-  if download_link is not None and not pre_download:
-    _download_missing(all_files, download_link, downloadable_files, fake_locations_map, file_location, json_file_location, image_file_location)
-    
-  all_files = _restore_from_fake_locations(all_files, fake_locations_map)
-
-  base_files = list([os.path.basename(file) for file in all_files])
-  files_to_load = base_files
+  basenames, basenames_to_locations_map, downloadable_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download or countries_map is not None, from_remote_only)
   
+  has_loading_file = False
+  files_from_loading_file = []
   try:
     if os.stat(loading_file):
       with open(loading_file, 'r', encoding='utf8') as file:
-        files_to_load = file.read().split('\n')
-        if limit and len(files_to_load) < (limit * 2 if not type else limit):
+        files_from_loading_file = file.read().split('\n')
+        has_loading_file = True
+        if limit and len(files_from_loading_file) < (limit * 2 if not type else limit):
           raise ValueError('Can not set limit higher than the number of files in the loading file, remember that the limit is per pair of files if not just one type is loaded')
   except FileNotFoundError:
-    if not allow_new_file_creation:
-      raise ValueError('No loading file at location')
     pass
+  
+  if countries_map and not passthrough_map:
+    if download_link is not None and not from_remote_only and not has_loading_file:
+      print('Warning: If you add local files, this will not be reproducible, consider setting from_remote_only to True')
+    basenames, _ = map_occurrences_to_files(basenames, countries_map, allow_missing=allow_missing_in_map, basenames_to_locations_map=basenames_to_locations_map)
+    print('Mapped files: ' + str(len(basenames)))
+    
+  if limit and len(basenames) < (limit * 2 if not type else limit):
+    raise ValueError('Can not set limit higher than the number of files available, remember that the limit is per pair of files if not just one type is loaded')
+  
+  if limit:
+    if download_link is not None and not from_remote_only and not has_loading_file:
+      print('Warning: If you add local files, this will not be reproducible, consider setting from_remote_only to True')
+    limited_files = _process_in_pairs(basenames, type, limit, shuffle_seed, additional_order=files_from_loading_file)
+    basenames = [file for file in basenames if file in limited_files]
+    print('Limited files: ' + str(len(basenames)))
+  if shuffle_seed is not None:
+    if download_link is not None and not from_remote_only and not has_loading_file:
+      print('Warning: If you add local files, this will not be reproducible, consider setting from_remote_only to True')
+    basenames = _process_in_pairs(basenames, type, None, shuffle_seed, additional_order=files_from_loading_file)
+    
+  if download_link is not None and not pre_download:
+    files_to_download = _get_non_downloaded_files_list(basenames, downloadable_files)
+    if len(files_to_download):
+      _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location)
+    
+  full_file_paths = _map_to_locations(basenames, basenames_to_locations_map)
+
+  # if no loading file, use the just discovered files
+  files_to_load = basenames
+  
+  if has_loading_file:
+    files_to_load = files_from_loading_file
+  elif not allow_new_file_creation:
+    raise ValueError('No loading file at location')
       
   if not len(files_to_load):
     raise ValueError('No files to load, did you forget to specify the type? Otherwise unpaired files will be ignored')
   
-  if not len(all_files):
+  if not len(basenames):
     raise ValueError('No files in loading location')
   
   actual_file_locations = []
   
-  allowed_missing_files = len(base_files) - limit if limit else 0
+  allowed_missing_files = len(basenames) - limit if limit else 0
   previous_missing_files = 0
   
   for file in files_to_load:
-    if file not in base_files:
+    if file not in basenames:
       previous_missing_files += 1
       if previous_missing_files > allowed_missing_files:
         raise ValueError('Missing file ' + file)
       else:
         continue
     else:
-      actual_file_locations.append(all_files[base_files.index(file)])
+      actual_file_locations.append(full_file_paths[basenames.index(file)])
       
   with open(loading_file, 'w', encoding='utf8') as file:
     file.write('\n'.join(files_to_load))
@@ -391,8 +418,8 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   return actual_file_locations
 
 # Update data based on factors
-def update_data_to_load(files_to_keep, old_loading_file = './data_list', new_loading_file = './updated_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filterText='singleplayer', type='', limit=0):
-  _, previous_files_to_load = get_data_to_load(old_loading_file, file_location, json_file_location, image_file_location, filterText, type, limit, allow_new_file_creation=False, return_basenames_too=True)
+def update_data_to_load(files_to_keep, old_loading_file = './data_list', new_loading_file = './updated_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, shuffle_seed=None, download_link=None, from_remote_only=False):
+  _, previous_files_to_load = get_data_to_load(old_loading_file, file_location, json_file_location, image_file_location, filter_text, type, limit, allow_new_file_creation=False, shuffle_seed=shuffle_seed, download_link=download_link, from_remote_only=from_remote_only, return_basenames_too=True)
   files_to_load = []
   base_files_to_keep = list([os.path.basename(file) for file in files_to_keep])
   for previous_file_to_load in previous_files_to_load:
@@ -431,8 +458,8 @@ def load_json_files(files, num_workers=16):
   return results   
 
 # get countries occurrences from multiplayer games
-def get_countries_occurrences(loading_file = './countries_map_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), filterText='multiplayer'):
-  multiplayer = get_data_to_load(loading_file=loading_file, file_location=file_location, filterText=filterText, type='json')
+def get_countries_occurrences(loading_file = './countries_map_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), filter_text='multiplayer'):
+  multiplayer = get_data_to_load(loading_file=loading_file, file_location=file_location, filter_text=filter_text, type='json')
   # map data
   countries, countries_to_files, files_to_countries, num_games = get_countries_occurrences_from_files(multiplayer)
   return countries, countries_to_files, files_to_countries, num_games
