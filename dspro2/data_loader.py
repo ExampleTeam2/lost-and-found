@@ -300,7 +300,7 @@ def _get_list_from_remote(download_link, file_location, json_file_location = Non
   print('All remote files: ' + str(len(all_files)))
   return basenames, basenames_to_locations_map
 
-def _get_files_list(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', download_link=None, pre_download=False, from_remote_only=False):
+def _get_files_list(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', download_link=None, pre_download=False, from_remote_only=False, dedupe_and_remove_unpaired=True):
   basenames_to_locations_map={}
   basenames = []
   remote_files = []
@@ -320,18 +320,19 @@ def _get_files_list(file_location, json_file_location = None, image_file_locatio
     if pre_download and len(non_downloaded_files):
       _download_files(download_link, non_downloaded_files, file_location, json_file_location, image_file_location)
       
-  # Remove duplicates
-  basenames_dedup = []
-  basenames_dedup_set = set()
-  for basename in basenames:
-    if basename not in basenames_dedup_set:
-      basenames_dedup.append(basename)
-      basenames_dedup_set.add(basename)
-  basenames = basenames_dedup
-  
-  # Remove unpaired files
-  if not type:
-    basenames = _remove_unpaired_files(basenames)
+  if dedupe_and_remove_unpaired:
+    # Remove duplicates
+    basenames_dedup = []
+    basenames_dedup_set = set()
+    for basename in basenames:
+      if basename not in basenames_dedup_set:
+        basenames_dedup.append(basename)
+        basenames_dedup_set.add(basename)
+    basenames = basenames_dedup
+    
+    # Remove unpaired files
+    if not type:
+      basenames = _remove_unpaired_files(basenames)
     
   print('Relevant files: ' + str(len(basenames)))  
   return basenames, basenames_to_locations_map, non_downloaded_files
@@ -357,6 +358,7 @@ def _resolve_env_variable(var, env_name, allow_env=None):
 # Set the image file location to "env" to use the environment variable "IMAGE_FILE_LOCATION" as the image file location, otherwise image_file_location will be used.
 # Set the download link to "env" to use the environment variable "DOWNLOAD_LINK" as the download link.
 # Set the environment variable "SKIP_REMOTE" to "true" to skip the remote files and only use the local files. (even if from_remote_only is set), only use this if you are sure the current files are already downloaded.
+# Set allow_new_file_creation=False to only allow loading from the loading file, otherwise an error will be raised. This will improve loading performance.
 # If a countries map is given, the files will automatically be pre-downloaded.
 def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, return_basenames_too=False):
   download_link = _resolve_env_variable(download_link, 'DOWNLOAD_LINK')
@@ -371,7 +373,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   
   pre_download = pre_download or countries_map is not None
   
-  basenames, basenames_to_locations_map, downloadable_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only)
+  basenames, basenames_to_locations_map, downloadable_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation)
   
   has_loading_file = False
   files_from_loading_file = []
