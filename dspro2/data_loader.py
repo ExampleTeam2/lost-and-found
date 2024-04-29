@@ -407,9 +407,9 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
       print('Warning: If you add local files, this will not be reproducible, consider setting from_remote_only to True')
     basenames = _process_in_pairs(basenames, type, None, shuffle_seed, additional_order=files_from_loading_file)
     
-  if download_link is not None and not pre_download:
+  if download_link is not None and not pre_download and len(downloadable_files):
     files_to_download = _get_downloadable_files_list(basenames, downloadable_files)
-    if has_loading_file:
+    if len(files_to_download) and has_loading_file:
       files_to_download = _get_downloadable_files_list(basenames, files_from_loading_file)
     if len(files_to_download):
       _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location)
@@ -459,12 +459,12 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
 def update_data_to_load(files_to_keep, old_loading_file = './data_list', new_loading_file = './updated_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, shuffle_seed=None, download_link=None, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False):
   _, previous_files_to_load = get_data_to_load(old_loading_file, file_location, json_file_location, image_file_location, filter_text, type, limit, allow_new_file_creation=False, shuffle_seed=shuffle_seed, download_link=download_link, from_remote_only=from_remote_only, allow_file_location_env=allow_file_location_env, allow_json_file_location_env=allow_json_file_location_env, allow_image_file_location_env=allow_image_file_location_env, return_basenames_too=True)
   files_to_load = []
-  base_files_to_keep = list([os.path.basename(file) for file in files_to_keep])
+  base_files_to_keep = set([os.path.basename(file) for file in files_to_keep])
   for previous_file_to_load in previous_files_to_load:
     if previous_file_to_load in base_files_to_keep:
       files_to_load.append(previous_file_to_load)
      
-  base_files = files_to_load
+  base_files = set(files_to_load)
       
   try:
     if os.stat(new_loading_file):
