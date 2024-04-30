@@ -4293,6 +4293,16 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+name = "uuid"
+version = "1.30"
+description = "UUID object and generation functions (Python 2.3 or higher)"
+optional = false
+python-versions = "*"
+files = [
+    {file = "uuid-1.30.tar.gz", hash = "sha256:1f87cc004ac5120466f36c5beae48b4c48cc411968eed0eaecd3da82aa96193f"},
+]
+
+[[package]]
 name = "wandb"
 version = "0.16.6"
 description = "A CLI and library for interacting with the Weights & Biases API."
@@ -4617,4 +4627,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "b8c1d2670615d0e4cc029eca80b6ddff351084b00de51dd00478119df2428dfc"
+content-hash = "9ccc700aea0772864e37385ab17cdd53b01b3e7f1c6b32fdd83c4be03fb33efd"
