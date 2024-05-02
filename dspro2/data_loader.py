@@ -505,9 +505,7 @@ def load_json_files(files, num_workers=16):
 def load_image_file(file):
   # channels, height, width is the pytorch convention
   with Image.open(file) as img:
-    img_array = np.array(img)
-    img_array = img_array.transpose((2, 0, 1))
-    return img_array
+    return img.convert('RGB')
 
 # load mutliple .png files parallelized
 def load_image_files(files, num_workers=16):
