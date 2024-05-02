@@ -35,6 +35,9 @@ dspro2/1_data_collection/data/cookies.json
 /playwright/.cache/
 /scraping/reports/
 
+# Wandb
+/dspro2/4_modeling/wandb/
+
 # Temp
 /tmp/
 /scraping/tmp/
