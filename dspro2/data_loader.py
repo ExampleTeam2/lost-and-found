@@ -20,7 +20,7 @@ def get_counterpart(file):
   elif file.endswith('.png'):
     counterpart = file.replace('location', 'result').replace('.png', '.json')
   else:
-    raise ValueError('Invalid file type')
+    raise ValueError('Invalid file type', file)
   return counterpart
 
 # Get rid of unpaired files (where only either json or png is present)
@@ -111,7 +111,7 @@ def _map_to_location_or_throw(file, basenames_to_locations_map):
 
 # From a list of files and a map, restore the original locations
 def _map_to_locations(files, basenames_to_locations_map, throw=False):
-  return [_map_to_location(file, basenames_to_locations_map, throw) for file in files] if not throw else [_map_to_location_or_throw(file, basenames_to_locations_map) for file in files]
+  return [_map_to_location(file, basenames_to_locations_map) for file in files] if not throw else [_map_to_location_or_throw(file, basenames_to_locations_map) for file in files]
 
 # Takes in a list of files and a occurrence map (from a different_dataset)), create an optimally mapped list of files where the occurrences correspond to the map (or are multiples of them)
 def map_occurrences_to_files(files, occurrence_map, countries_map_percentage_threshold, allow_missing=False, basenames_to_locations_map=None):
@@ -307,16 +307,20 @@ def process_in_pairs_simple(all_files, type='', limit=None, shuffle_seed=None):
     processed_files = processed_json_files + processed_image_files
   return processed_files
 
-def get_files(path):
+def get_all_files(path):
   files = list([file.path for file in os.scandir(path)])
   return [file for file in files if 'geoguessr' in file]
 
+def get_files(path):
+  files = get_all_files(path)
+  return [file for file in files if file.endswith('.json') or file.endswith('.png')]
+
 def get_json_files(path):
-  files = get_files(path)
+  files = get_all_files(path)
   return [file for file in files if file.endswith('.json')]
 
 def get_image_files(path):
-  files = get_files(path)
+  files = get_all_files(path)
   return [file for file in files if file.endswith('.png')]
 
 def _get_list_from_local_dir(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', basenames_to_locations_map={}):
