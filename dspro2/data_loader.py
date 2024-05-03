@@ -8,6 +8,10 @@ import urllib3
 from PIL import Image
 import numpy as np
 
+# load .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 def get_counterpart(file):
   # Get the counterpart of a file (json or png)
   # Get the counterpart
