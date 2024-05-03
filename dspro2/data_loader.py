@@ -99,9 +99,15 @@ def _map_to_basenames(files, basenames_to_locations_map={}):
       basenames_to_locations_map[basename] = file
   return basenames, basenames_to_locations_map
 
+def _map_to_location(file, basenames_to_locations_map):
+  return basenames_to_locations_map.get(file, file)
+
+def _map_to_location_or_throw(file, basenames_to_locations_map):
+  return basenames_to_locations_map[file]
+
 # From a list of files and a map, restore the original locations
-def _map_to_locations(files, basenames_to_locations_map):
-  return [basenames_to_locations_map.get(file, file) for file in files]
+def _map_to_locations(files, basenames_to_locations_map, throw=False):
+  return [_map_to_location(file, basenames_to_locations_map, throw) for file in files] if not throw else [_map_to_location_or_throw(file, basenames_to_locations_map) for file in files]
 
 # Takes in a list of files and a occurrence map (from a different_dataset)), create an optimally mapped list of files where the occurrences correspond to the map (or are multiples of them)
 def map_occurrences_to_files(files, occurrence_map, countries_map_percentage_threshold, allow_missing=False, basenames_to_locations_map=None):
@@ -462,8 +468,6 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
     if len(files_to_download):
       _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location)
     
-  full_file_paths = _map_to_locations(basenames, basenames_to_locations_map)
-  
   # if no loading file, use the just discovered files
   files_to_load = basenames
   
@@ -486,7 +490,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   basenames_set = set(basenames)
   
   if skip_checks:
-    actual_file_locations = [full_file_paths[basenames.index(file)] for file in basenames]
+    actual_file_locations = _map_to_locations(files_to_load, basenames_to_locations_map, throw=True)
     if return_basenames_too:
       return actual_file_locations, files_to_load
     return actual_file_locations
@@ -499,7 +503,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
       else:
         continue
     else:
-      actual_file_locations.append(full_file_paths[basenames.index(file)])
+      actual_file_locations.append(_map_to_location_or_throw(file))
       
   with open(loading_file, 'w', encoding='utf8') as file:
     file.write('\n'.join(files_to_load))
