@@ -98,7 +98,7 @@ class CountryEnricher:
     
     def enrich_with_country_info(self):
       if not self.from_country:
-        results = rg.search(self.coordinates)
+        results = rg.search(self.coordinates) if len(self.coordinates) else []
         for result, coord in zip(results, self.coordinates):
             image_id = self.file_map[coord]
             country_code = result['cc']
