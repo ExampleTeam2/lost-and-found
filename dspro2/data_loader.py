@@ -281,6 +281,22 @@ def _process_in_pairs(all_files, type='', limit=None, shuffle_seed=None, additio
     processed_files = processed_json_files + processed_image_files
   return processed_files
 
+def process_in_pairs_simple(all_files, type='', limit=None, shuffle_seed=None):
+  processed_files = []
+  if type:
+    random_perm_files = shuffle_files_simple(all_files, shuffle_seed if shuffle_seed is not None else 42)
+    processed_files = random_perm_files[:limit] if limit else random_perm_files
+  else:
+    # individually and with same seed to keep pairs
+    json_files = [file for file in all_files if file.endswith('.json')]
+    image_files = [file for file in all_files if file.endswith('.png')]
+    random_perm_json_files = shuffle_files_simple(json_files, shuffle_seed if shuffle_seed is not None else 42)
+    processed_json_files = random_perm_json_files[:limit] if limit else random_perm_json_files
+    random_perm_image_files = shuffle_files_simple(image_files, shuffle_seed if shuffle_seed is not None else 42)
+    processed_image_files = random_perm_image_files[:limit] if limit else random_perm_image_files
+    processed_files = processed_json_files + processed_image_files
+  return processed_files
+
 def _get_list_from_local_dir(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', basenames_to_locations_map={}):
   all_files = []
   if file_location is not None:
@@ -430,13 +446,14 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   if limit:
     if download_link is not None and not from_remote_only and not has_loading_file:
       print('Warning: If you add local files, this will not be reproducible, consider setting from_remote_only to True')
-    limited_files = _process_in_pairs(basenames, type, limit, shuffle_seed, additional_order=files_from_loading_file) if not skip_checks else limit_files_simple(basenames, limit, shuffle_seed)
-    basenames = [file for file in basenames if file in limited_files]
+    limited_files = _process_in_pairs(basenames, type, limit, shuffle_seed, additional_order=files_from_loading_file) if not skip_checks else process_in_pairs_simple(basenames, type, limit, shuffle_seed)
+    limited_files_set = set(limited_files)
+    basenames = [file for file in basenames if file in limited_files_set]
     print('Limited files: ' + str(len(basenames)))
   if shuffle_seed is not None:
     if download_link is not None and not from_remote_only and not has_loading_file:
       print('Warning: If you add local files, this will not be reproducible, consider setting from_remote_only to True')
-    basenames = _process_in_pairs(basenames, type, None, shuffle_seed, additional_order=files_from_loading_file) if not skip_checks else shuffle_files_simple(basenames, shuffle_seed)
+    basenames = _process_in_pairs(basenames, type, None, shuffle_seed, additional_order=files_from_loading_file) if not skip_checks else process_in_pairs_simple(basenames, type, None, shuffle_seed)
     
   if download_link is not None and not pre_download and len(downloadable_files):
     files_to_download = _get_downloadable_files_list(basenames, downloadable_files)
