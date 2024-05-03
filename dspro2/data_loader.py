@@ -174,7 +174,7 @@ def _get_list_from_html_file(download_link):
 
 def _get_list_from_download_link(download_link, filter_text='singleplayer', type=''):
   full_list = _get_list_from_html_file(download_link)
-  all_files = [file for file in full_list if filter_text in file and file.endswith(type)]
+  all_files = [file for file in full_list if filter_text in file and (file.endswith(type) if type else (file.endswith('.json') or file.endswith('.png')))]
   return all_files
 
 def _get_full_file_location(file_name, current_location):
