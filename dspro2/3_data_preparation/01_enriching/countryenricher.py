@@ -37,7 +37,6 @@ class AdditionalCountryOrRegion:
 class CountryEnricher:
     """Enriches JSON files with country information based on coordinates."""
     def __init__(self, input_dir, output_dir, from_country=False, allow_env=False):
-        super().__init__()
         self.input_dir = resolve_env_variable(input_dir, 'FILE_LOCATION', allow_env, 'JSON_FILE_LOCATION')
         self.output_dir = resolve_env_variable(output_dir, 'JSON_FILE_LOCATION', allow_env, 'FILE_LOCATION')
         self.json_files = {}
@@ -71,7 +70,11 @@ class CountryEnricher:
                 if 'coordinates' in json_data:
                   coord = tuple(json_data['coordinates'])
                   self.coordinates.append(coord)
-                  self.file_map[coord] = image_id
+                  coord_str = str(coord)
+                  if coord_str in self.file_map:
+                    self.file_map[coord_str].append(image_id)
+                  else:
+                    self.file_map[coord_str] = [image_id]
                 else:
                   raise ValueError(f"Coordinates not found in {image_id}")
               else:
@@ -90,7 +93,7 @@ class CountryEnricher:
           for _ in executor.map(process_json_file, json_paths):
             current_file += 1
             if (current_file and current_file % 1000 == 0) or current_file == len(json_paths):
-              print('Enriched ' + str(current_file) + ' files')
+              print('Loaded ' + str(current_file) + ' files')
             
                     
         if had_error:
@@ -100,7 +103,7 @@ class CountryEnricher:
       if not self.from_country:
         results = rg.search(self.coordinates) if len(self.coordinates) else []
         for result, coord in zip(results, self.coordinates):
-            image_id = self.file_map[coord]
+            image_ids = self.file_map[str(coord)]
             country_code = result['cc']
             country = pycountry.countries.get(alpha_2=country_code)
             if country is None:
@@ -109,8 +112,9 @@ class CountryEnricher:
                 country = AdditionalCountryOrRegion(country_code, country_name)
             if country is None:
               raise ValueError(f"Country code {country_code} not found")
-            self.json_files[image_id]['country_name'] = country.name
-            self.json_files[image_id]['country_code'] = country.alpha_2
+            for image_id in image_ids:
+              self.json_files[image_id]['country_name'] = country.name
+              self.json_files[image_id]['country_code'] = country.alpha_2
       else:
         for country_name, image_ids in self.file_map.items():
           countries = []
