@@ -243,6 +243,20 @@ def split_files(files, first_files=[]):
   second_matching_files = sorted(list(files_set - first_files_set))
   return first_matching_files, second_matching_files
 
+def shuffle_files_simple(files, seed):
+  sorted_files = sorted(files)
+  random.seed(seed)
+  files_perm = random.sample(sorted_files, len(sorted_files))
+  return files_perm
+
+def limit_files_simple(files, limit, seed):
+  if seed is None:
+    seed = 42
+  shuffled_files = shuffle_files_simple(files, seed)
+  limited_files = shuffled_files[:limit]
+  limited_files_set = set(limited_files)
+  return [file for file in files if file in limited_files_set]
+
 # Shuffle files, but keep files from the previous list (data_list) in the first part and new files in the second part to keep it more stable
 def shuffle_files(files, seed, first_files=[]):
   first_files, second_files = split_files(files, first_files)
@@ -300,7 +314,7 @@ def _get_list_from_remote(download_link, file_location, json_file_location = Non
   print('All remote files: ' + str(len(all_files)))
   return basenames, basenames_to_locations_map
 
-def _get_files_list(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', download_link=None, pre_download=False, from_remote_only=False, dedupe_and_remove_unpaired=True):
+def _get_files_list(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', download_link=None, pre_download=False, from_remote_only=False, dedupe_and_remove_unpaired=True, skip_checks=False):
   basenames_to_locations_map={}
   basenames = []
   remote_files = []
@@ -320,7 +334,7 @@ def _get_files_list(file_location, json_file_location = None, image_file_locatio
     if pre_download and len(non_downloaded_files):
       _download_files(download_link, non_downloaded_files, file_location, json_file_location, image_file_location)
       
-  if dedupe_and_remove_unpaired:
+  if dedupe_and_remove_unpaired and not skip_checks:
     # Remove duplicates
     basenames_dedup = []
     basenames_dedup_set = set()
@@ -358,6 +372,7 @@ def _resolve_env_variable(var, env_name, allow_env=None):
 # Set the image file location to "env" to use the environment variable "IMAGE_FILE_LOCATION" as the image file location, otherwise image_file_location will be used.
 # Set the download link to "env" to use the environment variable "DOWNLOAD_LINK" as the download link.
 # Set the environment variable "SKIP_REMOTE" to "true" to skip the remote files and only use the local files. (even if from_remote_only is set), only use this if you are sure the current files are already downloaded.
+# Set the environment variable "SKIP_CHECKS" to "true" to skip all of the checks and just use the files from the data-list. Only use this if you are sure the files are already downloaded and structured correctly.
 # Set allow_new_file_creation=False to only allow loading from the loading file, otherwise an error will be raised. This will improve loading performance.
 # If a countries map is given, the files will automatically be pre-downloaded.
 def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, return_basenames_too=False):
@@ -367,13 +382,20 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   image_file_location = _resolve_env_variable(image_file_location, 'IMAGE_FILE_LOCATION', allow_image_file_location_env)
   skip_remote = _resolve_env_variable(download_link, 'SKIP_REMOTE', True)
   skip_remote = skip_remote is not None and skip_remote and skip_remote.lower() != 'false' and skip_remote.lower() != '0'
+  skip_checks = _resolve_env_variable(True, 'SKIP_CHECKS', True)
+  skip_checks = skip_checks is not None and skip_checks and skip_checks.lower() != 'false' and skip_checks.lower() != '0'
+  if skip_checks:
+    print('Warning: Skipping all checks')
+    skip_remote = True
+  elif skip_remote and download_link:
+    print('Warning: Skipping remote files check')
   if skip_remote:
     from_remote_only = False
     download_link = None
   
   pre_download = pre_download or countries_map is not None
   
-  basenames, basenames_to_locations_map, downloadable_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation)
+  basenames, basenames_to_locations_map, downloadable_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks)
   
   has_loading_file = False
   files_from_loading_file = []
@@ -383,13 +405,20 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
         files_from_loading_file = file.read().split('\n')
         # filter None values and empty strings
         files_from_loading_file = [file for file in files_from_loading_file if file is not None and file]
+        if skip_checks:
+          # skip all checks and logic
+          basenames = files_from_loading_file
         has_loading_file = True
         if limit and len(files_from_loading_file) < (limit * 2 if not type else limit):
           raise ValueError('Can not set limit higher than the number of files in the loading file, remember that the limit is per pair of files if not just one type is loaded')
   except FileNotFoundError:
+    if skip_checks:
+      raise ValueError('No loading file at location, but checks are skipped')
     pass
   
   if countries_map and not passthrough_map:
+    if skip_checks:
+      raise ValueError('Countries map given, but checks are skipped')
     if download_link is not None and not from_remote_only and not has_loading_file:
       print('Warning: If you add local files, this will not be reproducible, consider setting from_remote_only to True')
     basenames, _ = map_occurrences_to_files(basenames, countries_map, countries_map_percentage_threshold, allow_missing=allow_missing_in_map, basenames_to_locations_map=basenames_to_locations_map)
@@ -401,13 +430,13 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   if limit:
     if download_link is not None and not from_remote_only and not has_loading_file:
       print('Warning: If you add local files, this will not be reproducible, consider setting from_remote_only to True')
-    limited_files = _process_in_pairs(basenames, type, limit, shuffle_seed, additional_order=files_from_loading_file)
+    limited_files = _process_in_pairs(basenames, type, limit, shuffle_seed, additional_order=files_from_loading_file) if not skip_checks else limit_files_simple(basenames, limit, shuffle_seed)
     basenames = [file for file in basenames if file in limited_files]
     print('Limited files: ' + str(len(basenames)))
   if shuffle_seed is not None:
     if download_link is not None and not from_remote_only and not has_loading_file:
       print('Warning: If you add local files, this will not be reproducible, consider setting from_remote_only to True')
-    basenames = _process_in_pairs(basenames, type, None, shuffle_seed, additional_order=files_from_loading_file)
+    basenames = _process_in_pairs(basenames, type, None, shuffle_seed, additional_order=files_from_loading_file) if not skip_checks else shuffle_files_simple(basenames, shuffle_seed)
     
   if download_link is not None and not pre_download and len(downloadable_files):
     files_to_download = _get_downloadable_files_list(basenames, downloadable_files)
@@ -438,6 +467,12 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   previous_missing_files = 0
   
   basenames_set = set(basenames)
+  
+  if skip_checks:
+    actual_file_locations = [full_file_paths[basenames.index(file)] for file in basenames]
+    if return_basenames_too:
+      return actual_file_locations, files_to_load
+    return actual_file_locations
   
   for file in files_to_load:
     if file not in basenames_set:
