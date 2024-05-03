@@ -303,18 +303,26 @@ def process_in_pairs_simple(all_files, type='', limit=None, shuffle_seed=None):
     processed_files = processed_json_files + processed_image_files
   return processed_files
 
+def get_files(path):
+  files = list([file.path for file in os.scandir(path)])
+  return [file for file in files if 'geoguessr' in file]
+
+def get_json_files(path):
+  files = get_files(path)
+  return [file for file in files if file.endswith('.json')]
+
+def get_image_files(path):
+  files = get_files(path)
+  return [file for file in files if file.endswith('.png')]
+
 def _get_list_from_local_dir(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', basenames_to_locations_map={}):
   all_files = []
   if file_location is not None:
-    all_files.extend(list([file.path for file in os.scandir(file_location)]))
+    all_files.extend(get_files(file_location))
   if json_file_location is not None and type != 'png':
-    json_files = list([file.path for file in os.scandir(json_file_location)])
-    json_files = [file for file in json_files if file.endswith('.json')]
-    all_files.extend(json_files)
+    all_files.extend(get_json_files(json_file_location))
   if image_file_location is not None and type != 'json':
-    image_files = list([file.path for file in os.scandir(image_file_location)])
-    image_files = [file for file in image_files if file.endswith('.png')]
-    all_files.extend(image_files)
+    all_files.extend(get_image_files(image_file_location))
     
   all_files = list(filter(lambda x: filter_text in x and x.endswith(type), all_files))
   
@@ -373,12 +381,14 @@ def _get_files_list(file_location, json_file_location = None, image_file_locatio
   print('Relevant files: ' + str(len(basenames)))  
   return basenames, basenames_to_locations_map, non_downloaded_files
 
-def _resolve_env_variable(var, env_name, allow_env=None):
-  if var == 'env' or allow_env == True and var is not None:
-    if allow_env == False:
+def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_env=None):
+  if var == 'env' or do_not_enforce_but_allow_env == True and var is not None:
+    if do_not_enforce_but_allow_env == False:
       raise ValueError('Prefer providing a default file location and setting <name>_allow_env=True')
     var = os.environ.get(env_name)
-    if allow_env is None and var is None:
+    if var is None and alt_env is not None:
+      var = os.environ.get(alt_env)
+    if do_not_enforce_but_allow_env is None and var is None:
       raise ValueError('Environment variable ' + env_name + ' not set')
   return var
 
@@ -398,13 +408,13 @@ def _resolve_env_variable(var, env_name, allow_env=None):
 # Set allow_new_file_creation=False to only allow loading from the loading file, otherwise an error will be raised. This will improve loading performance.
 # If a countries map is given, the files will automatically be pre-downloaded.
 def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, return_basenames_too=False):
-  download_link = _resolve_env_variable(download_link, 'DOWNLOAD_LINK')
-  file_location = _resolve_env_variable(file_location, 'FILE_LOCATION', allow_file_location_env)
-  json_file_location = _resolve_env_variable(json_file_location, 'JSON_FILE_LOCATION', allow_json_file_location_env)
-  image_file_location = _resolve_env_variable(image_file_location, 'IMAGE_FILE_LOCATION', allow_image_file_location_env)
-  skip_remote = _resolve_env_variable(download_link, 'SKIP_REMOTE', True)
+  download_link = resolve_env_variable(download_link, 'DOWNLOAD_LINK')
+  file_location = resolve_env_variable(file_location, 'FILE_LOCATION', allow_file_location_env)
+  json_file_location = resolve_env_variable(json_file_location, 'JSON_FILE_LOCATION', allow_json_file_location_env)
+  image_file_location = resolve_env_variable(image_file_location, 'IMAGE_FILE_LOCATION', allow_image_file_location_env)
+  skip_remote = resolve_env_variable(download_link, 'SKIP_REMOTE', True)
   skip_remote = skip_remote is not None and skip_remote and skip_remote.lower() != 'false' and skip_remote.lower() != '0'
-  skip_checks = _resolve_env_variable(True, 'SKIP_CHECKS', True)
+  skip_checks = resolve_env_variable(True, 'SKIP_CHECKS', True)
   skip_checks = skip_checks is not None and skip_checks and skip_checks.lower() != 'false' and skip_checks.lower() != '0'
   if skip_checks:
     print('Warning: Skipping all checks')
@@ -557,7 +567,7 @@ def load_json_files(files, num_workers=16):
     results = list(executor.map(load_json_file, files))
   return results  
 
-# load a single .png file as a numpy array
+# load a single .png file as a converted image
 def load_image_file(file):
   # channels, height, width is the pytorch convention
   with Image.open(file) as img:
@@ -567,6 +577,17 @@ def load_image_file(file):
 def load_image_files(files, num_workers=16):
   with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
     results = list(executor.map(load_image_file, files))
+  return results
+
+# load a single .png file, needs to be closed manually or used in a with statement
+def load_image_file_raw(file):
+  # channels, height, width is the pytorch convention
+  return Image.open(file)
+
+# load mutliple .png files parallelized
+def load_image_files_raw(files, num_workers=16):
+  with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
+    results = list(executor.map(load_image_file_raw, files))
   return results
 
 # get countries occurrences from games
