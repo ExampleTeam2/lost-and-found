@@ -503,7 +503,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
       else:
         continue
     else:
-      actual_file_locations.append(_map_to_location_or_throw(file))
+      actual_file_locations.append(_map_to_location_or_throw(file, basenames_to_locations_map))
       
   with open(loading_file, 'w', encoding='utf8') as file:
     file.write('\n'.join(files_to_load))
