@@ -114,22 +114,29 @@ def _map_to_locations(files, basenames_to_locations_map, throw=False):
   return [_map_to_location(file, basenames_to_locations_map) for file in files] if not throw else [_map_to_location_or_throw(file, basenames_to_locations_map) for file in files]
 
 # Takes in a list of files and a occurrence map (from a different_dataset)), create an optimally mapped list of files where the occurrences correspond to the map (or are multiples of them)
-def map_occurrences_to_files(files, occurrence_map, countries_map_percentage_threshold, allow_missing=False, basenames_to_locations_map=None):
+def map_occurrences_to_files(files, occurrence_map, countries_map_percentage_threshold, countries_map_slack_factor=None, allow_missing=False, basenames_to_locations_map=None):
   # get the occurrences of the files itself
-  files_occurrences, _, _, num_files, counties_to_basenames, _ = get_countries_occurrences_from_files(files, basenames_to_locations_map=basenames_to_locations_map)
+  files_occurrences, _, _, num_files, countries_to_basenames, _ = get_countries_occurrences_from_files(files, basenames_to_locations_map=basenames_to_locations_map)
+  original_countries_to_basenames = {country: files for country, files in countries_to_basenames.items()}
+  original_occurrences = {country: num for country, num in files_occurrences.items()}
+  other_countries_to_basenames = {}
+  other_files_occurrences = {}
   if countries_map_percentage_threshold:
     # filter out countries with less than the threshold
-    counties_to_basenames = {country: files for country, files in counties_to_basenames.items() if len(files) / num_files >= countries_map_percentage_threshold}
+    countries_to_basenames = {country: files for country, files in countries_to_basenames.items() if len(files) / num_files >= countries_map_percentage_threshold}
+    other_countries_to_basenames = {country: files for country, files in original_countries_to_basenames.items() if country not in countries_to_basenames}
     # and update the files occurrences
-    files_occurrences = {country: num for country, num in files_occurrences.items() if country in counties_to_basenames}
+    files_occurrences = {country: num for country, num in files_occurrences.items() if country in countries_to_basenames}
+    other_files_occurrences = {country: num for country, num in original_occurrences.items() if country in other_countries_to_basenames}
   # get the factors between each of the countries (nan if not in the map)
-  all_countries = [*occurrence_map.keys(), *files_occurrences.keys()]
+  all_countries = list(set([*occurrence_map.keys(), *files_occurrences.keys()]))
   factors = [(files_occurrences[country] / occurrence_map[country]) if (country in occurrence_map and country in files_occurrences) else float('nan') for country in all_countries]
   # if any of the factors is nan, raise an exception
   if any([x != x for x in factors]):
     if allow_missing:
       # filter out the missing countries
       factors = [x for x in factors if x == x]
+      print(f'Using {len(factors)} countries (out of {len(all_countries)} options)')
     else:
       raise ValueError('Missing country in one of the maps')
   if allow_missing and len(factors) == 0:
@@ -137,15 +144,33 @@ def map_occurrences_to_files(files, occurrence_map, countries_map_percentage_thr
   # Get the lowest factor
   factor = min(factors)
   # Get the number of files to load by country
-  new_occurrences = {country: math.ceil(occurrence_map[country] * factor) for country in occurrence_map}
+  new_occurrences = {country: math.ceil(occurrence_map[country] * factor) for country in occurrence_map if country in files_occurrences}
+  
+  # Optionally add the other countries fitting the slack factor 
+  if countries_map_percentage_threshold and countries_map_slack_factor is not None:
+    other_countries = list(set([*occurrence_map.keys(), *other_files_occurrences.keys()]))
+    other_factors = [(other_files_occurrences[country] / occurrence_map[country]) if (country in occurrence_map and country in other_files_occurrences) else float('nan') for country in other_countries]
+    # set other factors to nan if they are below the slack factor
+    slacked_factors = [x * countries_map_slack_factor if x == x and ((x / factor) >= countries_map_slack_factor) else float('nan') for x in other_factors]
+    # get countries with factors above the slack factor
+    other_relevant_countries = [country for country, factor in zip(other_countries, slacked_factors) if factor == factor]
+    other_relevant_factors = [factor for factor in slacked_factors if factor == factor]
+    print(f'Slack factor included {len(other_relevant_countries)} additional countries (of {len(other_countries)} options)')
+    # add to the new occurrences map
+    for country, slacked_factor in zip(other_relevant_countries, other_relevant_factors):
+      new_occurrences[country] = math.ceil(occurrence_map[country] * slacked_factor)
+      
   # Get the files to load
   files_to_load = []
   for country in new_occurrences:
-    if allow_missing and country not in counties_to_basenames:
+    if allow_missing and (country not in countries_to_basenames and country not in other_countries_to_basenames):
       continue
-    files_to_load.extend(counties_to_basenames[country][:new_occurrences[country]])
+    country_basenames = countries_to_basenames.get(country, None)
+    if country_basenames is None:
+      country_basenames = other_countries_to_basenames[country]
+    files_to_load.extend(country_basenames[:new_occurrences[country]])
   # Get the pairs of files to load
-  files_with_counterparts = _get_files_counterparts(files_to_load, [*files, *counties_to_basenames.values()])
+  files_with_counterparts = _get_files_counterparts(files_to_load, [*files, *countries_to_basenames.values(), *other_countries_to_basenames.values()])
   return files_with_counterparts, len(files_to_load)
 
 def _get_list_from_html_file(download_link):
@@ -415,7 +440,9 @@ def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_e
 # Set the environment variable "SKIP_CHECKS" to "true" to skip all of the checks and just use the files from the data-list. Only use this if you are sure the files are already downloaded and structured correctly.
 # Set allow_new_file_creation=False to only allow loading from the loading file, otherwise an error will be raised. This will improve loading performance.
 # If a countries map is given, the files will automatically be pre-downloaded.
-def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, return_basenames_too=False):
+# The countries_map_percentage_threshold is the minimum percentage of games (of the total) a country should have to be included in the map, it only works if allow_missing_in_map is set to True.
+# If countries_map_slack_factor is set (only works if countries_map_percentage_threshold is set), it will allow countries to be included in the map if they are within the slack factor of the percentage threshold. This can also be set to 1 to include countries that can be mapped but do not match countries_map_percentage_threshold.
+def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, return_basenames_too=False):
   download_link = resolve_env_variable(download_link, 'DOWNLOAD_LINK')
   file_location = resolve_env_variable(file_location, 'FILE_LOCATION', allow_file_location_env)
   json_file_location = resolve_env_variable(json_file_location, 'JSON_FILE_LOCATION', allow_json_file_location_env)
@@ -461,7 +488,9 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
       raise ValueError('Countries map given, but checks are skipped')
     if download_link is not None and not from_remote_only and not has_loading_file:
       print('Warning: If you add local files, this will not be reproducible, consider setting from_remote_only to True')
-    basenames, _ = map_occurrences_to_files(basenames, countries_map, countries_map_percentage_threshold, allow_missing=allow_missing_in_map, basenames_to_locations_map=basenames_to_locations_map)
+    mapped_files, _ = map_occurrences_to_files(basenames, countries_map, countries_map_percentage_threshold, countries_map_slack_factor, allow_missing=allow_missing_in_map, basenames_to_locations_map=basenames_to_locations_map)
+    mapped_files_set = set(mapped_files)
+    basenames = [file for file in basenames if file in mapped_files_set]
     print('Mapped files: ' + str(len(basenames)))
     
   if limit and len(basenames) < (limit * 2 if not type else limit):
