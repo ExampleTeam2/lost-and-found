@@ -10,8 +10,6 @@ kanban-plugin: basic
 - [ ] Plan Cloud-Service task and compare it with all services, also with costs #BusinessUnderstanding
 - [ ] Create Data Processing Part for Sceintific Report #DataPreparation
 - [ ] Create Methods we used for decision makings and include them into the Scientific Report #DataCollecting  #DataPreparation #Modeling
-- [ ] Setup wand.db Experiment tracking for Model Training #Modeling
-- [ ] Setup wand.db Experiment tracking for Model Validation #Evaluation
 - [ ] Create Model Validation Part for Sceintific Report #Evaluation
 - [ ] Create MLOps Part for Sceintific Report #Deployment
 - [ ] Create final presentation
@@ -19,21 +17,29 @@ kanban-plugin: basic
 
 ## Current
 
-- [ ] Create CNN-Architecture for the Model #Modeling
-- [ ] Create Baseline Model #Modeling
-- [ ] Do some research about CNN or other networks which can handle images #Modeling
+- [ ] Try more different base line models, Transformer Encoders, more Resnet architechtures and Vanilla CNN #Modeling
+- [ ] Add test metrics to the code #Evaluation
+- [ ] Research other metrics for the evaluating the model #Modeling #Evaluation
+- [ ] Add Multiple labels architechture, combine coordinates with countries #Modeling
+- [ ] Deploy Training Iteration on other cloud service than gpuhub #Modeling
 
 
 ## Doing
 
 - [ ] Update Scientific Report for DataProcessing, Methods, Model Validation, MLOps #WorkingPermanently
 - [ ] up-to-date kanban board before each coaching session #WorkingPermanently
-- [ ] Get Data insights from images #DataUnderstanding
+- [ ] Do some research about CNN or other networks which can handle images #Modeling
+- [ ] Setup wand.db Experiment tracking for Model Training #Modeling
+- [ ] Setup wand.db Experiment tracking for Model Validation #Evaluation
 
 
 ## Done
 
+- [ ] Create Baseline Model #Modeling
+- [ ] Create CNN-Architecture for the Model #Modeling
+- [ ] Define base metric for training and evaluating #Modeling
 - [ ] Create a structure for data science project #DataPreparation #DataUnderstanding #Modeling #Evaluation #Deployment
+- [ ] Get Data insights from images #DataUnderstanding
 - [ ] Map coordinates to real coordinates #DataPreparation
 - [ ] Map coordinates to countries #DataPreparation
 - [ ] Add sample dataset to GitLab for Data Processing #DataCollecting
