@@ -4,6 +4,8 @@ import 'dotenv/config';
 import { Page } from 'playwright-core';
 import { describe } from 'node:test';
 import { DATA_PATH, GAMES, LOCATION_FILE, LOCATION_FILE_EXTENSION, MAX_GAMES, MAX_MINUTES, MAX_ROUNDS, MODE, NUMBER_OF_INSTANCES, RESULT_FILE, RESULT_FILE_EXTENSION, SINGLEPLAYER_WIDTH, STAGGER_INSTANCES, TEMP_PATH, getTimestampString } from './playwright_base_config';
+import checkDiskSpace from 'check-disk-space';
+import path from 'path';
 
 let logProgressInterval: ReturnType<typeof setInterval> | undefined;
 
@@ -21,6 +23,33 @@ const log = (message: string, i?: string) => {
     logProgressInterval = setInterval(() => process.stdout.write('.'), 10000);
   }
 }
+
+const getVolumeRoot = (currentPath: string) => {
+  if (process.platform === 'win32') {
+    // Get the drive letter and append ':\'
+    return currentPath.split(path.sep)[0] + '\\';
+  } else {
+    return '/';
+  }
+};
+
+const hasEnoughFreeDiskSpace = async () => {
+  const cwd = process.cwd();
+
+  const volumeRoot = getVolumeRoot(cwd);
+
+  const diskSpace = await checkDiskSpace(volumeRoot);
+  
+  // Is there more free storage than 100MB in bytes
+  return diskSpace.free > 100 * 1024 * 1024;
+};
+
+const waitForFreeDiskSpace = async (identifier?: string) => {
+  while (!(await hasEnoughFreeDiskSpace())) {
+    log('Waiting for free disk space', identifier);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+};
 
 const getButtonWithText = (page: Page, text: string, only = false) => {
   return page.locator('button, a').getByText(text, { exact: only });
@@ -493,6 +522,7 @@ const roundSingleplayer = async(page: Page, gameId: string, roundNumber: number,
 };
 
 const gameStart = async (page: Page, mode: typeof MODE, waitText: string, waitTime: number, i: number, identifier?: string, resume = false) => {
+  await waitForFreeDiskSpace(identifier);
   if (!resume || (await page.getByText('World', { exact: true }).count()) === 0) {
     await page.getByText(waitText).or(page.getByText('Rate limit')).nth(0).waitFor({ state: 'visible', timeout: 60000 });
     if (await page.getByText('Rate limit').count() > 0) {
