@@ -99,7 +99,7 @@ const getCookieBanner = (page: Page) => {
 }
 
 // Create function which checks for a cookie banner and removes it
-const removeCookieBanner = async (page: Page) => {
+const removeCookieBanner = async (page: Page, timeout = 15000) => {
   // Check if element with id "onetrust-consent-sdk" exists
   const cookieBanner = getCookieBanner(page);
   await cookieBanner.waitFor({ state: 'attached', timeout: 15000 });
@@ -623,6 +623,7 @@ const playStart = async (page: Page, i: number, identifier?: string) => {
     await removeCookieBanner(page);
     await logIn(page, identifier);
   } else {
+    await removeCookieBanner(page, 3000);
     log('Already logged in', identifier);
   }
   page.setDefaultTimeout(5000);
