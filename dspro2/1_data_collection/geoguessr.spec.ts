@@ -45,8 +45,12 @@ const hasEnoughFreeDiskSpace = async () => {
 };
 
 const waitForFreeDiskSpace = async (identifier?: string) => {
+  let first = true;
   while (!(await hasEnoughFreeDiskSpace())) {
-    log('Waiting for free disk space', identifier);
+    if (first) {
+      log('Waiting for free disk space', identifier);
+    }
+    first = false;
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
 };
