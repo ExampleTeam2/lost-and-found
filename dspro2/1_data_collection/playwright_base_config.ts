@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-export const DATA_PATH = 'dspro2/1_data_collection/data/';
+export const DATA_PATH = 'dspro2/1_data_collection/.data/';
 export const TEMP_PATH = 'dspro2/1_data_collection/tmp/';
 export const LOCATION_FILE = 'geoguessr_location_';
 export const LOCATION_FILE_EXTENSION = '.png';
