@@ -11,10 +11,9 @@ from data_loader import load_json_files, load_image_files
 
 
 class ImageDataHandler:
-    def __init__(self, image_paths, json_paths, transform, batch_size=128, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1):
+    def __init__(self, image_paths, json_paths, transform, datasize, batch_size=128, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1):
         self.batch_size = batch_size
-        
-        print(len(image_paths))
+        self.datasize = datasize
       
         file_name_dataset = CustomImageNameDataset(image_paths, json_paths, transform=transform)
         file_name_loader = DataLoader(file_name_dataset, batch_size=batch_size, shuffle=False)
@@ -50,9 +49,9 @@ class ImageDataHandler:
         test_data = combined[val_end:]
         
         # Create train, val- and test datasets
-        train_dataset = CustomImageDataset(*zip(*train_data), replace_country_index=True)
-        val_dataset = CustomImageDataset(*zip(*val_data), replace_country_index=False)
-        test_dataset = CustomImageDataset(*zip(*test_data), replace_country_index=False)
+        train_dataset = CustomImageDataset(*zip(*train_data), self.datasize, replace_country_index=True)
+        val_dataset = CustomImageDataset(*zip(*val_data), self.datasize, replace_country_index=False)
+        test_dataset = CustomImageDataset(*zip(*test_data), self.datasize, replace_country_index=False)
 
         # Create train, val- and test dataloaders
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)

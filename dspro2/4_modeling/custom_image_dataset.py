@@ -3,11 +3,11 @@ import json
 from torch.utils.data import Dataset
 
 class CustomImageDataset(Dataset):
-    def __init__(self, images, coordinates, countries, replace_country_index):
+    def __init__(self, images, coordinates, countries, datasize, replace_country_index):
         self.images = images
         self.coordinates = coordinates
         self.countries = countries
-        self.country_index_path= "country_to_index.json"
+        self.country_index_path= f"models/datasize_{datasize}_country_to_index.json"
 
         if replace_country_index:
           try:
