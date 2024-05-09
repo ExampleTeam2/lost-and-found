@@ -51,3 +51,6 @@ dspro2/1_data_collection/data/cookies.json
 /dspro2/3_data_preparation/01_enriching/data/
 /dspro2/3_data_preparation/01_enriching/.data/
 /analyze/data/
+
+# Models and Tensors
+*.pth
