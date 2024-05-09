@@ -11,7 +11,7 @@ from data_loader import load_json_files, load_image_files
 
 
 class ImageDataHandler:
-    def __init__(self, image_paths, json_paths, transform, datasize, batch_size=128, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1):
+    def __init__(self, image_paths, json_paths, transform, datasize, batch_size=1000, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1):
         self.batch_size = batch_size
         self.datasize = datasize
       
