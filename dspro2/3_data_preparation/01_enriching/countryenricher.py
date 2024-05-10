@@ -50,6 +50,8 @@ class CountryEnricher:
         
     def load_and_prepare_files(self, num_workers=16):
         json_paths = get_json_files(self.input_dir)
+        # filter for mode
+        json_paths = [path for path in json_paths if self.mode in path]
         had_error = False
         
         def process_json_file(file_path):

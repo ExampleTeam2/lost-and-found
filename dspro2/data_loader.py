@@ -60,9 +60,12 @@ def get_countries_occurrences_from_files(files, basenames_to_locations_map=None)
   countries_to_basenames = {}
   basenames_to_countries = {}
   for file, game, basename in zip(json_files, json_data, json_basenames):
-      if 'country_name' not in game and 'country' not in game:
-        print('Country name not found in game: ' + file)
-        continue
+      if 'country_name' not in game:
+        if 'country' not in game:
+          print('Country not found in game: ' + file)
+          continue
+        else:
+          raise ValueError('Country name not found in game, was not enriched: ' + file)
       country = game['country_name']
       if country in countries:
           countries[country] += 1
