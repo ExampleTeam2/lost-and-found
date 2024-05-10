@@ -420,11 +420,13 @@ def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_e
   if var == 'env' or do_not_enforce_but_allow_env == True and var is not None:
     if do_not_enforce_but_allow_env == False:
       raise ValueError('Prefer providing a default file location and setting <name>_allow_env=True')
-    var = os.environ.get(env_name)
-    if var is None and alt_env is not None:
-      var = os.environ.get(alt_env)
-    if do_not_enforce_but_allow_env is None and var is None:
+    new_var = os.environ.get(env_name)
+    if new_var is None and alt_env is not None:
+      new_var = os.environ.get(alt_env)
+    if do_not_enforce_but_allow_env is None and new_var is None:
       raise ValueError('Environment variable ' + env_name + ' not set')
+    elif new_var is not None:
+      return new_var
   return var
 
 # Get file paths of data to load, using multiple locations and optionally a map.
@@ -446,6 +448,7 @@ def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_e
 # If countries_map_slack_factor is set (only works if countries_map_percentage_threshold is set), it will allow countries to be included in the map if they are within the slack factor of the percentage threshold. This can also be set to 1 to include countries that can be mapped but do not match countries_map_percentage_threshold.
 def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, return_basenames_too=False):
   if download_link == 'default':
+    print('Using default download link')
     download_link = DEFAULT_DOWNLOAD_LINK
   download_link = resolve_env_variable(download_link, 'DOWNLOAD_LINK', allow_download_link_env)
   file_location = resolve_env_variable(file_location, 'FILE_LOCATION', allow_file_location_env)
