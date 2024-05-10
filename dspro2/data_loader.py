@@ -565,8 +565,8 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   return actual_file_locations
 
 # Update data based on factors
-def update_data_to_load(files_to_keep, old_loading_file = './data_list', new_loading_file = './updated_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, shuffle_seed=None, download_link=None, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False):
-  _, previous_files_to_load = get_data_to_load(old_loading_file, file_location, json_file_location, image_file_location, filter_text, type, limit, allow_new_file_creation=False, shuffle_seed=shuffle_seed, download_link=download_link, from_remote_only=from_remote_only, allow_file_location_env=allow_file_location_env, allow_json_file_location_env=allow_json_file_location_env, allow_image_file_location_env=allow_image_file_location_env, return_basenames_too=True)
+def update_data_to_load(files_to_keep, old_loading_file = './data_list', new_loading_file = './updated_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, shuffle_seed=None, download_link=None, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False):
+  _, previous_files_to_load = get_data_to_load(old_loading_file, file_location, json_file_location, image_file_location, filter_text, type, limit, allow_new_file_creation=False, shuffle_seed=shuffle_seed, download_link=download_link, from_remote_only=from_remote_only, allow_file_location_env=allow_file_location_env, allow_json_file_location_env=allow_json_file_location_env, allow_image_file_location_env=allow_image_file_location_env, allow_download_link_env=allow_download_link_env, return_basenames_too=True)
   files_to_load = []
   base_files_to_keep = set([os.path.basename(file) for file in files_to_keep])
   for previous_file_to_load in previous_files_to_load:
@@ -632,8 +632,8 @@ def load_image_files_raw(files, num_workers=16):
   return results
 
 # get countries occurrences from games
-def get_countries_occurrences(loading_file = './countries_map_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), filter_text='multiplayer', download_link=None, from_remote_only=False, allow_file_location_env=False, allow_image_file_location_env=False, allow_json_file_location_env=False):
-  files = get_data_to_load(loading_file=loading_file, file_location=file_location, filter_text=filter_text, type='json', download_link=download_link, from_remote_only=from_remote_only, allow_file_location_env=allow_file_location_env, allow_image_file_location_env=allow_image_file_location_env, allow_json_file_location_env=allow_json_file_location_env)
+def get_countries_occurrences(loading_file = './countries_map_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), filter_text='multiplayer', download_link=None, from_remote_only=False, allow_file_location_env=False, allow_image_file_location_env=False, allow_json_file_location_env=False, allow_download_link_env=False):
+  files = get_data_to_load(loading_file=loading_file, file_location=file_location, filter_text=filter_text, type='json', download_link=download_link, from_remote_only=from_remote_only, allow_file_location_env=allow_file_location_env, allow_image_file_location_env=allow_image_file_location_env, allow_json_file_location_env=allow_json_file_location_env, allow_download_link_env=allow_download_link_env)
   # map data
   countries, countries_to_files, files_to_countries, num_games, countries_to_basenames, basenames_to_countries = get_countries_occurrences_from_files(files)
   return countries, countries_to_files, files_to_countries, num_games, countries_to_basenames, basenames_to_countries
