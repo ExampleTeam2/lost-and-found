@@ -8,6 +8,8 @@ import urllib3
 from PIL import Image
 import numpy as np
 
+DEFAULT_DOWNLOAD_LINK='http://49.12.197.1'
+
 # load .env file
 from dotenv import load_dotenv
 load_dotenv()
@@ -431,19 +433,21 @@ def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_e
 # If no shuffle seed is given they will be returned in the original order.
 # If not just one type is loaded, the limit will be applied per pair of files.
 # The shuffle (if enabled) will also be applied per pair of files.
-# If a download link is uses, it will be used instead of the file location and the files will be downloaded to the file location.
+# If a download link is used, it will be used instead of the file location and the files will be downloaded to the file location.
 # Set the allow_file_location_env=True to use the environment variable "FILE_LOCATION" as the file location, otherwise file_location will be used.
 # Set the json file location to "env" to use the environment variable "JSON_FILE_LOCATION" as the json file location, otherwise json_file_location will be used.
 # Set the image file location to "env" to use the environment variable "IMAGE_FILE_LOCATION" as the image file location, otherwise image_file_location will be used.
-# Set the download link to "env" to use the environment variable "DOWNLOAD_LINK" as the download link.
+# Set the download link to "default" to use the default, set allow_download_link_env=True to use the environment variable "DOWNLOAD_LINK" as the download link.
 # Set the environment variable "SKIP_REMOTE" to "true" to skip the remote files and only use the local files. (even if from_remote_only is set), only use this if you are sure the current files are already downloaded.
 # Set the environment variable "SKIP_CHECKS" to "true" to skip all of the checks and just use the files from the data-list. Only use this if you are sure the files are already downloaded and structured correctly.
 # Set allow_new_file_creation=False to only allow loading from the loading file, otherwise an error will be raised. This will improve loading performance.
 # If a countries map is given, the files will automatically be pre-downloaded.
 # The countries_map_percentage_threshold is the minimum percentage of games (of the total) a country should have to be included in the map, it only works if allow_missing_in_map is set to True.
 # If countries_map_slack_factor is set (only works if countries_map_percentage_threshold is set), it will allow countries to be included in the map if they are within the slack factor of the percentage threshold. This can also be set to 1 to include countries that can be mapped but do not match countries_map_percentage_threshold.
-def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, return_basenames_too=False):
-  download_link = resolve_env_variable(download_link, 'DOWNLOAD_LINK')
+def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, return_basenames_too=False):
+  if download_link == 'default':
+    download_link = DEFAULT_DOWNLOAD_LINK
+  download_link = resolve_env_variable(download_link, 'DOWNLOAD_LINK', allow_download_link_env)
   file_location = resolve_env_variable(file_location, 'FILE_LOCATION', allow_file_location_env)
   json_file_location = resolve_env_variable(json_file_location, 'JSON_FILE_LOCATION', allow_json_file_location_env)
   image_file_location = resolve_env_variable(image_file_location, 'IMAGE_FILE_LOCATION', allow_image_file_location_env)
