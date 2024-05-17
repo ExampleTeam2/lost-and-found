@@ -22,15 +22,21 @@ kanban-plugin: basic
 - [ ] Research other metrics for the evaluating the model #Modeling #Evaluation
 - [ ] Add Multiple labels architechture, combine coordinates with countries #Modeling
 - [ ] Deploy Training Iteration on other cloud service than gpuhub #Modeling
+- [ ] Load pre-trained weights and do some transfer learning , freeze some layers and unfreeze dense layers #Modeling
+- [ ] Focus just on predicting accuracy of guessing countries #BusinessUnderstanding
+- [ ] Play the game and make a baseline accuracy for amateur {Yutaro, Lukas}, and pro {Linus} #Modeling
 
 
 ## Doing
 
+- [ ] Focus on the task "Country Prediction" #WorkingPermanently
 - [ ] Update Scientific Report for DataProcessing, Methods, Model Validation, MLOps #WorkingPermanently
 - [ ] up-to-date kanban board before each coaching session #WorkingPermanently
 - [ ] Do some research about CNN or other networks which can handle images #Modeling
 - [ ] Setup wand.db Experiment tracking for Model Training #Modeling
 - [ ] Setup wand.db Experiment tracking for Model Validation #Evaluation
+- [ ] Change accuray for best, 3 best and 5 best predictions, and logg it, when it is under the predictions it's correct #Modeling
+- [ ] Try other models like MobileNetV2 and a CNN too? #Modeling
 
 
 ## Done
