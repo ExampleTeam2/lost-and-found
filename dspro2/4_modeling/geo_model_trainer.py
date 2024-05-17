@@ -38,6 +38,7 @@ class GeoModelTrainer:
       
   def initialize_model(self, model_type):
       self.model_type = model_type
+      # Initialize already with best available weights (currently alias for IMAGENET1K_V2)
       if self.model_type == 'resnet18':
           model = resnet18(weights=ResNet18_Weights.DEFAULT)
       elif self.model_type == 'resnet34':
@@ -117,12 +118,19 @@ class GeoModelTrainer:
           optimizer = optim.AdamW(optimizer_grouped_parameters, weight_decay=config.weight_decay)
 
           for epoch in range(config.epochs):
-              train_loss, train_metric = self.run_epoch(criterion, optimizer, is_train=True)
-              val_loss, val_metric = self.run_epoch(criterion, optimizer, is_train=False)
+              if self.use_coordinates:
+                  train_loss, train_metric = self.run_epoch(criterion, optimizer, is_train=True)
+                  val_loss, val_metric = self.run_epoch(criterion, optimizer, is_train=False)
+              else:
+                  train_loss, train_top1_accuracy, train_top3_accuracy, train_top5_accuracy = self.run_epoch(criterion, optimizer, is_train=True)
+                  val_loss, val_top1_accuracy, val_top3_accuracy, val_top5_accuracy = self.run_epoch(criterion, optimizer, is_train=False)
               
               # Early stopping and logging
-              if (self.use_coordinates and val_metric < best_val_metric) or (not self.use_coordinates and val_metric > best_val_metric):
-                  best_val_metric = val_metric
+              if (self.use_coordinates and val_metric < best_val_metric) or (not self.use_coordinates and val_top1_accuracy > best_val_metric):
+                  #if val_metric:
+                  #    best_val_metric = val_metric
+                  #else:
+                  best_val_metric = val_top1_accuracy
                   torch.save(self.model.state_dict(), f"models/datasize_{self.datasize}/best_model_checkpoint{model_name}_predict_coordinates_{self.use_coordinates}.pth")
                   patience_counter = 0
               else:
@@ -142,41 +150,61 @@ class GeoModelTrainer:
               else:
                 wandb.log({
                   "Train Loss": train_loss,
-                  "Train Accuracy": train_metric,
+                  "Train Accuracy Top 1": train_top1_accuracy,
+                  "Train Accuracy Top 3": train_top3_accuracy,
+                  "Train Accuracy Top 5": train_top5_accuracy,
                   "Validation Loss": val_loss,
-                  "Validation Accuracy": val_metric
+                  "Validation Accuracy Top 1": val_top1_accuracy,
+                  "Validation Accuracy Top 3": val_top3_accuracy,
+                  "Validation Accuracy Top 5": val_top5_accuracy
               })
 
   def run_epoch(self, criterion, optimizer, is_train=True):
-      if is_train:
-          self.model.train()
-      else:
-          self.model.eval()
-      
-      total_loss = 0.0
-      total_metric = 0.0
-      data_loader = self.train_dataloader if is_train else self.val_dataloader
-      
-      for images, coordinates, country_indices in data_loader:
-          with torch.set_grad_enabled(is_train):
-              images = images.to(self.device)
-              targets = coordinates.to(self.device) if self.use_coordinates else country_indices.to(self.device)
-              optimizer.zero_grad()
-              outputs = self.model(images)
-              loss = criterion(outputs, targets)
-              
-              if is_train:
-                  loss.backward()
-                  optimizer.step()
-              
-              total_loss += loss.item() * images.size(0)
-              if self.use_coordinates:
-                total_metric += self.mean_spherical_distance(outputs, coordinates).item() * images.size(0)
-              else:
-                  predicted = outputs.max(1, keepdim=True)[1]
-                  correct = predicted.eq(targets.view_as(predicted)).sum().item()
-                  total_metric += correct
-      
-      avg_loss = total_loss / len(data_loader.dataset)
-      avg_metric = total_metric / len(data_loader.dataset)
-      return avg_loss, avg_metric
+    if is_train:
+        self.model.train()
+    else:
+        self.model.eval()
+
+    total_loss = 0.0
+    total_metric = 0.0
+    top1_correct = 0
+    top3_correct = 0
+    top5_correct = 0
+    data_loader = self.train_dataloader if is_train else self.val_dataloader
+
+    for images, coordinates, country_indices in data_loader:
+        with torch.set_grad_enabled(is_train):
+            images = images.to(self.device)
+            targets = coordinates.to(self.device) if self.use_coordinates else country_indices.to(self.device)
+            optimizer.zero_grad()
+            outputs = self.model(images)
+            loss = criterion(outputs, targets)
+
+            if is_train:
+                loss.backward()
+                optimizer.step()
+
+            total_loss += loss.item() * images.size(0)
+            if self.use_coordinates:
+                total_metric += self.mean_spherical_distance(outputs, targets).item() * images.size(0)
+            else:
+                # Get the top 5 predictions for each image
+                _, predicted_top5 = outputs.topk(5, 1, True, True)
+
+                # Calculate different accuracies
+                correct = predicted_top5.eq(targets.view(-1, 1).expand_as(predicted_top5))
+
+                top1_correct += correct[:, 0].sum().item()
+                top3_correct += correct[:, :3].sum().item()
+                top5_correct += correct[:, :5].sum().item()
+
+    avg_loss = total_loss / len(data_loader.dataset)
+
+    if self.use_coordinates:
+        avg_metric = total_metric / len(data_loader.dataset)
+        return avg_loss, avg_metric
+    else:
+        top1_accuracy = top1_correct / len(data_loader.dataset)
+        top3_accuracy = top3_correct / len(data_loader.dataset)
+        top5_accuracy = top5_correct / len(data_loader.dataset)
+        return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy

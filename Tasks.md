@@ -22,7 +22,6 @@ kanban-plugin: basic
 - [ ] Research other metrics for the evaluating the model #Modeling #Evaluation
 - [ ] Add Multiple labels architechture, combine coordinates with countries #Modeling
 - [ ] Deploy Training Iteration on other cloud service than gpuhub #Modeling
-- [ ] Load pre-trained weights and do some transfer learning , freeze some layers and unfreeze dense layers #Modeling
 - [ ] Focus just on predicting accuracy of guessing countries #BusinessUnderstanding
 - [ ] Play the game and make a baseline accuracy for amateur {Yutaro, Lukas}, and pro {Linus} #Modeling
 
@@ -42,6 +41,7 @@ kanban-plugin: basic
 ## Done
 
 - [ ] Create Baseline Model #Modeling
+- [ ] Load pre-trained weights and do some transfer learning , freeze some layers and unfreeze dense layers #Modeling
 - [ ] Create CNN-Architecture for the Model #Modeling
 - [ ] Define base metric for training and evaluating #Modeling
 - [ ] Create a structure for data science project #DataPreparation #DataUnderstanding #Modeling #Evaluation #Deployment
