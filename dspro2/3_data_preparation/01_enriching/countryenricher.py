@@ -8,30 +8,7 @@ from fuzzywuzzy import process
 import sys
 sys.path.insert(0, '../../')
 from data_loader import resolve_env_variable, get_json_files, load_json_file
-
-additional_countries_and_regions = [
-  ['XK', 'Kosovo'],
-]
-additional_countries_and_regions_split = list(zip(*additional_countries_and_regions))
-additional_countries_and_regions_split_reversed = additional_countries_and_regions_split[::-1] if len(additional_countries_and_regions_split) > 1 else additional_countries_and_regions_split
-additional_countries_and_regions_reversed = list(zip(*additional_countries_and_regions_split_reversed))
-
-additional_countries_and_regions_names = additional_countries_and_regions_split[1]
-
-additional_countries_and_regions_from_name = dict(additional_countries_and_regions_reversed)
-
-def get_closest_additional_country_or_region_from_name(name):
-  found, score = process.extractOne(name, additional_countries_and_regions_names)
-  if score <= 80:
-    return None
-  return found
-
-additional_countries_and_regions_from_country_code = dict(additional_countries_and_regions)
-
-class AdditionalCountryOrRegion:
-  def __init__(self, country_code, country_name):
-    self.alpha_2 = country_code
-    self.name = country_name
+from countryconverter import convert_from_coordinates, convert_from_names
 
 # You can use the environment variables FILE_LOCATION and JSON_FILE_LOCATION to set the input and output directories
 class CountryEnricher:
@@ -103,37 +80,9 @@ class CountryEnricher:
     
     def enrich_with_country_info(self):
       if not self.from_country:
-        results = rg.search(self.coordinates) if len(self.coordinates) else []
-        for result, coord in zip(results, self.coordinates):
-            image_ids = self.file_map[str(coord)]
-            country_code = result['cc']
-            country = pycountry.countries.get(alpha_2=country_code)
-            if country is None:
-              country_name = additional_countries_and_regions_from_country_code.get(country_code, None)
-              if country_name is not None:
-                country = AdditionalCountryOrRegion(country_code, country_name)
-            if country is None:
-              raise ValueError(f"Country code {country_code} not found")
-            for image_id in image_ids:
-              self.json_files[image_id]['country_name'] = country.name
-              self.json_files[image_id]['country_code'] = country.alpha_2
+        self.json_files = convert_from_coordinates(self.coordinates, self.file_map, self.json_files)
       else:
-        for country_name, image_ids in self.file_map.items():
-          countries = []
-          try:
-            countries = pycountry.countries.search_fuzzy(country_name)
-          except LookupError:
-            matched_name = get_closest_additional_country_or_region_from_name(country_name)
-            if matched_name is not None:
-              country_code = additional_countries_and_regions_from_name.get(matched_name, None)
-              country = AdditionalCountryOrRegion(country_code, matched_name)
-              countries.append(country)
-          if not len(countries):
-            raise ValueError(f"Country {country_name} not found")
-          country = countries[0]
-          for image_id in image_ids:
-            self.json_files[image_id]['country_name'] = country.name
-            self.json_files[image_id]['country_code'] = country.alpha_2
+        self.json_files = convert_from_names(self.file_map, self.json_files)
     
     def save_enriched_files(self, num_workers=16):
         os.makedirs(self.output_dir, exist_ok=True)
