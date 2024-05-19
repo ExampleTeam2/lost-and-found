@@ -244,7 +244,7 @@ def _download_files_direct(download_link, files_to_download, current_location, n
       if (current_file_log and current_file_log % 1000 == 0) or current_file == len(files_to_download):
         print('Downloaded ' + str(current_file_log) + ' files')
 
-def _download_files(download_link, files_to_download, file_location, json_file_location = None, image_file_location = None):
+def _download_files(download_link, files_to_download, file_location, json_file_location = None, image_file_location = None, num_connections=16):
   print('Downloading ' + str(len(files_to_download)) + ' files')
   files_to_normal_location = []
   files_to_json_location = []
@@ -258,11 +258,11 @@ def _download_files(download_link, files_to_download, file_location, json_file_l
   else:
     files_to_normal_location.extend([file for file in files_to_download if file.endswith('.png')])
   if len(files_to_normal_location):
-    _download_files_direct(download_link, files_to_normal_location, file_location)
+    _download_files_direct(download_link, files_to_normal_location, file_location, num_connections=num_connections)
   if len(files_to_json_location):
-    _download_files_direct(download_link, files_to_json_location, json_file_location, start_file=len(files_to_normal_location))
+    _download_files_direct(download_link, files_to_json_location, json_file_location, start_file=len(files_to_normal_location), num_connections=num_connections)
   if len(files_to_image_location):
-    _download_files_direct(download_link, files_to_image_location, image_file_location, start_file=len(files_to_normal_location) + len(files_to_json_location))
+    _download_files_direct(download_link, files_to_image_location, image_file_location, start_file=len(files_to_normal_location) + len(files_to_json_location), num_connections=num_connections)
   pass
 
 def _get_non_downloaded_files_list(remote_files, local_files):
@@ -382,7 +382,7 @@ def _get_list_from_remote(download_link, file_location, json_file_location = Non
   print('All remote files: ' + str(len(all_files)))
   return basenames, basenames_to_locations_map
 
-def _get_files_list(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', download_link=None, pre_download=False, from_remote_only=False, dedupe_and_remove_unpaired=True, skip_checks=False):
+def _get_files_list(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', download_link=None, pre_download=False, from_remote_only=False, dedupe_and_remove_unpaired=True, skip_checks=False, num_download_connections=16):
   basenames_to_locations_map={}
   basenames = []
   remote_files = []
@@ -400,7 +400,7 @@ def _get_files_list(file_location, json_file_location = None, image_file_locatio
   if len(remote_files):
     non_downloaded_files = _get_non_downloaded_files_list(remote_files, local_files)
     if pre_download and len(non_downloaded_files):
-      _download_files(download_link, non_downloaded_files, file_location, json_file_location, image_file_location)
+      _download_files(download_link, non_downloaded_files, file_location, json_file_location, image_file_location, num_connections=num_download_connections)
       
   if dedupe_and_remove_unpaired and not skip_checks:
     # Remove duplicates
@@ -449,7 +449,7 @@ def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_e
 # If a countries map is given, the files will automatically be pre-downloaded.
 # The countries_map_percentage_threshold is the minimum percentage of games (of the total) a country should have to be included in the map, it only works if allow_missing_in_map is set to True.
 # If countries_map_slack_factor is set (only works if countries_map_percentage_threshold is set), it will allow countries to be included in the map if they are within the slack factor of the percentage threshold. This can also be set to 1 to include countries that can be mapped but do not match countries_map_percentage_threshold.
-def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, return_basenames_too=False):
+def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16, return_basenames_too=False):
   if download_link == 'default':
     download_link = DEFAULT_DOWNLOAD_LINK
   download_link = resolve_env_variable(download_link, 'DOWNLOAD_LINK', allow_download_link_env)
@@ -471,7 +471,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   
   pre_download = pre_download or countries_map is not None
   
-  basenames, basenames_to_locations_map, downloadable_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks)
+  basenames, basenames_to_locations_map, downloadable_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks, num_download_connections=num_download_connections)
   
   has_loading_file = False
   files_from_loading_file = []
@@ -523,7 +523,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
       downloadable_files_from_loading_file = _get_downloadable_files_list(files_from_loading_file, downloadable_files)
       files_to_download = _get_downloadable_files_list(basenames, downloadable_files_from_loading_file)
     if len(files_to_download):
-      _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location)
+      _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location, num_connections=num_download_connections)
     
   # if no loading file, use the just discovered files
   files_to_load = basenames
@@ -571,8 +571,8 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   return actual_file_locations
 
 # Update data based on factors
-def update_data_to_load(files_to_keep, old_loading_file = './data_list', new_loading_file = './updated_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, shuffle_seed=None, download_link=None, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False):
-  _, previous_files_to_load = get_data_to_load(old_loading_file, file_location, json_file_location, image_file_location, filter_text, type, limit, allow_new_file_creation=False, shuffle_seed=shuffle_seed, download_link=download_link, from_remote_only=from_remote_only, allow_file_location_env=allow_file_location_env, allow_json_file_location_env=allow_json_file_location_env, allow_image_file_location_env=allow_image_file_location_env, allow_download_link_env=allow_download_link_env, return_basenames_too=True)
+def update_data_to_load(files_to_keep, old_loading_file = './data_list', new_loading_file = './updated_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, shuffle_seed=None, download_link=None, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16):
+  _, previous_files_to_load = get_data_to_load(old_loading_file, file_location, json_file_location, image_file_location, filter_text, type, limit, allow_new_file_creation=False, shuffle_seed=shuffle_seed, download_link=download_link, from_remote_only=from_remote_only, allow_file_location_env=allow_file_location_env, allow_json_file_location_env=allow_json_file_location_env, allow_image_file_location_env=allow_image_file_location_env, allow_download_link_env=allow_download_link_env, num_download_connections=num_download_connections, return_basenames_too=True)
   files_to_load = []
   base_files_to_keep = set([os.path.basename(file) for file in files_to_keep])
   for previous_file_to_load in previous_files_to_load:
@@ -638,8 +638,8 @@ def load_image_files_raw(files, num_workers=16):
   return results
 
 # get countries occurrences from games
-def get_countries_occurrences(loading_file = './countries_map_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), filter_text='multiplayer', download_link=None, from_remote_only=False, allow_file_location_env=False, allow_image_file_location_env=False, allow_json_file_location_env=False, allow_download_link_env=False):
-  files = get_data_to_load(loading_file=loading_file, file_location=file_location, filter_text=filter_text, type='json', download_link=download_link, from_remote_only=from_remote_only, allow_file_location_env=allow_file_location_env, allow_image_file_location_env=allow_image_file_location_env, allow_json_file_location_env=allow_json_file_location_env, allow_download_link_env=allow_download_link_env)
+def get_countries_occurrences(loading_file = './countries_map_data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), filter_text='multiplayer', download_link=None, from_remote_only=False, allow_file_location_env=False, allow_image_file_location_env=False, allow_json_file_location_env=False, allow_download_link_env=False, num_download_connections=16):
+  files = get_data_to_load(loading_file=loading_file, file_location=file_location, filter_text=filter_text, type='json', download_link=download_link, from_remote_only=from_remote_only, allow_file_location_env=allow_file_location_env, allow_image_file_location_env=allow_image_file_location_env, allow_json_file_location_env=allow_json_file_location_env, allow_download_link_env=allow_download_link_env, num_download_connections=num_download_connections)
   # map data
   countries, countries_to_files, files_to_countries, num_games, countries_to_basenames, basenames_to_countries = get_countries_occurrences_from_files(files)
   return countries, countries_to_files, files_to_countries, num_games, countries_to_basenames, basenames_to_countries
