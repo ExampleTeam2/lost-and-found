@@ -520,7 +520,8 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   if download_link is not None and not pre_download and len(downloadable_files):
     files_to_download = _get_downloadable_files_list(basenames, downloadable_files)
     if len(files_to_download) and has_loading_file:
-      files_to_download = _get_downloadable_files_list(basenames, files_from_loading_file)
+      downloadable_files_from_loading_file = _get_downloadable_files_list(files_from_loading_file, downloadable_files)
+      files_to_download = _get_downloadable_files_list(basenames, downloadable_files_from_loading_file)
     if len(files_to_download):
       _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location)
     
