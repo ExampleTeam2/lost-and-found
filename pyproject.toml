@@ -27,6 +27,7 @@ datasets = "^2.19.0"
 wandb = "^0.16.6"
 uuid = "^1.30"
 gradio = "^4.31.4"
+folium = "^0.16.0"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -43,6 +43,9 @@ def _remove_unpaired_files(files):
   print('Filtered out ' + str(len(files) - len(paired_files)) + ' unpaired files')
   return paired_files
 
+# Initially converted Bermuda here, but it is just not included in the singleplayer data in the first place (but in the multiplayer data)
+country_groups = {}
+
 def get_countries_occurrences_from_files(files, basenames_to_locations_map=None):
   # filter out-non json files
   json_files = list(filter(lambda x: x.endswith('.json'), files))
@@ -67,6 +70,9 @@ def get_countries_occurrences_from_files(files, basenames_to_locations_map=None)
         else:
           raise ValueError('Country name not found in game, was not enriched: ' + file)
       country = game['country_name']
+      # Convert to actual country
+      if country in country_groups:
+        country = country_groups[country]
       if country in countries:
           countries[country] += 1
           countries_to_files[country].append(file)
@@ -138,12 +144,16 @@ def map_occurrences_to_files(files, occurrence_map, countries_map_percentage_thr
   factors = [(files_occurrences[country] / occurrence_map[country]) if (country in occurrence_map and country in files_occurrences) else float('nan') for country in all_countries]
   # if any of the factors is nan, raise an exception
   if any([x != x for x in factors]):
-    if allow_missing:
-      # filter out the missing countries
-      factors = [x for x in factors if x == x]
-      print(f'Using {len(factors)} countries (out of {len(all_countries)} options)')
-    else:
-      raise ValueError('Missing country in one of the maps')
+    if not allow_missing:
+      missing_countries = [country for country, factor in zip(all_countries, factors) if factor != factor]
+      # check if any of them are in the occurrence map
+      missing_countries = [country for country in missing_countries if country in occurrence_map]
+      if len(missing_countries):
+        print('Missing countries in the map:', missing_countries)
+        raise ValueError('Missing country in one of the maps')
+    # filter out the missing countries
+    factors = [x for x in factors if x == x]
+    print(f'Using {len(factors)} countries (out of {len(all_countries)} options)')
   if allow_missing and len(factors) == 0:
     raise ValueError('No countries in commmon between the maps')
   # Get the lowest factor
