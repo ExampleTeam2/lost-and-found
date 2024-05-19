@@ -357,9 +357,9 @@ def _get_list_from_local_dir(file_location, json_file_location = None, image_fil
   all_files = []
   if file_location is not None:
     all_files.extend(get_files(file_location))
-  if json_file_location is not None and type != 'png':
+  if json_file_location != file_location and json_file_location is not None and type != 'png':
     all_files.extend(get_json_files(json_file_location))
-  if image_file_location is not None and type != 'json':
+  if image_file_location != file_location and image_file_location is not None and type != 'json':
     all_files.extend(get_image_files(image_file_location))
     
   all_files = list(filter(lambda x: filter_text in x and x.endswith(type), all_files))
@@ -468,7 +468,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   if skip_remote:
     from_remote_only = False
     download_link = None
-  
+
   pre_download = pre_download or countries_map is not None
   
   basenames, basenames_to_locations_map, downloadable_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks, num_download_connections=num_download_connections)
