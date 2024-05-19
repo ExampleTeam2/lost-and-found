@@ -46,7 +46,8 @@ No Requirements, it is good to show what we did to achieve our goal with data. M
 ___
 # Data processing
 
-Follows...
+## Resize of the images
+We can't train the classifier using images in a high resolution, because our resources are limited, and also often images (like from missing persons) are also very low quality. So we decided to reduce the resolution, at the beginning of the processing, about the 1/4 of the original resolution of 1280p x 720p. This also helps to move the images for learning to the server or also between us and also loading takes lot less time for future processing steps. 
 
 
 ___
