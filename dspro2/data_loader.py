@@ -55,7 +55,7 @@ def get_countries_occurrences_from_files(files, basenames_to_locations_map=None)
     json_files_full_paths = _map_to_locations(json_files, basenames_to_locations_map)
     
   # load all multiplayer data
-  json_data = load_json_files(json_files_full_paths)
+  json_data = load_json_files(json_files_full_paths, allow_err=True)
   # get all countries with their number of games
   countries = {}
   countries_to_files = {}
@@ -63,6 +63,8 @@ def get_countries_occurrences_from_files(files, basenames_to_locations_map=None)
   countries_to_basenames = {}
   basenames_to_countries = {}
   for file, game, basename in zip(json_files, json_data, json_basenames):
+      if game is None:
+        continue
       if 'country_name' not in game:
         if 'country' not in game:
           print('Country not found in game: ' + file)
@@ -614,14 +616,22 @@ def split_json_and_image_files(files):
   return json_files, image_files
 
 # load a single json file
-def load_json_file(file):
+def load_json_file(file, allow_err=False):
   with open(file, 'r', encoding='utf8') as f:
-    return json.load(f)
+    try:
+      return json.load(f)
+    except json.JSONDecodeError as error:
+      if allow_err: 
+        print(f"JSONDecodeError in {os.path.basename(file)}")
+        print(error)
+        return None
+      else:
+        raise error
 
 # load mutliple json files parallelized
-def load_json_files(files, num_workers=16):
+def load_json_files(files, num_workers=16, allow_err=False):
   with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
-    results = list(executor.map(load_json_file, files))
+    results = list(executor.map(lambda f: load_json_file(f, allow_err), files))
   return results  
 
 # load a single .png file as a converted image
