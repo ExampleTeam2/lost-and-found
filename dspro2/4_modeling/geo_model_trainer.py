@@ -20,6 +20,7 @@ class GeoModelTrainer:
       self.datasize = datasize
       self.use_coordinates = predict_coordinates
       self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+      self.patience = 10
       self.model_type = None
       self.model = None
 
@@ -96,7 +97,6 @@ class GeoModelTrainer:
           # Set seeds, configure optimizers, losses, etc.
           best_val_metric = float('inf') if self.use_coordinates else 0
           patience_counter = 0
-          patience = 20
 
           # Rename run name and initialize parameters in model name
           model_name = f"model_{config.model_name}_lr_{config.learning_rate}_opt_{config.optimizer}_weightDecay_{config.weight_decay}_imgSize_{config.input_image_size}"
@@ -135,8 +135,8 @@ class GeoModelTrainer:
                   patience_counter = 0
               else:
                   patience_counter += 1
-                  if patience_counter >= patience:
-                      print(f"Stopping early after {patience} epochs without improvement")
+                  if patience_counter >= self.patience:
+                      print(f"Stopping early after {self.patience} epochs without improvement")
                       break
 
               # Log metrics to wandb
