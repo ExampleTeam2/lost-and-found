@@ -99,7 +99,7 @@ class GeoModelTrainer:
           patience = 20
 
           # Rename run name and initialize parameters in model name
-          model_name = f"model_{config.model_name}_lr_{config.learning_rate}_opt_{config.optimizer}_weightDecay_{config.weight_decay}"
+          model_name = f"model_{config.model_name}_lr_{config.learning_rate}_opt_{config.optimizer}_weightDecay_{config.weight_decay}_imgSize_{config.input_image_size}"
           run_name = model_name + f"_{uuid.uuid4()}"
           wandb.run.name = run_name
 
