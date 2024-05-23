@@ -8,6 +8,10 @@ class CustomImageDataset(Dataset):
         self.coordinates = coordinates
         self.countries = countries
         self.country_index_path= f"models/datasize_{datasize}_country_to_index.json"
+        absolute_path = os.path.abspath(self.country_index_path)
+
+        print(f"Country index path (relative): {self.country_index_path}")
+        print(f"Country index path (absolute): {absolute_path}")
 
         if replace_country_index:
           # Try to load existing country to index mapping from a JSON file
