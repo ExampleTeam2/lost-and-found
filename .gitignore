@@ -54,3 +54,6 @@ dspro2/1_data_collection/data/cookies.json
 
 # Models and Tensors
 *.pth
+
+# Temp
+temp_executed_notebook.py
