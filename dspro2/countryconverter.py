@@ -25,22 +25,32 @@ class AdditionalCountryOrRegion:
   def __init__(self, country_code, country_name):
     self.alpha_2 = country_code
     self.name = country_name
+    
+def convert_country_code_to_country(country_code):
+  country = pycountry.countries.get(alpha_2=country_code)
+  if country is None:
+    country_name = additional_countries_and_regions_from_country_code.get(country_code, None)
+    if country_name is not None:
+      country = AdditionalCountryOrRegion(country_code, country_name)
+  if country is None:
+    raise ValueError(f"Country code {country_code} not found")
+  return country
+    
+def convert_coordinates_to_country_names(coordinates):
+  results = rg.search(coordinates) if len(coordinates) else []
+  country_codes = [result['cc'] for result in results]
+  countries = [convert_country_code_to_country(country_code) for country_code in country_codes]
+  country_names = [country.name for country in countries]
+  country_codes = [country.alpha_2 for country in countries]
+  return country_names, country_codes
 
 def convert_from_coordinates(coordinates, file_map, json_files):
-  results = rg.search(coordinates) if len(coordinates) else []
-  for result, coord in zip(results, coordinates):
-      image_ids = file_map[str(coord)]
-      country_code = result['cc']
-      country = pycountry.countries.get(alpha_2=country_code)
-      if country is None:
-        country_name = additional_countries_and_regions_from_country_code.get(country_code, None)
-        if country_name is not None:
-          country = AdditionalCountryOrRegion(country_code, country_name)
-      if country is None:
-        raise ValueError(f"Country code {country_code} not found")
-      for image_id in image_ids:
-        json_files[image_id]['country_name'] = country.name
-        json_files[image_id]['country_code'] = country.alpha_2
+  country_names, country_codes = convert_coordinates_to_country_names(coordinates)
+  for name, country_code, coord in zip(country_names, country_codes, coordinates):
+    image_ids = file_map[str(coord)]
+    for image_id in image_ids:
+      json_files[image_id]['country_name'] = name
+      json_files[image_id]['country_code'] = country_code
   return json_files
 
 def convert_country_to_correct_name(country_name):
