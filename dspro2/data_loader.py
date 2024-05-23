@@ -363,6 +363,9 @@ def process_in_pairs_simple(all_files, type='', limit=None, shuffle_seed=None):
   return processed_files
 
 def get_all_files(path):
+  # create the directory if it does not exist
+  if not os.path.exists(path):
+    os.makedirs(path)
   files = list([file.path for file in os.scandir(path)])
   return [file for file in files if 'geoguessr' in file]
 
