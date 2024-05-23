@@ -46,16 +46,29 @@ def _remove_unpaired_files(files):
 # Initially converted Bermuda here, but it is just not included in the singleplayer data in the first place (but in the multiplayer data)
 country_groups = {}
 
-def get_countries_occurrences_from_files(files, basenames_to_locations_map=None):
+def get_countries_occurrences_from_files(files, basenames_to_locations_map=None, cached_basenames_to_countries={}):
   # filter out-non json files
   json_files = list(filter(lambda x: x.endswith('.json'), files))
   json_basenames = [_get_basename(file) for file in json_files]
-  json_files_full_paths = json_files
+  
+  missing_json_files = [file for file in json_basenames if file not in cached_basenames_to_countries]
+  
+  missing_json_files_full_paths = missing_json_files
   if basenames_to_locations_map:
-    json_files_full_paths = _map_to_locations(json_files, basenames_to_locations_map)
+    missing_json_files_full_paths = _map_to_locations(missing_json_files, basenames_to_locations_map)
     
-  # load all multiplayer data
-  json_data = load_json_files(json_files_full_paths, allow_err=True)
+  # load missing data
+  missing_json_data = load_json_files(missing_json_files_full_paths, allow_err=True)
+  
+  json_data = []
+  for file in json_basenames:
+    if file in cached_basenames_to_countries:
+      country = cached_basenames_to_countries[file]
+      # technically 'country' is different from 'country_name' but it doesn't matter here
+      json_data.append({'country_name': country, 'country': country })
+    else:
+      json_data.append(missing_json_data.pop(0))
+  
   # get all countries with their number of games
   countries = {}
   countries_to_files = {}
@@ -127,9 +140,9 @@ def _map_to_locations(files, basenames_to_locations_map, throw=False):
   return [_map_to_location(file, basenames_to_locations_map) for file in files] if not throw else [_map_to_location_or_throw(file, basenames_to_locations_map) for file in files]
 
 # Takes in a list of files and a occurrence map (from a different_dataset)), create an optimally mapped list of files where the occurrences correspond to the map (or are multiples of them)
-def map_occurrences_to_files(files, occurrence_map, countries_map_percentage_threshold, countries_map_slack_factor=None, allow_missing=False, basenames_to_locations_map=None):
+def map_occurrences_to_files(files, occurrence_map, countries_map_percentage_threshold, countries_map_slack_factor=None, allow_missing=False, basenames_to_locations_map=None, cached_basenames_to_countries={}):
   # get the occurrences of the files itself
-  files_occurrences, _, _, num_files, countries_to_basenames, _ = get_countries_occurrences_from_files(files, basenames_to_locations_map=basenames_to_locations_map)
+  files_occurrences, _, _, num_files, countries_to_basenames, _ = get_countries_occurrences_from_files(files, basenames_to_locations_map=basenames_to_locations_map, cached_basenames_to_countries=cached_basenames_to_countries)
   original_countries_to_basenames = {country: files for country, files in countries_to_basenames.items()}
   original_occurrences = {country: num for country, num in files_occurrences.items()}
   other_countries_to_basenames = {}
@@ -461,7 +474,7 @@ def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_e
 # If a countries map is given, the files will automatically be pre-downloaded.
 # The countries_map_percentage_threshold is the minimum percentage of games (of the total) a country should have to be included in the map, it only works if allow_missing_in_map is set to True.
 # If countries_map_slack_factor is set (only works if countries_map_percentage_threshold is set), it will allow countries to be included in the map if they are within the slack factor of the percentage threshold. This can also be set to 1 to include countries that can be mapped but do not match countries_map_percentage_threshold.
-def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16, allow_num_download_connections_env=True, return_basenames_too=False):
+def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16, allow_num_download_connections_env=True, countries_map_cached_basenames_to_countries={}, return_basenames_too=False):
   if download_link == 'default':
     download_link = DEFAULT_DOWNLOAD_LINK
   download_link = resolve_env_variable(download_link, 'DOWNLOAD_LINK', allow_download_link_env)
@@ -510,7 +523,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
       raise ValueError('Countries map given, but checks are skipped')
     if download_link is not None and not from_remote_only and not has_loading_file:
       print('Warning: If you add local files, this will not be reproducible, consider setting from_remote_only to True')
-    mapped_files, _ = map_occurrences_to_files(basenames, countries_map, countries_map_percentage_threshold, countries_map_slack_factor, allow_missing=allow_missing_in_map, basenames_to_locations_map=basenames_to_locations_map)
+    mapped_files, _ = map_occurrences_to_files(basenames, countries_map, countries_map_percentage_threshold, countries_map_slack_factor, allow_missing=allow_missing_in_map, basenames_to_locations_map=basenames_to_locations_map, cached_basenames_to_countries=countries_map_cached_basenames_to_countries)
     mapped_files_set = set(mapped_files)
     basenames = [file for file in basenames if file in mapped_files_set]
     print('Mapped files: ' + str(len(basenames)))

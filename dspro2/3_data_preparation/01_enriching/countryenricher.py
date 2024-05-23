@@ -13,7 +13,7 @@ from countryconverter import convert_from_coordinates, convert_from_names
 # You can use the environment variables FILE_LOCATION and JSON_FILE_LOCATION to set the input and output directories
 class CountryEnricher:
     """Enriches JSON files with country information based on coordinates."""
-    def __init__(self, input_dir, output_dir, from_country=False, allow_env=False):
+    def __init__(self, input_dir, output_dir, from_country=False, allow_env=False, use_previous=True):
         self.input_dir = resolve_env_variable(input_dir, 'FILE_LOCATION', allow_env, 'JSON_FILE_LOCATION')
         self.output_dir = resolve_env_variable(output_dir, 'JSON_FILE_LOCATION', allow_env, 'FILE_LOCATION')
         self.json_files = {}
@@ -23,6 +23,8 @@ class CountryEnricher:
         self.mode = 'singleplayer' if not from_country else 'multiplayer'
         self.pattern = r'singleplayer_(.+?)\.json' if not from_country else r'multiplayer_(.+?)\.json'
         self.from_country = from_country
+        # Only use if the mapping logic didn't change
+        self.use_previous = use_previous
         self.process()
         
     def load_and_prepare_files(self, num_workers=16):
@@ -44,6 +46,10 @@ class CountryEnricher:
                 print(f"JSONDecodeError in {file}")
                 print(error)
                 return
+              # skip if already processed
+              if self.use_previous:
+                if 'country_name' in self.json_files:
+                  return
               self.json_files[image_id] = json_data
               if not self.from_country:
                 if 'coordinates' in json_data:
