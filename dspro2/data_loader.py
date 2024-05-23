@@ -51,10 +51,10 @@ def get_countries_occurrences_from_files(files, basenames_to_locations_map=None,
   json_files = list(filter(lambda x: x.endswith('.json'), files))
   json_basenames = [_get_basename(file) for file in json_files]
   
-  missing_json_files = [file for file in json_basenames if file not in cached_basenames_to_countries]
+  missing_json_files = [file for file, basename in zip(json_files, json_basenames) if basename not in cached_basenames_to_countries]
   
   missing_json_files_full_paths = missing_json_files
-  if basenames_to_locations_map:
+  if basenames_to_locations_map is not None:
     missing_json_files_full_paths = _map_to_locations(missing_json_files, basenames_to_locations_map)
     
   # load missing data
