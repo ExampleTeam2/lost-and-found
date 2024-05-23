@@ -6,8 +6,9 @@ poetry install
 
 # Define the path to the notebook
 NOTEBOOK_PATH="dspro2/4_modeling/training_resnet_models.ipynb"
-OUTPUT_PATH="temp_executed_notebook.py"
+OUTPUT_NAME="temp_executed_notebook"
+OUTPUT_PATH="4_modeling/$OUTPUT_NAME.py"
 
 # Activate the poetry environment and convert the notebook to a script
-poetry run jupyter nbconvert --ExecutePreprocessor.timeout=600 --to script $NOTEBOOK_PATH --output $OUTPUT_PATH
+poetry run jupyter nbconvert --ExecutePreprocessor.timeout=600 --to script $NOTEBOOK_PATH --output $OUTPUT_NAME
 poetry run python3 $OUTPUT_PATH
