@@ -441,7 +441,7 @@ def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_e
     if do_not_enforce_but_allow_env is None and new_var is None:
       raise ValueError('Environment variable ' + env_name + ' not set')
     elif new_var is not None:
-      return new_var
+      return str(new_var)
   return var
 
 # Get file paths of data to load, using multiple locations and optionally a map.
