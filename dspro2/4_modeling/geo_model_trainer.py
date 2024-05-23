@@ -125,13 +125,13 @@ class GeoModelTrainer:
               else:
                   train_loss, train_top1_accuracy, train_top3_accuracy, train_top5_accuracy = self.run_epoch(criterion, optimizer, is_train=True)
                   val_loss, val_top1_accuracy, val_top3_accuracy, val_top5_accuracy = self.run_epoch(criterion, optimizer, is_train=False)
-              
-              # Early stopping and logging
+
               if (self.use_coordinates and val_metric < best_val_metric) or (not self.use_coordinates and val_top1_accuracy > best_val_metric):
-                  #if val_metric:
-                  #    best_val_metric = val_metric
-                  #else:
-                  best_val_metric = val_top1_accuracy
+                  if self.use_coordinates:
+                      best_val_metric = val_metric
+                  else:
+                      best_val_metric = val_top1_accuracy
+                    
                   os.makedirs(f"models/datasize_{self.datasize}", exist_ok=True)
                   raw_model_path = f"best_model_checkpoint{model_name}_predict_coordinates_{self.use_coordinates}.pth"
                   model_path = f"models/datasize_{self.datasize}/{raw_model_path}"
