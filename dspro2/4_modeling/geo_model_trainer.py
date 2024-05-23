@@ -131,7 +131,7 @@ class GeoModelTrainer:
                   #    best_val_metric = val_metric
                   #else:
                   best_val_metric = val_top1_accuracy
-                  os.makedirs("models/datasize_{self.datasize}", exist_ok=True)
+                  os.makedirs(f"models/datasize_{self.datasize}", exist_ok=True)
                   torch.save(self.model.state_dict(), f"models/datasize_{self.datasize}/best_model_checkpoint{model_name}_predict_coordinates_{self.use_coordinates}.pth")
                   patience_counter = 0
               else:
