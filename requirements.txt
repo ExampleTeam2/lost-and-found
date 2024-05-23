@@ -459,6 +459,9 @@ fsspec[http]==2024.3.1 ; python_version >= "3.10" and python_version < "4.0" \
 fuzzywuzzy==0.18.0 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:45016e92264780e58972dca1b3d939ac864b78437422beecebb3095f8efd00e8 \
     --hash=sha256:928244b28db720d1e0ee7587acf660ea49d7e4c632569cad4f1cd7e68a5f0993
+geojson==3.1.0 ; python_version >= "3.10" and python_version < "4.0" \
+    --hash=sha256:58a7fa40727ea058efc28b0e9ff0099eadf6d0965e04690830208d3ef571adac \
+    --hash=sha256:68a9771827237adb8c0c71f8527509c8f5bef61733aa434cefc9c9d4f0ebe8f3
 gitdb==4.0.11 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:81a3407ddd2ee8df444cbacea00e2d038e40150acfa3001696fe0dcf1d3adfa4 \
     --hash=sha256:bf5421126136d6d0af55bc1e7c1af1c397a34f5b7bd79e776cd3e89785c2b04b
