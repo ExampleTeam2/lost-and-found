@@ -12,4 +12,8 @@ OUTPUT_PATH="dspro2/4_modeling"
 # Activate the poetry environment and convert the notebook to a script
 poetry run jupyter nbconvert --ExecutePreprocessor.timeout=600 --to script $NOTEBOOK_PATH --output $OUTPUT_NAME
 cd $OUTPUT_PATH
+# For colab
+export FILE_LOCATION="../../../drive/MyDrive/.data"
+export JSON_FILE_LOCATION="../../../drive/MyDrive/.data"
+export IMAGE_FILE_LOCATION="../../../drive/MyDrive/.data"
 poetry run python3 $OUTPUT_NAME.py
