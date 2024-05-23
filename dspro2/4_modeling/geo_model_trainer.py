@@ -1,5 +1,6 @@
 import random
 import os
+import gc
 
 import torch
 import torch.nn as nn
@@ -165,6 +166,13 @@ class GeoModelTrainer:
           best_model = self.initialize_model(model_type=config.model_name).to(self.device)
           best_model.load_state_dict(torch.load(model_path))
           wandb.save(model_path)
+
+          # Clean up
+          del self.model
+          del best_model
+
+          gc.collect()
+          torch.cuda.empty_cache()  
 
   def run_epoch(self, criterion, optimizer, is_train=True):
     if is_train:
