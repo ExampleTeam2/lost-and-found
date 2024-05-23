@@ -132,6 +132,7 @@ class GeoModelTrainer:
                   #else:
                   best_val_metric = val_top1_accuracy
                   os.makedirs(f"models/datasize_{self.datasize}", exist_ok=True)
+                  model_path = f"models/datasize_{self.datasize}/best_model_checkpoint{model_name}_predict_coordinates_{self.use_coordinates}.pth"
                   torch.save(self.model.state_dict(), f"models/datasize_{self.datasize}/best_model_checkpoint{model_name}_predict_coordinates_{self.use_coordinates}.pth")
                   patience_counter = 0
               else:
@@ -159,6 +160,11 @@ class GeoModelTrainer:
                   "Validation Accuracy Top 3": val_top3_accuracy,
                   "Validation Accuracy Top 5": val_top5_accuracy
               })
+                
+          # Load and log the best model to wandb
+          best_model = self.initialize_model(model_type=config.model_name).to(self.device)
+          best_model.load_state_dict(torch.load(model_path))
+          wandb.save(model_path)
 
   def run_epoch(self, criterion, optimizer, is_train=True):
     if is_train:
