@@ -484,7 +484,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   file_location = resolve_env_variable(file_location, 'FILE_LOCATION', allow_file_location_env)
   json_file_location = resolve_env_variable(json_file_location, 'JSON_FILE_LOCATION', allow_json_file_location_env)
   image_file_location = resolve_env_variable(image_file_location, 'IMAGE_FILE_LOCATION', allow_image_file_location_env)
-  skip_remote = resolve_env_variable(download_link, 'SKIP_REMOTE', True)
+  skip_remote = resolve_env_variable(str(False), 'SKIP_REMOTE', True)
   skip_remote = skip_remote is not None and skip_remote and skip_remote.lower() != 'false' and skip_remote.lower() != '0'
   skip_checks = resolve_env_variable(str(False), 'SKIP_CHECKS', True)
   skip_checks = skip_checks is not None and skip_checks and skip_checks.lower() != 'false' and skip_checks.lower() != '0'
