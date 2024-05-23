@@ -133,8 +133,9 @@ class GeoModelTrainer:
                   #else:
                   best_val_metric = val_top1_accuracy
                   os.makedirs(f"models/datasize_{self.datasize}", exist_ok=True)
-                  model_path = f"models/datasize_{self.datasize}/best_model_checkpoint{model_name}_predict_coordinates_{self.use_coordinates}.pth"
-                  torch.save(self.model.state_dict(), f"models/datasize_{self.datasize}/best_model_checkpoint{model_name}_predict_coordinates_{self.use_coordinates}.pth")
+                  raw_model_path = f"best_model_checkpoint{model_name}_predict_coordinates_{self.use_coordinates}.pth"
+                  model_path = f"models/datasize_{self.datasize}/{raw_model_path}"
+                  torch.save(self.model.state_dict(), model_path)
                   patience_counter = 0
               else:
                   patience_counter += 1
@@ -165,7 +166,9 @@ class GeoModelTrainer:
           # Load and log the best model to wandb
           best_model = self.initialize_model(model_type=config.model_name).to(self.device)
           best_model.load_state_dict(torch.load(model_path))
-          wandb.save(model_path)
+          wandb_model_path = os.path.join(wandb.run.dir, raw_model_path)
+          torch.save(best_model.state_dict(), wandb_model_path)
+          wandb.save(wandb_model_path)
 
           # Clean up
           del self.model
