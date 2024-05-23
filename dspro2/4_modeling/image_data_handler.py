@@ -1,6 +1,7 @@
 import sys
 import random
 import torch
+from tqdm import tqdm
 from torch.utils.data import DataLoader, Dataset
 
 from custom_image_name_dataset import CustomImageNameDataset
@@ -8,10 +9,11 @@ from custom_image_dataset import CustomImageDataset
 
 sys.path.insert(0, '../')
 from data_loader import load_json_files, load_image_files
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class ImageDataHandler:
-    def __init__(self, image_paths, json_paths, transform, datasize, batch_size=1000, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1):
+    def __init__(self, image_paths, json_paths, transform, datasize, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1):
         self.batch_size = batch_size
         self.datasize = datasize
       
@@ -22,7 +24,7 @@ class ImageDataHandler:
         self.countries = []
         self.coordinates = []
 
-        for batch_image_files, batch_label_files in file_name_loader:
+        for batch_image_files, batch_label_files in tqdm(file_name_loader, desc="Loading images and labels"):
             images = load_image_files(batch_image_files)
             labels = load_json_files(batch_label_files)
             self.countries.extend([item['country_name'] for item in labels])
@@ -30,7 +32,8 @@ class ImageDataHandler:
             self.coordinates.extend([item['coordinates'] for item in labels])
             #self.coordinates.extend([item.get('coordinates', 'Unknown') for item in labels])
             for image in images:
-              self.images.append(transform(image))
+                self.images.append(transform(image))
+                #self.images.append(transform(image).to(device))
         
         # Initialize datasets and loaders
         self.train_loader, self.val_loader, self.test_loader = self.create_loaders(train_ratio, val_ratio, test_ratio)
