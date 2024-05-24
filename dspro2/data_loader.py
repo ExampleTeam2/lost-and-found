@@ -453,10 +453,13 @@ def get_all_files(path, use_files_list=False, nested=False):
       files_list = file.read()
       
   stripped_path = re.sub(r'/$', '', path)
+  # make absolute
+  if not stripped_path.startswith('/'):
+    stripped_path = os.path.abspath(stripped_path)
   
   if nested and not use_files_list:
     return _get_id_dir_contents(path)
-
+  
   files = _list_dir_contents(path) if not use_files_list else [stripped_path + '/' + (file if not nested else (_get_nested_dir_prefix(file) + file)) for file in files_list.split('\n') if file]
   return _filter_dir_contents(files)
 
