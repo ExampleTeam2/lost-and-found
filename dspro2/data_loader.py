@@ -569,8 +569,8 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   num_download_connections = int(resolve_env_variable(str(num_download_connections), 'NUM_DOWNLOAD_CONNECTIONS', allow_num_download_connections_env))
   use_files_list = resolve_env_variable(str(False), 'USE_FILES_LIST', True)
   use_files_list = use_files_list is not None and use_files_list and use_files_list.lower() != 'false' and use_files_list.lower() != '0'
-  nested = resolve_env_variable(str(False), 'NESTED', True)
-  nested = nested is not None and nested and nested.lower() != 'false' and nested.lower() != '0'
+  nested = resolve_env_variable(str(True), 'NESTED', True)
+  nested = not (nested is not None and nested and nested.lower() != 'true' and nested.lower() != '1')
   if skip_checks:
     print('Warning: Skipping all checks')
     skip_remote = True
