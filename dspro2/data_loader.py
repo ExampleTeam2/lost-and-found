@@ -274,6 +274,8 @@ def _download_single_file(file_url_to_download, current_location, file_name, use
 
 def _download_files_direct(download_link, files_to_download, current_location, num_connections=16, start_file=0, use_files_list=False, nested=False):
   actual_download_links_and_files = _get_download_link_from_files(download_link, files_to_download)
+  # make absolute
+  current_location = os.path.abspath(current_location)
   with concurrent.futures.ThreadPoolExecutor(max_workers=num_connections) as executor:
     # Download and log every 100 files using a generator
     # First initialize the generator
@@ -286,6 +288,8 @@ def _download_files_direct(download_link, files_to_download, current_location, n
         print('Downloaded ' + str(current_file_log) + ' files')
         
 def _list_dir_contents(file_location):
+  # make absolute
+  file_location = os.path.abspath(file_location)
   return list([file.path for file in os.scandir(file_location)])
 
 def _filter_dir_contents(files):
@@ -443,22 +447,22 @@ def get_all_files(path, use_files_list=False, nested=False):
   if not os.path.exists(path):
     os.makedirs(path)
     
-  files_list = ""
-    
-  if use_files_list:
-    if not os.path.exists(path + '/files_list'):
-      # create empty file
-      with open(path + '/files_list', 'w') as file:
-        file.write('')
-    
-    with open(path + '/files_list', 'r') as file:
-      files_list = file.read()
-      
   stripped_path = re.sub(r'/$', '', path)
   # make absolute
   if not stripped_path.startswith('/'):
     stripped_path = os.path.abspath(stripped_path)
-  
+    
+  files_list = ""
+    
+  if use_files_list:
+    if not os.path.exists(stripped_path + '/files_list'):
+      # create empty file
+      with open(stripped_path + '/files_list', 'w') as file:
+        file.write('')
+    
+    with open(stripped_path + '/files_list', 'r') as file:
+      files_list = file.read()
+      
   if nested and not use_files_list:
     return _get_id_dir_contents(path)
   
