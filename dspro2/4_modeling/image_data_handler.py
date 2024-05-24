@@ -2,7 +2,8 @@ import sys
 import random
 import torch
 from tqdm import tqdm
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
+import pycountry
 
 from custom_image_name_dataset import CustomImageNameDataset
 from custom_image_dataset import CustomImageDataset
@@ -51,14 +52,14 @@ class ImageDataHandler:
         val_data = combined[train_end:val_end]
         test_data = combined[val_end:]
         
-        # Gather all unique countries and create global country_to_index mapping
-        all_countries = set(self.countries)
+        # Create a global country_to_index mapping from pycountry
+        all_countries = [country.name for country in pycountry.countries]
         country_to_index = {country: idx for idx, country in enumerate(sorted(all_countries))}
 
         # Create train, val- and test datasets
-        train_dataset = CustomImageDataset(*zip(*train_data), self.datasize, country_to_index=country_to_index, replace_country_index=True)
-        val_dataset = CustomImageDataset(*zip(*val_data), self.datasize, country_to_index=country_to_index, replace_country_index=False)
-        test_dataset = CustomImageDataset(*zip(*test_data), self.datasize, country_to_index=country_to_index, replace_country_index=False)
+        train_dataset = CustomImageDataset(*zip(*train_data), self.datasize, country_to_index=country_to_index)
+        val_dataset = CustomImageDataset(*zip(*val_data), self.datasize, country_to_index=country_to_index)
+        test_dataset = CustomImageDataset(*zip(*test_data), self.datasize, country_to_index=country_to_index)
 
         # Create train, val- and test dataloaders
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
