@@ -300,6 +300,12 @@ def _create_id_dirs(file_location, depth=2):
     if (depth - 1) > 0:
       _create_id_dirs(file_location + '/' + chr(65 + i), depth - 1)
       
+def _list_dir_contents(file_location):
+  return list([file.path for file in os.scandir(file_location)])
+
+def _filter_dir_contents(files):
+  return [file for file in files if 'geoguessr' in file]
+      
 def _get_id_dirs(file_location, depth=2):
   file_paths = []
   # 0-9
@@ -307,19 +313,27 @@ def _get_id_dirs(file_location, depth=2):
     if os.path.exists(file_location + '/' + str(i)):
       if (depth - 1) > 0:
         file_paths.extend(_get_id_dirs(file_location + '/' + str(i), depth - 1))
+      else:
+        file_paths.extend(_list_dir_contents(file_location + '/' + str(i)))
         
   # lowercase a-z
   for i in range(26):
     if os.path.exists(file_location + '/' + chr(97 + i)):
       if (depth - 1) > 0:
         file_paths.extend(_get_id_dirs(file_location + '/' + chr(97 + i), depth - 1))
+      else:
+        file_paths.extend(_list_dir_contents(file_location + '/' + chr(97 + i)))
         
   # uppercase A-Z
   for i in range(26):
     if os.path.exists(file_location + '/' + chr(65 + i)):
       if (depth - 1) > 0:
         file_paths.extend(_get_id_dirs(file_location + '/' + chr(65 + i), depth - 1))
+      else:
+        file_paths.extend(_list_dir_contents(file_location + '/' + chr(65 + i)))
         
+  file_paths = _filter_dir_contents(file_paths) if depth == 1 else file_paths
+  
   return file_paths
   
 def _download_files(download_link, files_to_download, file_location, json_file_location = None, image_file_location = None, num_connections=16, use_files_list=False, nested=False):
@@ -444,8 +458,8 @@ def get_all_files(path, use_files_list=False, nested=False):
   if nested and not use_files_list:
     return _get_id_dirs(path)
 
-  files = list([file.path for file in os.scandir(path)]) if not use_files_list else [stripped_path + '/' + (file if not nested else (_get_nested_dir_prefix(file) + file)) for file in files_list.split('\n') if file]
-  return [file for file in files if 'geoguessr' in file]
+  files = _list_dir_contents(path) if not use_files_list else [stripped_path + '/' + (file if not nested else (_get_nested_dir_prefix(file) + file)) for file in files_list.split('\n') if file]
+  return _filter_dir_contents(files)
 
 def get_files(path, use_files_list=False, nested=False):
   files = get_all_files(path, use_files_list=use_files_list, nested=nested)
