@@ -25,6 +25,7 @@ kanban-plugin: basic
 - [ ] Focus just on predicting accuracy of guessing countries #BusinessUnderstanding
 - [ ] Play the game and make a baseline accuracy for amateur {Yutaro, Lukas}, and pro {Linus} #Modeling
 - [ ] Try Transformer also to Resnet #Modeling
+- [ ] Deploy training on VastAI #Modeling
 
 
 ## Doing
