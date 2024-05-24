@@ -233,18 +233,28 @@ def _get_list_from_download_link(download_link, filter_text='singleplayer', type
   all_files = [file for file in full_list if filter_text in file and (file.endswith(type) if type else (file.endswith('.json') or file.endswith('.png')))]
   return all_files
 
-def _get_full_file_location(file_name, current_location):
+# from geoguessr_location_singleplayer_<id>_<num>.png to <id>_<num>
+def _get_file_id(file):
+  return "_".join(file.split('_')[-2:]).split('.')[0]
+
+def _get_nested_dir_prefix(file):
+  file_id = _get_file_id(file)
+  return file_id[0] + '/' + file_id[1] + '/'
+
+def _get_full_file_location(file_name, current_location, nested=False):
+  if nested:
+    return os.path.join(current_location, _get_nested_dir_prefix(file_name), file_name)
   return os.path.join(current_location, file_name)
 
-def _map_download_locations_of_files(files, file_location, json_file_location = None, image_file_location = None, basenames_to_locations_map = {}):
+def _map_download_locations_of_files(files, file_location, json_file_location = None, image_file_location = None, basenames_to_locations_map = {}, nested=False):
   basenames = [_get_basename(file) for file in files]
   for basename in basenames:
     if json_file_location is not None and basename.endswith('.json'):
-      file_path = _get_full_file_location(basename, json_file_location)
+      file_path = _get_full_file_location(basename, json_file_location, nested=nested)
     elif image_file_location is not None and basename.endswith('.png'):
-      file_path = _get_full_file_location(basename, image_file_location)
+      file_path = _get_full_file_location(basename, image_file_location, nested=nested)
     else:
-      file_path = _get_full_file_location(basename, file_location)
+      file_path = _get_full_file_location(basename, file_location, nested=nested)
     if basename not in basenames_to_locations_map:
       basenames_to_locations_map[basename] = file_path
   
@@ -253,28 +263,75 @@ def _map_download_locations_of_files(files, file_location, json_file_location = 
 def _get_download_link_from_files(download_link, files_to_download):
   return [[download_link + '/' + file, file] for file in files_to_download]
 
-def _download_single_file(file_url_to_download, current_location, file_name, use_files_list=False):
-  with urllib3.request('GET', file_url_to_download, preload_content=False) as r, open(_get_full_file_location(file_name, current_location), 'wb') as out_file:       
+def _download_single_file(file_url_to_download, current_location, file_name, use_files_list=False, nested=False):
+  with urllib3.request('GET', file_url_to_download, preload_content=False) as r, open(_get_full_file_location(file_name, current_location, nested=nested), 'wb') as out_file:
     shutil.copyfileobj(r, out_file)
     if use_files_list:
       with open(current_location + '/files_list', 'a') as file:
         file.write(file_name + '\n')
 
-def _download_files_direct(download_link, files_to_download, current_location, num_connections=16, start_file=0, use_files_list=False):
+def _download_files_direct(download_link, files_to_download, current_location, num_connections=16, start_file=0, use_files_list=False, nested=False):
   actual_download_links_and_files = _get_download_link_from_files(download_link, files_to_download)
   with concurrent.futures.ThreadPoolExecutor(max_workers=num_connections) as executor:
     # Download and log every 100 files using a generator
     # First initialize the generator
     current_file = 0
     current_file_log = start_file
-    for _ in executor.map(lambda x: _download_single_file(x[0], current_location, x[1], use_files_list=use_files_list), actual_download_links_and_files):
+    for _ in executor.map(lambda x: _download_single_file(x[0], current_location, x[1], use_files_list=use_files_list, nested=nested), actual_download_links_and_files):
       current_file += 1
       current_file_log += 1
       if (current_file_log and current_file_log % 1000 == 0) or current_file == len(files_to_download):
         print('Downloaded ' + str(current_file_log) + ' files')
-
-def _download_files(download_link, files_to_download, file_location, json_file_location = None, image_file_location = None, num_connections=16, use_files_list=False):
+        
+def _create_id_dirs(file_location, depth=2):
+  # 0-9
+  for i in range(10):
+    os.makedirs(file_location + '/' + str(i), exist_ok=True)
+    if (depth - 1) > 0:
+      _create_id_dirs(file_location + '/' + str(i), depth - 1)
+  # lowercase a-z
+  for i in range(26):
+    os.makedirs(file_location + '/' + chr(97 + i), exist_ok=True)
+    if (depth - 1) > 0:
+      _create_id_dirs(file_location + '/' + chr(97 + i), depth - 1)
+  # uppercase A-Z
+  for i in range(26):
+    os.makedirs(file_location + '/' + chr(65 + i), exist_ok=True)
+    if (depth - 1) > 0:
+      _create_id_dirs(file_location + '/' + chr(65 + i), depth - 1)
+      
+def _get_id_dirs(file_location, depth=2):
+  file_paths = []
+  # 0-9
+  for i in range(10):
+    if os.path.exists(file_location + '/' + str(i)):
+      if (depth - 1) > 0:
+        file_paths.extend(_get_id_dirs(file_location + '/' + str(i), depth - 1))
+        
+  # lowercase a-z
+  for i in range(26):
+    if os.path.exists(file_location + '/' + chr(97 + i)):
+      if (depth - 1) > 0:
+        file_paths.extend(_get_id_dirs(file_location + '/' + chr(97 + i), depth - 1))
+        
+  # uppercase A-Z
+  for i in range(26):
+    if os.path.exists(file_location + '/' + chr(65 + i)):
+      if (depth - 1) > 0:
+        file_paths.extend(_get_id_dirs(file_location + '/' + chr(65 + i), depth - 1))
+        
+  return file_paths
+  
+def _download_files(download_link, files_to_download, file_location, json_file_location = None, image_file_location = None, num_connections=16, use_files_list=False, nested=False):
   print('Downloading ' + str(len(files_to_download)) + ' files')
+  
+  if nested:
+    _create_id_dirs(file_location)
+    if json_file_location is not None:
+      _create_id_dirs(json_file_location)
+    if image_file_location is not None:
+      _create_id_dirs(image_file_location)
+  
   files_to_normal_location = []
   files_to_json_location = []
   files_to_image_location = []
@@ -287,11 +344,11 @@ def _download_files(download_link, files_to_download, file_location, json_file_l
   else:
     files_to_normal_location.extend([file for file in files_to_download if file.endswith('.png')])
   if len(files_to_normal_location):
-    _download_files_direct(download_link, files_to_normal_location, file_location, num_connections=num_connections, use_files_list=use_files_list)
+    _download_files_direct(download_link, files_to_normal_location, file_location, num_connections=num_connections, use_files_list=use_files_list, nested=nested)
   if len(files_to_json_location):
-    _download_files_direct(download_link, files_to_json_location, json_file_location, start_file=len(files_to_normal_location), num_connections=num_connections, use_files_list=use_files_list)
+    _download_files_direct(download_link, files_to_json_location, json_file_location, start_file=len(files_to_normal_location), num_connections=num_connections, use_files_list=use_files_list, nested=nested)
   if len(files_to_image_location):
-    _download_files_direct(download_link, files_to_image_location, image_file_location, start_file=len(files_to_normal_location) + len(files_to_json_location), num_connections=num_connections, use_files_list=use_files_list)
+    _download_files_direct(download_link, files_to_image_location, image_file_location, start_file=len(files_to_normal_location) + len(files_to_json_location), num_connections=num_connections, use_files_list=use_files_list, nested=nested)
   pass
 
 def _get_non_downloaded_files_list(remote_files, local_files):
@@ -366,7 +423,7 @@ def process_in_pairs_simple(all_files, type='', limit=None, shuffle_seed=None):
     processed_files = processed_json_files + processed_image_files
   return processed_files
 
-def get_all_files(path, use_files_list=False):
+def get_all_files(path, use_files_list=False, nested=False):
   # create the directory if it does not exist
   if not os.path.exists(path):
     os.makedirs(path)
@@ -383,30 +440,33 @@ def get_all_files(path, use_files_list=False):
       files_list = file.read()
       
   stripped_path = re.sub(r'/$', '', path)
+  
+  if nested and not use_files_list:
+    return _get_id_dirs(path)
 
-  files = list([file.path for file in os.scandir(path)]) if not use_files_list else [stripped_path + '/' + file for file in files_list.split('\n') if file]
+  files = list([file.path for file in os.scandir(path)]) if not use_files_list else [stripped_path + '/' + (file if not nested else (_get_nested_dir_prefix(file) + file)) for file in files_list.split('\n') if file]
   return [file for file in files if 'geoguessr' in file]
 
-def get_files(path, use_files_list=False):
-  files = get_all_files(path, use_files_list=use_files_list)
+def get_files(path, use_files_list=False, nested=False):
+  files = get_all_files(path, use_files_list=use_files_list, nested=nested)
   return [file for file in files if file.endswith('.json') or file.endswith('.png')]
 
-def get_json_files(path, use_files_list=False):
-  files = get_all_files(path, use_files_list=use_files_list)
+def get_json_files(path, use_files_list=False, nested=False):
+  files = get_all_files(path, use_files_list=use_files_list, nested=nested)
   return [file for file in files if file.endswith('.json')]
 
-def get_image_files(path, use_files_list=False):
-  files = get_all_files(path, use_files_list=use_files_list)
+def get_image_files(path, use_files_list=False, nested=False):
+  files = get_all_files(path, use_files_list=use_files_list, nested=nested)
   return [file for file in files if file.endswith('.png')]
 
-def _get_list_from_local_dir(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', basenames_to_locations_map={}, use_files_list=False):
+def _get_list_from_local_dir(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', basenames_to_locations_map={}, use_files_list=False, nested=False):
   all_files = []
   if file_location is not None:
-    all_files.extend(get_files(file_location, use_files_list=use_files_list))
+    all_files.extend(get_files(file_location, use_files_list=use_files_list, nested=nested))
   if json_file_location != file_location and json_file_location is not None and type != 'png':
-    all_files.extend(get_json_files(json_file_location, use_files_list=use_files_list))
+    all_files.extend(get_json_files(json_file_location, use_files_list=use_files_list, nested=nested))
   if image_file_location != file_location and image_file_location is not None and type != 'json':
-    all_files.extend(get_image_files(image_file_location, use_files_list=use_files_list))
+    all_files.extend(get_image_files(image_file_location, use_files_list=use_files_list, nested=nested))
     
   all_files = list(filter(lambda x: filter_text in x and x.endswith(type), all_files))
   
@@ -418,35 +478,35 @@ def _get_list_from_local_dir(file_location, json_file_location = None, image_fil
   print('All local files: ' + str(len(all_files)))
   return all_files, basenames_to_locations_map
 
-def _get_list_from_remote(download_link, file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', basenames_to_locations_map={}):
+def _get_list_from_remote(download_link, file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', basenames_to_locations_map={}, nested=False):
   all_files = _get_list_from_download_link(download_link, filter_text, type)
   # Filter None values        
   all_files = [file for file in all_files if file is not None]
   
-  basenames, basenames_to_locations_map = _map_download_locations_of_files(all_files, file_location, json_file_location, image_file_location, basenames_to_locations_map)
+  basenames, basenames_to_locations_map = _map_download_locations_of_files(all_files, file_location, json_file_location, image_file_location, basenames_to_locations_map, nested=nested)
   
   print('All remote files: ' + str(len(all_files)))
   return basenames, basenames_to_locations_map
 
-def _get_files_list(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', download_link=None, pre_download=False, from_remote_only=False, dedupe_and_remove_unpaired=True, skip_checks=False, num_download_connections=16, use_files_list=False):
+def _get_files_list(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', download_link=None, pre_download=False, from_remote_only=False, dedupe_and_remove_unpaired=True, skip_checks=False, num_download_connections=16, use_files_list=False, nested=False):
   basenames_to_locations_map={}
   basenames = []
   remote_files = []
   local_files = []
   non_downloaded_files = []
   if download_link is not None:
-    remote_files, basenames_to_locations_map = _get_list_from_remote(download_link, file_location, json_file_location, image_file_location, filter_text, type, basenames_to_locations_map)
+    remote_files, basenames_to_locations_map = _get_list_from_remote(download_link, file_location, json_file_location, image_file_location, filter_text, type, basenames_to_locations_map, nested=nested)
     basenames.extend(remote_files)
   elif from_remote_only:
     raise ValueError('No download link given')
-  local_files, basenames_to_locations_map = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filter_text, type, basenames_to_locations_map, use_files_list=use_files_list)
+  local_files, basenames_to_locations_map = _get_list_from_local_dir(file_location, json_file_location, image_file_location, filter_text, type, basenames_to_locations_map, use_files_list=use_files_list, nested=nested)
   if not from_remote_only:  
     basenames.extend(local_files)
     
   if len(remote_files):
     non_downloaded_files = _get_non_downloaded_files_list(remote_files, local_files)
     if pre_download and len(non_downloaded_files):
-      _download_files(download_link, non_downloaded_files, file_location, json_file_location, image_file_location, num_connections=num_download_connections, use_files_list=use_files_list)
+      _download_files(download_link, non_downloaded_files, file_location, json_file_location, image_file_location, num_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
       
   if dedupe_and_remove_unpaired and not skip_checks:
     # Remove duplicates
@@ -509,6 +569,8 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   num_download_connections = int(resolve_env_variable(str(num_download_connections), 'NUM_DOWNLOAD_CONNECTIONS', allow_num_download_connections_env))
   use_files_list = resolve_env_variable(str(False), 'USE_FILES_LIST', True)
   use_files_list = use_files_list is not None and use_files_list and use_files_list.lower() != 'false' and use_files_list.lower() != '0'
+  nested = resolve_env_variable(str(False), 'NESTED', True)
+  nested = nested is not None and nested and nested.lower() != 'false' and nested.lower() != '0'
   if skip_checks:
     print('Warning: Skipping all checks')
     skip_remote = True
@@ -520,7 +582,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
 
   pre_download = pre_download or countries_map is not None
   
-  basenames, basenames_to_locations_map, downloadable_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks, num_download_connections=num_download_connections, use_files_list=use_files_list)
+  basenames, basenames_to_locations_map, downloadable_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks, num_download_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
   
   has_loading_file = False
   files_from_loading_file = []
@@ -572,7 +634,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
       downloadable_files_from_loading_file = _get_downloadable_files_list(files_from_loading_file, downloadable_files)
       files_to_download = _get_downloadable_files_list(basenames, downloadable_files_from_loading_file)
     if len(files_to_download):
-      _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location, num_connections=num_download_connections, use_files_list=use_files_list)
+      _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location, num_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
     
   # if no loading file, use the just discovered files
   files_to_load = basenames
