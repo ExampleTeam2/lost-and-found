@@ -158,9 +158,21 @@ class GeoModelTrainer:
           else:
             criterion = nn.CrossEntropyLoss()
 
+          classifier_params = []
+          if "resnet" in self.model_type:
+              classifier_params = self.model.fc.parameters()
+          elif self.model_type == 'mobilenet_v2':
+              classifier_params = self.model.classifier.parameters()
+          elif self.model_type == 'efficientnet_b7':
+              classifier_params = self.model.classifier.parameters()
+          elif self.model_type in ['swin_transformer', 'tinyvit_21m_224']:
+              classifier_params = self.model.head.fc.parameters()
+          elif self.model_type == 'vit_base_patch16_224':
+              classifier_params = self.model.head.parameters()
+
           optimizer_grouped_parameters = [
-              {"params": [p for n, p in self.model.named_parameters() if not n.startswith('fc')], "lr": config.learning_rate * 0.1},
-              {"params": self.model.fc.parameters(), "lr": config.learning_rate}
+              {"params": [p for n, p in self.model.named_parameters() if not any(layer in n for layer in ['fc', 'classifier', 'head.fc', 'head'])], "lr": config.learning_rate * 0.1},
+              {"params": classifier_params, "lr": config.learning_rate}
           ]
           optimizer = optim.AdamW(optimizer_grouped_parameters, weight_decay=config.weight_decay)
 
