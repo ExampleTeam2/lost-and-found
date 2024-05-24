@@ -2,8 +2,6 @@
 pip3 install poetry
 git clone "https://oauth2:$ACCESS_TOKEN@gitlab.com/exampleteam2/dspro2.git"
 cd dspro2
-git remote set-url --push origin "https://oauth2:$ACCESS_TOKEN@gitlab.com/exampleteam2/dspro2.git"
-git pull
 poetry install
 
 # Define the path to the notebook
