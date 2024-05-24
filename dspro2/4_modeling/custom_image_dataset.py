@@ -8,7 +8,7 @@ class CustomImageDataset(Dataset):
         self.images = images
         self.coordinates = coordinates
         self.countries = countries
-        self.country_index_path= f"dspro2/4_modeling/models/datasize_{datasize}_country_to_index.json"
+        self.country_index_path= f"models/datasize_{datasize}_country_to_index.json"
         #absolute_path = os.path.abspath(self.country_index_path)
 
         # Use absolute path for all operations
