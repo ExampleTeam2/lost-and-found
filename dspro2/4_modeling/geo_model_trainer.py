@@ -5,8 +5,9 @@ import gc
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152
+from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152, mobilenet_v2, efficientnet_b7
 from torchvision.models import ResNet18_Weights, ResNet34_Weights, ResNet50_Weights, ResNet101_Weights, ResNet152_Weights
+from torchvision.models.efficientnet import EfficientNet_B7_Weights
 import numpy as np
 
 import wandb
@@ -51,13 +52,38 @@ class GeoModelTrainer:
           model = resnet101(weights=ResNet101_Weights.DEFAULT)
       elif self.model_type == 'resnet152':
           model = resnet152(weights=ResNet152_Weights.DEFAULT)
+      elif self.model_type == 'mobilenet_v2':
+          model = mobilenet_v2(weights='IMAGENET1K_V2')
+      elif self.model_type == 'efficientnet_b7':
+          model = efficientnet_b7(weights=EfficientNet_B7_Weights.DEFAULT)
       else:
           raise ValueError("Unsupported model type. Supported types are: resnet18, resnet34, resnet50, resnet101, resnet152.")
-      
-      # Modify the final layer based on the number of classes
-      model.fc = nn.Linear(model.fc.in_features, self.num_classes)
-      nn.init.kaiming_normal_(model.fc.weight, mode='fan_out', nonlinearity='relu')
-      nn.init.constant_(model.fc.bias, 0)
+
+      # add here the difference between resnet and other models
+      if "resnet" in self.model_type:
+          # Modify the final layer based on the number of classes
+          model.fc = nn.Linear(model.fc.in_features, self.num_classes)
+          # Initialize weights of the classifier
+          nn.init.kaiming_normal_(model.fc.weight, mode='fan_out', nonlinearity='relu')
+          nn.init.constant_(model.fc.bias, 0)
+      elif self.model_type == 'mobilenet_v2':
+          # Modify the final layer based on the number of classes
+          model.classifier = nn.Sequential(
+                nn.Dropout(p=0.2, inplace=False),
+                nn.Linear(in_features=1280, out_features=self.num_classes, bias=True)
+          )
+          # Initialize weights of the classifier
+          nn.init.kaiming_normal_(model.classifier[1].weight, mode='fan_out', nonlinearity='relu')
+          nn.init.constant_(model.classifier[1].bias, 0)
+      elif self.model_type == 'efficientnet_b7':
+          # Modify the final layer based on the number of classes
+          model.classifier = nn.Sequential(
+              nn.Dropout(p=0.5, inplace=False),
+              nn.Linear(in_features=2560, out_features=self.num_classes, bias=True)
+          )
+          # Initialize weights of the classifier
+          nn.init.kaiming_normal_(model.classifier[1].weight, mode='fan_out', nonlinearity='relu')
+          nn.init.constant_(model.classifier[1].bias, 0)
       return model
   
   def coordinates_to_cartesian(self, lon, lat, R=6371):
