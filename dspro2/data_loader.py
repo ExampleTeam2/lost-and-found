@@ -283,57 +283,56 @@ def _download_files_direct(download_link, files_to_download, current_location, n
       if (current_file_log and current_file_log % 1000 == 0) or current_file == len(files_to_download):
         print('Downloaded ' + str(current_file_log) + ' files')
         
-def _create_id_dirs(file_location, depth=2):
-  # 0-9
-  for i in range(10):
-    os.makedirs(file_location + '/' + str(i), exist_ok=True)
-    if (depth - 1) > 0:
-      _create_id_dirs(file_location + '/' + str(i), depth - 1)
-  # lowercase a-z
-  for i in range(26):
-    os.makedirs(file_location + '/' + chr(97 + i), exist_ok=True)
-    if (depth - 1) > 0:
-      _create_id_dirs(file_location + '/' + chr(97 + i), depth - 1)
-  # uppercase A-Z
-  for i in range(26):
-    os.makedirs(file_location + '/' + chr(65 + i), exist_ok=True)
-    if (depth - 1) > 0:
-      _create_id_dirs(file_location + '/' + chr(65 + i), depth - 1)
-      
 def _list_dir_contents(file_location):
   return list([file.path for file in os.scandir(file_location)])
 
 def _filter_dir_contents(files):
   return [file for file in files if 'geoguessr' in file]
-      
-def _get_id_dirs(file_location, depth=2):
+
+def _get_id_dir(file_location, char, file_paths=[], depth=2, get_all=False):
+  if (not get_all and os.path.exists(file_location + '/' + char)) or get_all:
+    if (depth - 1) > 0:
+      file_paths.extend(_get_id_dirs(file_location + '/' + char, depth - 1, get_all))
+    else:
+      file_paths.append(file_location + '/' + char)
+        
+  return file_paths
+        
+        
+
+def _get_id_dirs(file_location, depth=2, get_all=False):
   file_paths = []
   # 0-9
   for i in range(10):
-    if os.path.exists(file_location + '/' + str(i)):
-      if (depth - 1) > 0:
-        file_paths.extend(_get_id_dirs(file_location + '/' + str(i), depth - 1))
-      else:
-        file_paths.extend(_list_dir_contents(file_location + '/' + str(i)))
+    file_paths = _get_id_dir(file_location, str(i), file_paths, depth, get_all)
         
   # lowercase a-z
   for i in range(26):
-    if os.path.exists(file_location + '/' + chr(97 + i)):
-      if (depth - 1) > 0:
-        file_paths.extend(_get_id_dirs(file_location + '/' + chr(97 + i), depth - 1))
-      else:
-        file_paths.extend(_list_dir_contents(file_location + '/' + chr(97 + i)))
+    file_paths = _get_id_dir(file_location, chr(97 + i), file_paths, depth, get_all)
         
   # uppercase A-Z
   for i in range(26):
-    if os.path.exists(file_location + '/' + chr(65 + i)):
-      if (depth - 1) > 0:
-        file_paths.extend(_get_id_dirs(file_location + '/' + chr(65 + i), depth - 1))
-      else:
-        file_paths.extend(_list_dir_contents(file_location + '/' + chr(65 + i)))
+    file_paths = _get_id_dir(file_location, chr(65 + i), file_paths, depth, get_all)
         
-  file_paths = _filter_dir_contents(file_paths) if depth == 1 else file_paths
+  return file_paths
+
+def _create_id_dirs(file_location, depth=2, num_workers=16):
+  file_paths = _get_id_dirs(file_location, depth, get_all=True)
   
+  # parallelize creating the directories
+  with concurrent.futures.ThreadPoolExecutor(num_workers) as executor:
+    list(executor.map(lambda x: os.makedirs(x, exist_ok=True), file_paths))
+      
+def _get_id_dir_contents(file_location, depth=2, num_workers=16):
+  file_paths = _get_id_dirs(file_location, depth)
+  
+  # parallelize getting the files
+  with concurrent.futures.ThreadPoolExecutor(num_workers) as executor:
+    file_paths = list(executor.map(_list_dir_contents, file_paths))
+    file_paths = [file for files in file_paths for file in files]
+      
+  file_paths = _filter_dir_contents(file_paths)
+        
   return file_paths
   
 def _download_files(download_link, files_to_download, file_location, json_file_location = None, image_file_location = None, num_connections=16, use_files_list=False, nested=False):
@@ -456,7 +455,7 @@ def get_all_files(path, use_files_list=False, nested=False):
   stripped_path = re.sub(r'/$', '', path)
   
   if nested and not use_files_list:
-    return _get_id_dirs(path)
+    return _get_id_dir_contents(path)
 
   files = _list_dir_contents(path) if not use_files_list else [stripped_path + '/' + (file if not nested else (_get_nested_dir_prefix(file) + file)) for file in files_list.split('\n') if file]
   return _filter_dir_contents(files)
