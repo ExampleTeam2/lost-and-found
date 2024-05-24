@@ -16,5 +16,5 @@ cd $OUTPUT_PATH
 export FILE_LOCATION="../../../drive/MyDrive/.data"
 export JSON_FILE_LOCATION="../../../drive/MyDrive/.data"
 export IMAGE_FILE_LOCATION="../../../drive/MyDrive/.data"
-export USE_FILES_LIST="true"
+export NESTED="true"
 poetry run python3 $OUTPUT_NAME.py
