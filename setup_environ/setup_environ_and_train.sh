@@ -20,4 +20,5 @@ if [ -f /content/drive/MyDrive ]; then
 	export IMAGE_FILE_LOCATION="/content/drive/MyDrive/.data"
 fi
 export NESTED="true"
+export USE_FILES_LIST="true"
 poetry run python3 $OUTPUT_NAME.py
