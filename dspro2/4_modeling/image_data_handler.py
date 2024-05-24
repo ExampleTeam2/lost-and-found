@@ -51,10 +51,14 @@ class ImageDataHandler:
         val_data = combined[train_end:val_end]
         test_data = combined[val_end:]
         
+        # Gather all unique countries and create global country_to_index mapping
+        all_countries = set(self.countries)
+        country_to_index = {country: idx for idx, country in enumerate(sorted(all_countries))}
+
         # Create train, val- and test datasets
-        train_dataset = CustomImageDataset(*zip(*train_data), self.datasize, replace_country_index=True)
-        val_dataset = CustomImageDataset(*zip(*val_data), self.datasize, replace_country_index=False)
-        test_dataset = CustomImageDataset(*zip(*test_data), self.datasize, replace_country_index=False)
+        train_dataset = CustomImageDataset(*zip(*train_data), self.datasize, country_to_index=country_to_index, replace_country_index=True)
+        val_dataset = CustomImageDataset(*zip(*val_data), self.datasize, country_to_index=country_to_index, replace_country_index=False)
+        test_dataset = CustomImageDataset(*zip(*test_data), self.datasize, country_to_index=country_to_index, replace_country_index=False)
 
         # Create train, val- and test dataloaders
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
