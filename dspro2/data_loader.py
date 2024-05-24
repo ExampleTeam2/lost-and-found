@@ -255,6 +255,8 @@ def _map_download_locations_of_files(files, file_location, json_file_location = 
       file_path = _get_full_file_location(basename, image_file_location, nested=nested)
     else:
       file_path = _get_full_file_location(basename, file_location, nested=nested)
+    # make absolute
+    file_path = os.path.abspath(file_path)
     if basename not in basenames_to_locations_map:
       basenames_to_locations_map[basename] = file_path
   
