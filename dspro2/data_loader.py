@@ -455,7 +455,9 @@ def get_all_files(path, use_files_list=False, nested=False):
   files_list = ""
     
   if use_files_list:
+    print('Looking for files list at ' + stripped_path + '/files_list')
     if not os.path.exists(stripped_path + '/files_list'):
+      print('Files list not found, creating it')
       # create empty file
       with open(stripped_path + '/files_list', 'w') as file:
         file.write('')
