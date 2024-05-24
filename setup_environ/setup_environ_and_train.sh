@@ -13,7 +13,7 @@ OUTPUT_PATH="dspro2/4_modeling"
 poetry run jupyter nbconvert --ExecutePreprocessor.timeout=600 --to script $NOTEBOOK_PATH --output $OUTPUT_NAME
 cd $OUTPUT_PATH
 # Detect if the notebook is running on colab with a drive mounted
-if [ -f /content/drive/MyDrive ]; then
+if [ -d /content/drive/MyDrive ]; then
 	echo "Running on colab"
 	export FILE_LOCATION="/content/drive/MyDrive/.data"
 	export JSON_FILE_LOCATION="/content/drive/MyDrive/.data"
