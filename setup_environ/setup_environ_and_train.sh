@@ -3,7 +3,9 @@ pip3 install poetry --quiet
 # Clone the repository withouth the LFS files for now
 export GIT_LFS_SKIP_SMUDGE=1 && git clone "https://oauth2:$ACCESS_TOKEN@gitlab.com/exampleteam2/dspro2.git"
 cd dspro2
+echo "Installing dependencies..."
 poetry install --quiet
+echo "Dependencies installed"
 
 # Define the path to the notebook
 NOTEBOOK_PATH="dspro2/4_modeling/training_resnet_models.ipynb"
