@@ -3,10 +3,11 @@ pip3 install poetry --quiet
 # Clone the repository withouth the LFS files for now
 export GIT_LFS_SKIP_SMUDGE=1 && git clone "https://oauth2:$ACCESS_TOKEN@gitlab.com/exampleteam2/dspro2.git"
 cd dspro2
-echo "Installing dependencies..."
+echo "Pre-Installing dependencies..."
 # Hack to speed up the installation of the dependencies
 poetry export -f requirements.txt > requirements.txt
 python -m pip install -r requirements.txt --quiet
+echo "Installing dependencies..."
 poetry install --quiet
 echo "Dependencies installed"
 
