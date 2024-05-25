@@ -2,7 +2,7 @@
 pip3 install poetry
 git clone "https://oauth2:$ACCESS_TOKEN@gitlab.com/exampleteam2/dspro2.git"
 cd dspro2
-poetry install
+poetry install --quiet
 
 # Define the path to the notebook
 NOTEBOOK_PATH="dspro2/4_modeling/training_resnet_models.ipynb"
