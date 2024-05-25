@@ -21,4 +21,5 @@ if [ -d /content/drive/MyDrive ]; then
 fi
 export NESTED="true"
 export USE_FILES_LIST="true"
+export TMP_DIR_AND_ZIP="true"
 poetry run python3 $OUTPUT_NAME.py
