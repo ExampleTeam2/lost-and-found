@@ -23,4 +23,5 @@ fi
 export NESTED="true"
 export USE_FILES_LIST="true"
 export TMP_DIR_AND_ZIP="true"
+export WANDB_TOKEN="$WANDB_TOKEN"
 poetry run python3 $OUTPUT_NAME.py
