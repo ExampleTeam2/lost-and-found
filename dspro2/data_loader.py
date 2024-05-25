@@ -453,21 +453,27 @@ def get_all_files(path, use_files_list=False, nested=False):
     stripped_path = os.path.abspath(stripped_path)
     
   files_list = ""
+  found_files_list = False
     
   if use_files_list:
-    if not os.path.exists(stripped_path + '/files_list'):
-      # create empty file
-      with open(stripped_path + '/files_list', 'w') as file:
-        file.write('')
-    
-    with open(stripped_path + '/files_list', 'r') as file:
-      files_list = file.read()
+    if os.path.exists(stripped_path + '/files_list'):
+      found_files_list = True
+      with open(stripped_path + '/files_list', 'r') as file:
+        files_list = file.read()
       
-  if nested and not use_files_list:
-    return _get_id_dir_contents(path)
-  
-  files = _list_dir_contents(path) if not use_files_list else [stripped_path + '/' + (file if not nested else (_get_nested_dir_prefix(file) + file)) for file in files_list.split('\n') if file]
-  return _filter_dir_contents(files)
+  final_files = []
+  if nested and (not use_files_list or not found_files_list):
+    final_files =  _get_id_dir_contents(path)
+  else:
+    files = _list_dir_contents(path) if not use_files_list or not found_files_list else [stripped_path + '/' + (file if not nested else (_get_nested_dir_prefix(file) + file)) for file in files_list.split('\n') if file]
+    final_files = _filter_dir_contents(files)
+    
+  if use_files_list and not found_files_list:
+    # create file with all files
+      with open(stripped_path + '/files_list', 'w') as file:
+        file.write('\n'.join(final_files) + '\n')
+        
+  return final_files
 
 def get_files(path, use_files_list=False, nested=False):
   files = get_all_files(path, use_files_list=use_files_list, nested=nested)
