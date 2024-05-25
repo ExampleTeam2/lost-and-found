@@ -536,6 +536,7 @@ def _load_from_zips_to_tmp(file_location, json_file_location = None, image_file_
     _copy_and_unzip_files(json_file_location, zip_name, current_dir, tmp_dir_name)
   if image_file_location != file_location and image_file_location is not None and type != 'json':
     _copy_and_unzip_files(image_file_location, zip_name, current_dir, tmp_dir_name)
+  return os.path.join(current_dir, tmp_dir_name)
     
 def _copy_files_list(path, files_list_path):
   # Copy files_list to path if it exists
