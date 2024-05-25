@@ -1,5 +1,5 @@
 #!/bin/sh
-pip3 install poetry
+pip3 install poetry --quiet
 git clone "https://oauth2:$ACCESS_TOKEN@gitlab.com/exampleteam2/dspro2.git"
 cd dspro2
 poetry install --quiet
