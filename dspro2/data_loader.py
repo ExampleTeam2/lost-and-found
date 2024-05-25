@@ -561,7 +561,8 @@ def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_
   zip_name = 'files.zip'
   current_dir = os.getcwd()
   tmp_dir_name = 'tmp'
-  files_list_path = os.path.join(current_dir, 'files_list')
+  tmp_dir = os.path.join(current_dir, tmp_dir_name)
+  files_list_path = os.path.join(tmp_dir, 'files_list')
   if os.path.exists(files_list_path):
     if file_location is not None:
       _copy_files_list(file_location, files_list_path)
