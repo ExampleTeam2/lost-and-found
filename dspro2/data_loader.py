@@ -470,9 +470,10 @@ def get_all_files(path, use_files_list=False, nested=False):
     
   if use_files_list and not found_files_list:
     # create file with all files
-      with open(stripped_path + '/files_list', 'w') as file:
-        file.write('\n'.join(final_files) + '\n')
-        
+    basenames = [_get_basename(file) for file in final_files]
+    with open(stripped_path + '/files_list', 'w') as file:
+      file.write('\n'.join(basenames) + '\n')
+      
   return final_files
 
 def get_files(path, use_files_list=False, nested=False):
