@@ -546,12 +546,16 @@ def _copy_files_list(path, files_list_path):
   shutil.copyfile(files_list_path, os.path.join(path, 'files_list'))
     
 def _zip_and_copy_files(path, zip_name, current_dir, tmp_dir_name):
+  print('Zipping and copying ' + zip_name)
   # Check if there are any files in tmp_dir
   tmp_dir = os.path.join(current_dir, tmp_dir_name)
   # Zip tmp_dir into current_dir
+  print('Zipping ' + zip_name)
   shutil.make_archive(os.path.join(current_dir, zip_name.split('.')[0]), 'zip', tmp_dir)
   # Copy zip to path
+  print('Copying ' + zip_name)
   shutil.copyfile(os.path.join(current_dir, zip_name), os.path.join(path, zip_name))
+  print('Copied ' + zip_name)
   
 def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_location = None):
   zip_name = 'files.zip'
