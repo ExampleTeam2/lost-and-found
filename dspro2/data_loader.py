@@ -565,6 +565,8 @@ def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_
       _copy_files_list(json_file_location, files_list_path)
     if image_file_location != file_location and image_file_location is not None and type != 'json':
       _copy_files_list(image_file_location, files_list_path)
+    # Remove files_list
+    os.remove(files_list_path)
       
   if file_location is not None:
     _zip_and_copy_files(file_location, zip_name, current_dir, tmp_dir_name)
