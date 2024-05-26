@@ -4,21 +4,11 @@ import os
 from torch.utils.data import Dataset
 
 class CustomImageDataset(Dataset):
-    def __init__(self, images, coordinates, countries, datasize, country_to_index=None, replace_country_index=False, hash=None):
+    def __init__(self, images, coordinates, countries, country_to_index):
         self.images = images
         self.coordinates = coordinates
         self.countries = countries
-        self.country_index_path = f"models/datasize_{datasize}_country_to_index.json" if not hash else f"models/datasize_{datasize}_{hash}_country_to_index.json"
-
-        if replace_country_index or country_to_index is None:
-            # Create a new country_to_index mapping
-            unique_countries = sorted(set(countries))
-            self.country_to_index = {country: idx for idx, country in enumerate(unique_countries)}
-            with open(self.country_index_path, 'w') as f:
-                json.dump(self.country_to_index, f)
-        else:
-            # Use the provided country_to_index mapping
-            self.country_to_index = country_to_index
+        self.country_to_index = country_to_index
 
         # Debugging: print the mapping and check for missing countries
         missing_countries = set(self.countries) - set(self.country_to_index.keys())

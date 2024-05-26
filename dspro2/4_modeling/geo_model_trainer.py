@@ -1,7 +1,7 @@
 import random
 import os
 import gc
-import shutil
+import json
 
 import torch
 import torch.nn as nn
@@ -16,7 +16,7 @@ import uuid
 
 
 class GeoModelTrainer:
-  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=True, country_to_index_file=None):
+  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=True, country_to_index=None):
       self.num_classes = num_classes
       self.train_dataloader = train_dataloader
       self.val_dataloader = val_dataloader
@@ -26,7 +26,7 @@ class GeoModelTrainer:
       self.patience = 10
       self.model_type = None
       self.model = None
-      self.country_to_index_file = country_to_index_file
+      self.country_to_index = country_to_index
       
   def set_seed(self, seed=42):
     np.random.seed(seed)
@@ -202,10 +202,12 @@ class GeoModelTrainer:
           best_model.load_state_dict(torch.load(model_path))
           wandb_model_path = os.path.join(wandb.run.dir, raw_model_path)
           
-          if self.country_to_index_file:
+          if self.country_to_index is not None:
               # copy to run directory
               wandb_country_to_index_file = os.path.join(wandb.run.dir, 'country_to_index.json')
-              shutil.copy(self.country_to_index_file, wandb_country_to_index_file)
+              # write json file
+              with open(wandb_country_to_index_file, 'w') as f:
+                  json.dump(self.country_to_index, f)
               # save to wandb
               wandb.save(wandb_country_to_index_file)
               

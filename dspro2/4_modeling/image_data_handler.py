@@ -2,7 +2,7 @@ import sys
 import random
 import torch
 from tqdm import tqdm
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 
 from custom_image_name_dataset import CustomImageNameDataset
 from custom_image_dataset import CustomImageDataset
@@ -13,10 +13,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class ImageDataHandler:
-    def __init__(self, image_paths, json_paths, transform, datasize, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, hash=None):
+    def __init__(self, image_paths, json_paths, transform, datasize, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1):
         self.batch_size = batch_size
         self.datasize = datasize
-        self.hash = hash
       
         file_name_dataset = CustomImageNameDataset(image_paths, json_paths, transform=transform)
         file_name_loader = DataLoader(file_name_dataset, batch_size=batch_size, shuffle=False)
@@ -32,11 +31,20 @@ class ImageDataHandler:
             self.coordinates.extend([item['coordinates'] for item in labels])
             for image in images:
                 self.images.append(transform(image))
+                
+        # Create a global country_to_index mapping
+        self.country_to_index = self._get_country_to_index()
         
         # Initialize datasets and loaders
-        self.train_loader, self.val_loader, self.test_loader = self.create_loaders(train_ratio, val_ratio, test_ratio)
+        self.train_loader, self.val_loader, self.test_loader = self._create_loaders(train_ratio, val_ratio, test_ratio)
+        
+    def _get_country_to_index(self):
+        # Gather all unique countries and create a global country_to_index mapping
+        all_countries = set(self.countries)
+        country_to_index = {country: idx for idx, country in enumerate(sorted(all_countries))}
+        return country_to_index
 
-    def create_loaders(self, train_ratio, val_ratio, test_ratio):
+    def _create_loaders(self, train_ratio, val_ratio, test_ratio):
         assert train_ratio + val_ratio + test_ratio - 1 <= 0.001, "Ratios should sum to 1"
         
         combined = list(zip(self.images, self.coordinates, self.countries))
@@ -49,14 +57,10 @@ class ImageDataHandler:
         val_data = combined[train_end:val_end]
         test_data = combined[val_end:]
         
-        # Gather all unique countries and create a global country_to_index mapping
-        all_countries = set(self.countries)
-        country_to_index = {country: idx for idx, country in enumerate(sorted(all_countries))}
-
         # Create train, val, and test datasets with the same mapping
-        train_dataset = CustomImageDataset(*zip(*train_data), self.datasize, country_to_index=country_to_index, replace_country_index=True, hash=self.hash)
-        val_dataset = CustomImageDataset(*zip(*val_data), self.datasize, country_to_index=country_to_index, replace_country_index=False, hash=self.hash)
-        test_dataset = CustomImageDataset(*zip(*test_data), self.datasize, country_to_index=country_to_index, replace_country_index=False, hash=self.hash)
+        train_dataset = CustomImageDataset(*zip(*train_data), self.datasize, country_to_index=self.country_to_index)
+        val_dataset = CustomImageDataset(*zip(*val_data), self.datasize, country_to_index=self.country_to_index)
+        test_dataset = CustomImageDataset(*zip(*test_data), self.datasize, country_to_index=self.country_to_index)
 
         # Create train, val, and test dataloaders
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
@@ -64,3 +68,4 @@ class ImageDataHandler:
         test_loader = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=True)
 
         return train_loader, val_loader, test_loader
+      
