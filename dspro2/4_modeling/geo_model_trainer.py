@@ -6,9 +6,9 @@ import json
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152, mobilenet_v2, efficientnet_b7
+from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152, mobilenet_v2, efficientnet_b1, efficientnet_b3, efficientnet_b7
 from torchvision.models import ResNet18_Weights, ResNet34_Weights, ResNet50_Weights, ResNet101_Weights, ResNet152_Weights
-from torchvision.models.efficientnet import EfficientNet_B7_Weights
+from torchvision.models.efficientnet import EfficientNet_B1_Weights, EfficientNet_B3_Weights, EfficientNet_B7_Weights
 import numpy as np
 
 import wandb
@@ -56,6 +56,10 @@ class GeoModelTrainer:
           model = resnet152(weights=ResNet152_Weights.DEFAULT)
       elif self.model_type == 'mobilenet_v2':
           model = mobilenet_v2(weights='IMAGENET1K_V2')
+      elif self.model_type == 'efficientnet_b1':
+          model = efficientnet_b1(weights=EfficientNet_B1_Weights.DEFAULT)
+      elif self.model_type == 'efficientnet_b3':
+          model = efficientnet_b3(weights=EfficientNet_B3_Weights.DEFAULT)
       elif self.model_type == 'efficientnet_b7':
           model = efficientnet_b7(weights=EfficientNet_B7_Weights.DEFAULT)
       else:
@@ -67,20 +71,22 @@ class GeoModelTrainer:
           # Initialize weights of the classifier
           nn.init.kaiming_normal_(model.fc.weight, mode='fan_out', nonlinearity='relu')
           nn.init.constant_(model.fc.bias, 0)
-      elif self.model_type == 'mobilenet_v2':
+      elif "efficientnet" in self.model_type or self.model_type == "mobilenet_v2":
+          if self.model_type == "mobilenet_v2":
+              dropout = 0.2
+              in_features = 1280
+          elif "efficientnet" in self.model_type:
+              dropout = 0.5
+              if self.model_type == "efficientnet_b1":
+                  in_features = 1280
+              elif self.model_type == "efficientnet_b3":
+                  in_features = 1536
+              elif self.model_type == "efficientnet_b7":
+                  in_features = 2560
           # Modify the final layer based on the number of classes
           model.classifier = nn.Sequential(
-                nn.Dropout(p=0.2, inplace=False),
-                nn.Linear(in_features=1280, out_features=self.num_classes, bias=True)
-          )
-          # Initialize weights of the classifier
-          nn.init.kaiming_normal_(model.classifier[1].weight, mode='fan_out', nonlinearity='relu')
-          nn.init.constant_(model.classifier[1].bias, 0)
-      elif self.model_type == 'efficientnet_b7':
-          # Modify the final layer based on the number of classes
-          model.classifier = nn.Sequential(
-              nn.Dropout(p=0.5, inplace=False),
-              nn.Linear(in_features=2560, out_features=self.num_classes, bias=True)
+                nn.Dropout(p=dropout, inplace=False),
+                nn.Linear(in_features=in_features, out_features=self.num_classes, bias=True)
           )
           # Initialize weights of the classifier
           nn.init.kaiming_normal_(model.classifier[1].weight, mode='fan_out', nonlinearity='relu')
@@ -144,7 +150,7 @@ class GeoModelTrainer:
                   {"params": [p for n, p in self.model.named_parameters() if not n.startswith('fc')], "lr": config.learning_rate * 0.1},
                   {"params": self.model.fc.parameters(), "lr": config.learning_rate}
               ]
-          elif self.model_type in ['mobilenet_v2', 'efficientnet_b7']:
+          elif "efficientnet" in self.model_type or self.model_type == "mobilenet_v2":
               optimizer_grouped_parameters = [
                   {"params": [p for n, p in self.model.named_parameters() if not n.startswith('classifier')], "lr": config.learning_rate * 0.1},
                   {"params": self.model.classifier.parameters(), "lr": config.learning_rate}
