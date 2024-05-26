@@ -524,9 +524,10 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir_name):
     os.makedirs(tmp_dir)
   # Check if zip file exists at path, if yes, unzip it into tmp_dir (so all files are in the tmp_dir)
   zip_path = os.path.join(path, zip_name)
-  if os.path.exists(zip_path):
-    print('Copying and unzipping ' + zip_name)
-    shutil.copyfile(zip_path, os.path.join(current_dir, zip_name))
+  if os.path.exists(zip_path) or os.path.exists(os.path.join(current_dir, zip_name)):
+    if not os.path.exists(os.path.join(current_dir, zip_name)):
+      print('Copying and unzipping ' + zip_name)
+      shutil.copyfile(zip_path, os.path.join(current_dir, zip_name))
     print('Unzipping ' + zip_name)
     # Unpack into tmp_dir
     shutil.unpack_archive(zip_path, tmp_dir)
