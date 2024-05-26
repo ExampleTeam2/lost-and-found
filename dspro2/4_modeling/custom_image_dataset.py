@@ -4,11 +4,11 @@ import os
 from torch.utils.data import Dataset
 
 class CustomImageDataset(Dataset):
-    def __init__(self, images, coordinates, countries, datasize, country_to_index=None, replace_country_index=False):
+    def __init__(self, images, coordinates, countries, datasize, country_to_index=None, replace_country_index=False, hash=None):
         self.images = images
         self.coordinates = coordinates
         self.countries = countries
-        self.country_index_path = f"models/datasize_{datasize}_country_to_index.json"
+        self.country_index_path = f"models/datasize_{datasize}_country_to_index.json" if not hash else f"models/datasize_{datasize}_{hash}_country_to_index.json"
 
         if replace_country_index or country_to_index is None:
             # Create a new country_to_index mapping

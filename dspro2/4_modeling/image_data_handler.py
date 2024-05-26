@@ -13,9 +13,10 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class ImageDataHandler:
-    def __init__(self, image_paths, json_paths, transform, datasize, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1):
+    def __init__(self, image_paths, json_paths, transform, datasize, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, hash=None):
         self.batch_size = batch_size
         self.datasize = datasize
+        self.hash = hash
       
         file_name_dataset = CustomImageNameDataset(image_paths, json_paths, transform=transform)
         file_name_loader = DataLoader(file_name_dataset, batch_size=batch_size, shuffle=False)
@@ -53,9 +54,9 @@ class ImageDataHandler:
         country_to_index = {country: idx for idx, country in enumerate(sorted(all_countries))}
 
         # Create train, val, and test datasets with the same mapping
-        train_dataset = CustomImageDataset(*zip(*train_data), self.datasize, country_to_index=country_to_index, replace_country_index=True)
-        val_dataset = CustomImageDataset(*zip(*val_data), self.datasize, country_to_index=country_to_index, replace_country_index=False)
-        test_dataset = CustomImageDataset(*zip(*test_data), self.datasize, country_to_index=country_to_index, replace_country_index=False)
+        train_dataset = CustomImageDataset(*zip(*train_data), self.datasize, country_to_index=country_to_index, replace_country_index=True, hash=self.hash)
+        val_dataset = CustomImageDataset(*zip(*val_data), self.datasize, country_to_index=country_to_index, replace_country_index=False, hash=self.hash)
+        test_dataset = CustomImageDataset(*zip(*test_data), self.datasize, country_to_index=country_to_index, replace_country_index=False, hash=self.hash)
 
         # Create train, val, and test dataloaders
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
