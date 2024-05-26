@@ -6,9 +6,9 @@ import json
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152, mobilenet_v2, efficientnet_b1, efficientnet_b3, efficientnet_b7
+from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152, mobilenet_v2, efficientnet_b1, efficientnet_b3, efficientnet_b4, efficientnet_b7
 from torchvision.models import ResNet18_Weights, ResNet34_Weights, ResNet50_Weights, ResNet101_Weights, ResNet152_Weights
-from torchvision.models.efficientnet import EfficientNet_B1_Weights, EfficientNet_B3_Weights, EfficientNet_B7_Weights
+from torchvision.models.efficientnet import EfficientNet_B1_Weights, EfficientNet_B3_Weights, EfficientNet_B4_Weights, EfficientNet_B7_Weights
 import numpy as np
 
 import wandb
@@ -60,6 +60,8 @@ class GeoModelTrainer:
           model = efficientnet_b1(weights=EfficientNet_B1_Weights.DEFAULT)
       elif self.model_type == 'efficientnet_b3':
           model = efficientnet_b3(weights=EfficientNet_B3_Weights.DEFAULT)
+      elif self.model_type == 'efficientnet_b4':
+          model = efficientnet_b4(weights=EfficientNet_B4_Weights.DEFAULT)
       elif self.model_type == 'efficientnet_b7':
           model = efficientnet_b7(weights=EfficientNet_B7_Weights.DEFAULT)
       else:
@@ -81,6 +83,8 @@ class GeoModelTrainer:
                   in_features = 1280
               elif self.model_type == "efficientnet_b3":
                   in_features = 1536
+              elif self.model_type == "efficientnet_b4":
+                  in_features = 1792
               elif self.model_type == "efficientnet_b7":
                   in_features = 2560
           # Modify the final layer based on the number of classes
