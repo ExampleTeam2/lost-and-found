@@ -1,6 +1,7 @@
 import random
 import os
 import gc
+import shutil
 
 import torch
 import torch.nn as nn
@@ -15,7 +16,7 @@ import uuid
 
 
 class GeoModelTrainer:
-  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=True):
+  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=True, country_to_index_file=None):
       self.num_classes = num_classes
       self.train_dataloader = train_dataloader
       self.val_dataloader = val_dataloader
@@ -25,7 +26,8 @@ class GeoModelTrainer:
       self.patience = 10
       self.model_type = None
       self.model = None
-
+      self.country_to_index_file = country_to_index_file
+      
   def set_seed(self, seed=42):
     np.random.seed(seed)
     random.seed(seed)
@@ -199,6 +201,14 @@ class GeoModelTrainer:
           best_model = self.initialize_model(model_type=config.model_name).to(self.device)
           best_model.load_state_dict(torch.load(model_path))
           wandb_model_path = os.path.join(wandb.run.dir, raw_model_path)
+          
+          if self.country_to_index_file:
+              # copy to run directory
+              wandb_country_to_index_file = os.path.join(wandb.run.dir, 'country_to_index.json')
+              shutil.copy(self.country_to_index_file, wandb_country_to_index_file)
+              # save to wandb
+              wandb.save(wandb_country_to_index_file)
+              
           torch.save(best_model.state_dict(), wandb_model_path)
           wandb.save(wandb_model_path)
 

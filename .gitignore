@@ -53,6 +53,7 @@ dspro2/1_data_collection/data/cookies.json
 /analyze/data/
 
 # Models and Tensors
+/dspro2/4_modeling/models/
 *.pth
 
 # Temp

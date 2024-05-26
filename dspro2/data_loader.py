@@ -4,9 +4,9 @@ import concurrent
 import math
 import random
 import re
-import subprocess
 import shutil
 import urllib3
+import hashlib
 from PIL import Image
 
 DEFAULT_DOWNLOAD_LINK='http://49.12.197.1'
@@ -25,6 +25,19 @@ def get_counterpart(file):
   else:
     raise ValueError('Invalid file type', file)
   return counterpart
+
+def hash_filenames(file_names):
+  # Create a SHA-256 hash object
+  hash_object = hashlib.sha256()
+  
+  # Concatenate all file names into one long string and update the hash object
+  for name in file_names:
+      # Ensure encoding to bytes, as hashlib requires bytes input
+      hash_object.update(name.encode('utf-8'))
+  
+  # Get the hexadecimal representation of the hash
+  hash_digest = hash_object.hexdigest()
+  return hash_digest
 
 # Get rid of unpaired files (where only either json or png is present)
 def _remove_unpaired_files(files):
