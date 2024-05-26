@@ -8,7 +8,6 @@ import torch.optim as optim
 from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152, mobilenet_v2, efficientnet_b7
 from torchvision.models import ResNet18_Weights, ResNet34_Weights, ResNet50_Weights, ResNet101_Weights, ResNet152_Weights
 from torchvision.models.efficientnet import EfficientNet_B7_Weights
-import timm
 import numpy as np
 
 import wandb
@@ -57,17 +56,9 @@ class GeoModelTrainer:
           model = mobilenet_v2(weights='IMAGENET1K_V2')
       elif self.model_type == 'efficientnet_b7':
           model = efficientnet_b7(weights=EfficientNet_B7_Weights.DEFAULT)
-      elif self.model_type == 'swin_transformer':
-          model = timm.create_model('swin_base_patch4_window7_224', pretrained=True)
-      elif self.model_type == 'tinyvit_21m_224':
-          model = timm.create_model('tinyvit_21m_224', pretrained=True)
-      elif self.model_type == 'vit_base_patch16_224':
-          # Similar than Pigeon from research paper which is based on a ViT model similar to this
-          model = timm.create_model('vit_base_patch16_224', pretrained=True)
       else:
           raise ValueError("Unsupported model type. Supported types are: resnet18, resnet34, resnet50, resnet101, resnet152.")
 
-      # add here the difference between resnet and other models
       if "resnet" in self.model_type:
           # Modify the final layer based on the number of classes
           model.fc = nn.Linear(model.fc.in_features, self.num_classes)
@@ -92,18 +83,6 @@ class GeoModelTrainer:
           # Initialize weights of the classifier
           nn.init.kaiming_normal_(model.classifier[1].weight, mode='fan_out', nonlinearity='relu')
           nn.init.constant_(model.classifier[1].bias, 0)
-      elif self.model_type in ['swin_transformer', 'tinyvit_21m_224']:
-          # Modify the final layer based on the number of classes
-          model.head.fc = nn.Linear(model.head.fc.in_features, self.num_classes)
-          # Initialize weights of the classifier
-          nn.init.kaiming_normal_(model.head.fc.weight, mode='fan_out', nonlinearity='relu')
-          nn.init.constant_(model.head.fc.bias, 0)
-      elif self.model_type == 'vit_base_patch16_224':
-          # Modify the final layer based on the number of classes
-          model.head = nn.Linear(model.head.in_features, self.num_classes)
-          # Initialize weights of the classifier
-          nn.init.kaiming_normal_(model.head.weight, mode='fan_out', nonlinearity='relu')
-          nn.init.constant_(model.head.bias, 0)
       return model
   
   def coordinates_to_cartesian(self, lon, lat, R=6371):
@@ -158,22 +137,17 @@ class GeoModelTrainer:
           else:
             criterion = nn.CrossEntropyLoss()
 
-          classifier_params = []
           if "resnet" in self.model_type:
-              classifier_params = self.model.fc.parameters()
-          elif self.model_type == 'mobilenet_v2':
-              classifier_params = self.model.classifier.parameters()
-          elif self.model_type == 'efficientnet_b7':
-              classifier_params = self.model.classifier.parameters()
-          elif self.model_type in ['swin_transformer', 'tinyvit_21m_224']:
-              classifier_params = self.model.head.fc.parameters()
-          elif self.model_type == 'vit_base_patch16_224':
-              classifier_params = self.model.head.parameters()
+              optimizer_grouped_parameters = [
+                  {"params": [p for n, p in self.model.named_parameters() if not n.startswith('fc')], "lr": config.learning_rate * 0.1},
+                  {"params": self.model.fc.parameters(), "lr": config.learning_rate}
+              ]
+          elif self.model_type in ['mobilenet_v2', 'efficientnet_b7']:
+              optimizer_grouped_parameters = [
+                  {"params": [p for n, p in self.model.named_parameters() if not n.startswith('classifier')], "lr": config.learning_rate * 0.1},
+                  {"params": self.model.classifier.parameters(), "lr": config.learning_rate}
+                ]
 
-          optimizer_grouped_parameters = [
-              {"params": [p for n, p in self.model.named_parameters() if not any(layer in n for layer in ['fc', 'classifier', 'head.fc', 'head'])], "lr": config.learning_rate * 0.1},
-              {"params": classifier_params, "lr": config.learning_rate}
-          ]
           optimizer = optim.AdamW(optimizer_grouped_parameters, weight_decay=config.weight_decay)
 
           for epoch in range(config.epochs):
