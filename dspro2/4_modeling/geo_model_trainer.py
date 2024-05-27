@@ -23,7 +23,7 @@ class GeoModelTrainer:
       self.datasize = datasize
       self.use_coordinates = predict_coordinates
       self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-      self.patience = 10
+      self.patience = 5
       self.model_type = None
       self.model = None
       self.country_to_index = country_to_index
