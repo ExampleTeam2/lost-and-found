@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0, '../../')
 from data_loader import resolve_env_variable, get_json_files, load_json_file
 from countryconverter import convert_from_coordinates, convert_from_names
+from region_enricher import RegionEnricher
 
 # You can use the environment variables FILE_LOCATION and JSON_FILE_LOCATION to set the input and output directories
 class CountryEnricher:
@@ -25,6 +26,8 @@ class CountryEnricher:
         self.from_country = from_country
         # Only use if the mapping logic didn't change
         self.use_previous = use_previous
+        self.region_enricher = RegionEnricher()
+        self.gdf = self.region_enricher.load_enriched_geojson()
         self.process()
         
     def load_and_prepare_files(self, num_workers=16):
@@ -89,6 +92,7 @@ class CountryEnricher:
         self.json_files = convert_from_coordinates(self.coordinates, self.file_map, self.json_files)
       else:
         self.json_files = convert_from_names(self.file_map, self.json_files)
+      self.json_files = self.region_enricher.add_regions_to_json(self.coordinates, self.file_map, self.json_files, self.gdf)
     
     def save_enriched_files(self, num_workers=16):
         os.makedirs(self.output_dir, exist_ok=True)

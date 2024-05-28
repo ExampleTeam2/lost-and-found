@@ -62,7 +62,40 @@ class RegionEnricher:
         self.gdf.to_file('../../data/admin_1_states_provinces.geojson', driver='GeoJSON')
 
 
-
-
+    def load_enriched_geojson(self):
+        gdf = gpd.read_file('../../data/admin_1_states_provinces.geojson', driver='GeoJSON')
+        return gdf
+    
+    # function to get the nearest 5 regions to a point and if the point is in a region, it will return the region names
+    def get_region_from_point(self, gdf, point):
+        # get the nearest 5 regions to the point
+        nearest_regions = gdf['name_1'].iloc[gdf.distance(point).argsort()[:5]]
+        return nearest_regions
+    
+    def is_point_in_region(self, gdf, point):
+        # check if the point is in a region
+        is_in_region = gdf.contains(point)
+        return is_in_region
+    
+    # function to call the get_region_from_point and is_point_in_region functions for a list of points
+    def get_region_from_points(self, gdf, points):
+        regions = []
+        is_in_regions = []
+        for point in points:
+            region = self.get_region_from_point(gdf, point)
+            is_in_region = self.is_point_in_region(gdf, point)
+            is_in_regions.append(is_in_region)
+            regions.append(region)
+        return regions, is_in_regions
+    
+    def add_regions_to_json(self, coordinates, file_map, json_files, gdf):
+        # get the region names and if the point is in a region
+        regions, is_in_regions = self.get_region_from_points(gdf, coordinates)
+        for region, is_in_region, coord in zip(regions, is_in_regions, coordinates):
+            image_ids = file_map[str(coord)]
+            for image_id in image_ids:
+                json_files[image_id]['region_name'] = region
+                json_files[image_id]['is_in_region'] = is_in_region
+        return json_files
 
 
