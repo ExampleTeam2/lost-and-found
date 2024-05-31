@@ -159,13 +159,13 @@ class ImageDataHandler:
     def _create_loaders(self):
         # Create train, val, and test datasets with the same mapping
         train_dataset = CustomImageDataset(self.train_images, self.train_coordinates, self.train_countries, country_to_index=self.country_to_index)
-        val_dataset = CustomImageDataset(self.val_images, self.val_coordinates, self.val_countries, country_to_index=self.country_to_index, shuffle=False)
-        test_dataset = CustomImageDataset(self.test_images, self.test_coordinates, self.test_countries, country_to_index=self.country_to_index, shuffle=False)
+        val_dataset = CustomImageDataset(self.val_images, self.val_coordinates, self.val_countries, country_to_index=self.country_to_index)
+        test_dataset = CustomImageDataset(self.test_images, self.test_coordinates, self.test_countries, country_to_index=self.country_to_index)
 
         # Create train, val, and test dataloaders
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
-        val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=True)
-        test_loader = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False)
+        test_loader = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False)
 
         return train_loader, val_loader, test_loader
       
