@@ -61,7 +61,7 @@ def get_cached_file_path(file_names, config, name='data', suffix='.pth'):
     file_name = key + '=' + str(config[key]) + ('&' if first else '') + file_name
     first = False
      
-  file_name = name + '_' + file_name
+  file_name = name + '_' + str(len(file_names) // 2) + '_' + file_name
   
   tmp_dir, _, current_dir = _get_tmp_dir()
   dir_to_check = tmp_dir if tmp_dir is not None else current_dir
