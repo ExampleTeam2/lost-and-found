@@ -800,7 +800,6 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
       zip_load_callback = None
       if tmp_dir_and_zip and not loaded_zip:
         zip_load_callback = lambda: _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=True)
-      return file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback
   
   basenames, basenames_to_locations_map, downloadable_files, pre_downloaded_new_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks, num_download_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
   downloaded_new_files = pre_downloaded_new_files
