@@ -27,10 +27,11 @@ class TestImageDataHandler:
     self.test_loader = DataLoader(CustomImageDataset(images, coordinates, countries, country_to_index=self.country_to_index), batch_size=batch_size, shuffle=False)
 
 class ImageDataHandler:
-    def __init__(self, list_files, base_transform, augmented_transform, final_transform, preprocessing_config={}, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_pth_save_callback=None, save_test_data=True):
+    def __init__(self, list_files, base_transform, augmented_transform, final_transform, preprocessing_config={}, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_pth_save_callback=None, save_test_data=True, random_seed=42):
         assert train_ratio + val_ratio + test_ratio - 1 <= 0.001, "Ratios should sum to 1"
           
         self.batch_size = batch_size
+        self.random_seed = random_seed
         
         json_paths, image_paths = split_json_and_image_files(list_files)
         
@@ -85,6 +86,8 @@ class ImageDataHandler:
           val_transform=transforms.Compose([base_transform, final_transform])
           test_transform=transforms.Compose([base_transform, final_transform])
           
+          random.seed(random_seed)
+          torch.manual_seed(random_seed)
           for batch_image_files, batch_label_files in tqdm(train_file_name_loader, desc="Loading train images and labels"):
               images = load_image_files(batch_image_files)
               labels = load_json_files(batch_label_files)
@@ -92,7 +95,9 @@ class ImageDataHandler:
               self.train_coordinates.extend([item['coordinates'] for item in labels])
               for image in images:
                   self.train_images.append(train_transform(image))
-                  
+              
+          random.seed(random_seed)
+          torch.manual_seed(random_seed)    
           for batch_image_files, batch_label_files in tqdm(val_file_name_loader, desc="Loading val images and labels"):
               images = load_image_files(batch_image_files)
               labels = load_json_files(batch_label_files)
@@ -101,6 +106,8 @@ class ImageDataHandler:
               for image in images:
                   self.val_images.append(val_transform(image))
                   
+          random.seed(random_seed)
+          torch.manual_seed(random_seed)
           for batch_image_files, batch_label_files in tqdm(test_file_name_loader, desc="Loading test images and labels"):
               images = load_image_files(batch_image_files)
               labels = load_json_files(batch_label_files)
@@ -163,6 +170,8 @@ class ImageDataHandler:
         test_dataset = CustomImageDataset(self.test_images, self.test_coordinates, self.test_countries, country_to_index=self.country_to_index)
 
         # Create train, val, and test dataloaders
+        random.seed(self.random_seed)
+        torch.manual_seed(self.random_seed)
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False)
         test_loader = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False)
