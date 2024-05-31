@@ -17,11 +17,12 @@ includeLinks: true
 
 ## Business Understanding
 Follows...
+
 ## Common approaches
 Follows...
+
 ### Common architectures
 Follows...
-
 
 ___
 **Requirements (2-3 pages with a minimum of 7 sources):**
@@ -67,6 +68,13 @@ ___
 ___
 # Model Validation
 
+## Common approaches for model evaluation
+Follows...
+
+## Human baseline performance
+Follows...
+
+## Model performance on other datasets
 Follows...
 
 ___
