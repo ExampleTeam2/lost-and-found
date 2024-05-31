@@ -634,7 +634,7 @@ def _zip_and_copy_files(path, zip_name, current_dir, tmp_dir='./tmp'):
   shutil.copyfile(os.path.join(current_dir, zip_name), os.path.join(path, zip_name))
   print('Copied ' + zip_name)
   
-def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp', alway_skip_zip=False, skip_pth=True):
+def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp', always_skip_zip=False, skip_pth=True):
   zip_name = 'files.zip'
   current_dir = os.getcwd()
   files_list_path = os.path.join(tmp_dir, 'files_list')
@@ -654,7 +654,7 @@ def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_
       
   # If there are no files left in tmp_dir, remove it
   skip_zip = False
-  if not len(os.listdir(tmp_dir)) and not alway_skip_zip:
+  if not len(os.listdir(tmp_dir)) and not always_skip_zip:
     skip_zip = True
       
   if not skip_zip:
