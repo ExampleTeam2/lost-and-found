@@ -2,6 +2,7 @@ import random
 import os
 import gc
 import json
+import shutil
 
 import torch
 import torch.nn as nn
@@ -18,7 +19,7 @@ import uuid
 
 
 class GeoModelTrainer:
-  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=True, country_to_index=None):
+  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=True, country_to_index=None, test_data_path=None):
       self.num_classes = num_classes
       self.train_dataloader = train_dataloader
       self.val_dataloader = val_dataloader
@@ -29,6 +30,7 @@ class GeoModelTrainer:
       self.model_type = None
       self.model = None
       self.country_to_index = country_to_index
+      self.test_data_path = test_data_path
       
   def set_seed(self, seed=42):
     np.random.seed(seed)
@@ -227,9 +229,16 @@ class GeoModelTrainer:
               # save to wandb
               wandb.save(wandb_country_to_index_file)
               
+          if self.test_data_path is not None:
+            # Copy test data to run directory
+            wandb_test_data_path = os.path.join(wandb.run.dir, 'test_data.pth')
+            # write json file
+            shutil.copy(self.test_data_path, wandb_test_data_path)
+            wandb.save(wandb_test_data_path)
+              
           torch.save(best_model.state_dict(), wandb_model_path)
           wandb.save(wandb_model_path)
-
+          
           # Clean up
           del self.model
           del best_model

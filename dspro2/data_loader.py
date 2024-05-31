@@ -620,9 +620,10 @@ def _copy_other_files(path, files_list_path, pth_files_paths):
   for file in pth_files_paths:
     if file.endswith('.pth'):
       # Copy file to path
-      print('Copying ' + os.path.basename(file))
-      shutil.copyfile(os.path.join(path, os.path.join(file)), os.path.join(path, file))
-      print('Copied ' + os.path.basename(file))
+      pth_basename = os.path.basename(file)
+      print('Copying ' + pth_basename)
+      shutil.copyfile(file, os.path.join(path, pth_basename))
+      print('Copied ' + pth_basename)
     
 def _zip_and_copy_files(path, zip_name, current_dir, tmp_dir='./tmp'):
   print('Zipping and copying ' + zip_name)
