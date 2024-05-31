@@ -10,12 +10,12 @@ from custom_image_name_dataset import CustomImageNameDataset
 from custom_image_dataset import CustomImageDataset
 
 sys.path.insert(0, '../')
-from data_loader import load_json_files, load_image_files, potentially_get_cached_file_path
+from data_loader import load_json_files, load_image_files, potentially_get_cached_file_path, get_cached_file_path
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class ImageDataHandler:
-    def __init__(self, image_paths, json_paths, base_transform, augmented_transform, final_transform, list_files=None, preprocessing_config={}, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None):
+    def __init__(self, image_paths, json_paths, base_transform, augmented_transform, final_transform, list_files=None, preprocessing_config={}, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_pth_save_callback=None):
         if list_files is None:
           list_files = [*json_paths, *image_paths]
           
@@ -113,7 +113,9 @@ class ImageDataHandler:
                 'val_coordinates': self.val_coordinates,
                 'test_coordinates': self.test_coordinates
             }
-            torch.save(data, f'cached_data_{preprocessing_config["train_ratio"]}_{preprocessing_config["val_ratio"]}_{preprocessing_config["test_ratio"]}.pt')
+            torch.save(data, get_cached_file_path(list_files, preprocessing_config))
+            if cache_pth_save_callback is not None:
+              cache_pth_save_callback()
             del data
                 
         self.countries = [*self.train_countries, *self.val_countries, *self.test_countries]

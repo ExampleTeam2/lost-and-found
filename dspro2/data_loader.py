@@ -627,7 +627,7 @@ def _zip_and_copy_files(path, zip_name, current_dir, tmp_dir='./tmp'):
   shutil.copyfile(os.path.join(current_dir, zip_name), os.path.join(path, zip_name))
   print('Copied ' + zip_name)
   
-def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp'):
+def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp', alway_skip_zip=False):
   zip_name = 'files.zip'
   current_dir = os.getcwd()
   files_list_path = os.path.join(tmp_dir, 'files_list')
@@ -647,7 +647,7 @@ def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_
       
   # If there are no files left in tmp_dir, remove it
   skip_zip = False
-  if not len(os.listdir(tmp_dir)):
+  if not len(os.listdir(tmp_dir)) and not alway_skip_zip:
     skip_zip = True
       
   if not skip_zip:
@@ -733,7 +733,7 @@ def _get_file_locations(file_location, json_file_location = None, image_file_loc
   if return_zip_load_callback:
     zip_load_callback = None
     if tmp_dir_and_zip and not always_load_zip:
-      zip_load_callback = lambda: _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=True)
+      zip_load_callback = lambda: _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=True)
     return file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback
     
   return file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip
@@ -760,8 +760,8 @@ def _get_file_locations(file_location, json_file_location = None, image_file_loc
 # If `TMP_DIR_AND_ZIP=true` is set, the files will be loaded from a zip file into the tmp directory and saved to a zip file into the tmp directory. This is useful for large datasets and slow file systems like Google Colab.
 # In that case if in the file_location `.pth` files are found, they will be copied to the tmp directory and copied back after the files are loaded. This is used for caching.
 # If this is true and `USE_FILES_LIST=true` is set, the copying of the `.zip` file will be skipped if `.pth` files are found.
-# If return_zip_load_callback is set to True, a callback function will be returned that can be used to load the zip file late if required.
-def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16, allow_num_download_connections_env=True, countries_map_cached_basenames_to_countries={}, return_basenames_too=False, return_zip_load_callback=False):
+# If return_zip_load_and_pth_save_callback is set to True, a callback function will be returned that can be used to load the zip file late if required, as well as a callback function that can be used to save the `.pth` files.
+def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16, allow_num_download_connections_env=True, countries_map_cached_basenames_to_countries={}, return_basenames_too=False, return_zip_load_and_pth_save_callback=False):
   if download_link == 'default':
     download_link = DEFAULT_DOWNLOAD_LINK
   download_link = resolve_env_variable(download_link, 'DOWNLOAD_LINK', allow_download_link_env)
@@ -785,7 +785,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   original_file_location = file_location
   original_json_file_location = json_file_location
   original_image_file_location = image_file_location
-  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env, always_load_zip=always_load_zip, return_zip_load_callback=return_zip_load_callback)
+  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env, always_load_zip=always_load_zip, return_zip_load_callback=return_zip_load_and_pth_save_callback)
   
   basenames, basenames_to_locations_map, downloadable_files, pre_downloaded_new_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks, num_download_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
   downloaded_new_files = pre_downloaded_new_files
@@ -843,13 +843,15 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
       downloaded_new_files = True
       _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location, num_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
       
+  pth_save_callback = None
+      
   if tmp_dir_and_zip:
     file_location = original_file_location
     json_file_location = original_json_file_location
     image_file_location = original_image_file_location
+    pth_save_callback = lambda: _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_skip_zip=True)
     if downloaded_new_files:
-      _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir)
-      
+      _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_skip_zip=False)
       
   # if no loading file, use the just discovered files
   files_to_load = basenames
@@ -875,11 +877,11 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   if skip_checks:
     actual_file_locations = _map_to_locations(files_to_load, basenames_to_locations_map, throw=True)
     if return_basenames_too:
-      if return_zip_load_callback:
-        return actual_file_locations, files_to_load, zip_load_callback
+      if return_zip_load_and_pth_save_callback:
+        return actual_file_locations, files_to_load, zip_load_callback, pth_save_callback
       return actual_file_locations, files_to_load
-    if return_zip_load_callback:
-      return actual_file_locations, zip_load_callback
+    if return_zip_load_and_pth_save_callback:
+      return actual_file_locations, zip_load_callback, pth_save_callback
     return actual_file_locations
   
   for file in files_to_load:
@@ -896,12 +898,12 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
     file.write('\n'.join(files_to_load))
     
   if return_basenames_too:
-    if return_zip_load_callback:
-      return actual_file_locations, files_to_load, zip_load_callback
+    if return_zip_load_and_pth_save_callback:
+      return actual_file_locations, files_to_load, zip_load_callback, pth_save_callback
     return actual_file_locations, files_to_load
   
-  if return_zip_load_callback:
-    return actual_file_locations, zip_load_callback
+  if return_zip_load_and_pth_save_callback:
+    return actual_file_locations, zip_load_callback, pth_save_callback
     
   return actual_file_locations
 
