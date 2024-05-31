@@ -5,7 +5,9 @@ import json
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
+from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152, mobilenet_v2, efficientnet_b1, efficientnet_b3, efficientnet_b4, efficientnet_b7
 from torchvision.models import ResNet18_Weights, ResNet34_Weights, ResNet50_Weights, ResNet101_Weights, ResNet152_Weights
 from torchvision.models.efficientnet import EfficientNet_B1_Weights, EfficientNet_B3_Weights, EfficientNet_B4_Weights, EfficientNet_B7_Weights
@@ -161,6 +163,7 @@ class GeoModelTrainer:
                 ]
 
           optimizer = optim.AdamW(optimizer_grouped_parameters, weight_decay=config.weight_decay)
+          scheduler = StepLR(optimizer, step_size=10, gamma=0.1)
 
           for epoch in range(config.epochs):
               if self.use_coordinates:
@@ -186,6 +189,9 @@ class GeoModelTrainer:
                   if patience_counter >= self.patience:
                       print(f"Stopping early after {self.patience} epochs without improvement")
                       break
+                      
+              # Step the scheduler at the end of the epoch
+              scheduler.step()
 
               # Log metrics to wandb
               if self.use_coordinates:
@@ -250,6 +256,7 @@ class GeoModelTrainer:
             targets = coordinates.to(self.device) if self.use_coordinates else country_indices.to(self.device)
             optimizer.zero_grad()
             outputs = self.model(images)
+            probabilities = F.softmax(outputs, dim=1)
             loss = criterion(outputs, targets)
 
             if is_train:
@@ -261,7 +268,7 @@ class GeoModelTrainer:
                 total_metric += self.mean_spherical_distance(outputs, targets).item() * images.size(0)
             else:
                 # Get the top 5 predictions for each image
-                _, predicted_top5 = outputs.topk(5, 1, True, True)
+                _, predicted_top5 = probabilities.topk(5, 1, True, True)
 
                 # Calculate different accuracies
                 correct = predicted_top5.eq(targets.view(-1, 1).expand_as(predicted_top5))
