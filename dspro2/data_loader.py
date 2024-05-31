@@ -33,11 +33,45 @@ def hash_filenames(file_names):
   # Concatenate all file names into one long string and update the hash object
   for name in file_names:
       # Ensure encoding to bytes, as hashlib requires bytes input
-      hash_object.update(name.encode('utf-8'))
+      hash_object.update(os.path.basename(name).encode('utf-8'))
   
   # Get the hexadecimal representation of the hash
   hash_digest = hash_object.hexdigest()
   return hash_digest
+
+def _get_tmp_dir(tmp_dir_and_zip=False):
+  tmp_dir_and_zip = resolve_env_variable(str(False), 'TMP_DIR_AND_ZIP', True)
+  tmp_dir_and_zip = tmp_dir_and_zip is not None and tmp_dir_and_zip and tmp_dir_and_zip.lower() != 'false' and tmp_dir_and_zip.lower() != '0'
+  
+  current_dir = os.getcwd()
+  
+  tmp_dir = None
+  if tmp_dir_and_zip:
+    tmp_dir_name = 'tmp'
+    tmp_dir = os.path.join(current_dir, tmp_dir_name)
+    
+  return tmp_dir, tmp_dir_and_zip, current_dir
+
+def get_cached_file_path(file_names, config, name='data', suffix='.pth', tmp_dir_and_zip=False):
+  file_name = hash_filenames(file_names) + suffix
+  config_keys = reversed(sorted(list(config.keys())))
+  first = True
+  for key in config_keys:
+    file_name = key + '=' + str(config[key]) + ('&' if first else '') + file_name
+    first = False
+     
+  file_name = name + '_' + file_name
+  
+  tmp_dir, tmp_dir_and_zip, current_dir = _get_tmp_dir(tmp_dir_and_zip)
+  dir_to_check = tmp_dir if tmp_dir is not None else current_dir
+  
+  return os.path.join(dir_to_check, file_name)
+  
+def potentially_get_cached_file_path(file_names, config, name='', tmp_dir_and_zip=False):
+  file_path = get_cached_file_path(file_names, config, name, tmp_dir_and_zip=tmp_dir_and_zip)
+  if os.path.exists(file_path):
+    return file_path
+  return None
 
 # Get rid of unpaired files (where only either json or png is present)
 def _remove_unpaired_files(files):
@@ -530,46 +564,61 @@ def _get_list_from_remote(download_link, file_location, json_file_location = Non
   print('All remote files: ' + str(len(all_files)))
   return basenames, basenames_to_locations_map
 
-def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir_name):
+def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir='./tmp'):
   # Create tmp_dir if it does not exist
-  tmp_dir = os.path.join(current_dir, tmp_dir_name)
   if not os.path.exists(tmp_dir):
     os.makedirs(tmp_dir)
-  # Check if zip file exists at path, if yes, unzip it into tmp_dir (so all files are in the tmp_dir)
-  zip_path = os.path.join(path, zip_name)
-  if os.path.exists(zip_path) or os.path.exists(os.path.join(current_dir, zip_name)):
-    if not os.path.exists(os.path.join(current_dir, zip_name)):
-      print('Copying and unzipping ' + zip_name)
-      shutil.copyfile(zip_path, os.path.join(current_dir, zip_name))
-    print('Unzipping ' + zip_name)
-    # Unpack into tmp_dir
-    shutil.unpack_archive(zip_path, tmp_dir)
-    print('Unzipped ' + zip_name)
+  skip_zip = False
+  # Copy all .pth files to tmp_dir if they exist
+  for file in os.listdir(path):
+    if file.endswith('.pth'):
+      skip_zip = True
+      # Copy file to tmp_dir
+      print('Copying ' + file)
+      shutil.copyfile(os.path.join(path, file), os.path.join(tmp_dir, file))
+      print('Copied ' + file)
+  if not skip_zip:
+    # Check if zip file exists at path, if yes, unzip it into tmp_dir (so all files are in the tmp_dir)
+    zip_path = os.path.join(path, zip_name)
+    if os.path.exists(zip_path) or os.path.exists(os.path.join(current_dir, zip_name)):
+      if not os.path.exists(os.path.join(current_dir, zip_name)):
+        print('Copying and unzipping ' + zip_name)
+        shutil.copyfile(zip_path, os.path.join(current_dir, zip_name))
+      print('Unzipping ' + zip_name)
+      # Unpack into tmp_dir
+      shutil.unpack_archive(zip_path, tmp_dir)
+      print('Unzipped ' + zip_name)
+  else:
+    print('Skipped copying and unzipping ' + zip_name)
+  
   files_list_path = os.path.join(path, 'files_list')
   # Copy files_list to tmp_dir if it exists
   if os.path.exists(files_list_path):
     shutil.copyfile(files_list_path, os.path.join(tmp_dir, 'files_list'))
     
-def _load_from_zips_to_tmp(file_location, json_file_location = None, image_file_location = None):
+def _load_from_zips_to_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp'):
   zip_name = 'files.zip'
-  current_dir = os.getcwd()
-  tmp_dir_name = 'tmp'
   if file_location is not None:
-    _copy_and_unzip_files(file_location, zip_name, current_dir, tmp_dir_name)
+    _copy_and_unzip_files(file_location, zip_name, current_dir, tmp_dir)
   if json_file_location != file_location and json_file_location is not None and type != 'png':
-    _copy_and_unzip_files(json_file_location, zip_name, current_dir, tmp_dir_name)
+    _copy_and_unzip_files(json_file_location, zip_name, current_dir, tmp_dir)
   if image_file_location != file_location and image_file_location is not None and type != 'json':
-    _copy_and_unzip_files(image_file_location, zip_name, current_dir, tmp_dir_name)
-  return os.path.join(current_dir, tmp_dir_name)
+    _copy_and_unzip_files(image_file_location, zip_name, current_dir, tmp_dir)
     
-def _copy_files_list(path, files_list_path):
+def _copy_other_files(path, files_list_path, pth_files_paths):
   # Copy files_list to path if it exists
   shutil.copyfile(files_list_path, os.path.join(path, 'files_list'))
+  # Copy .pth files to path if they exist
+  for file in pth_files_paths:
+    if file.endswith('.pth'):
+      # Copy file to path
+      print('Copying ' + os.path.basename(file))
+      shutil.copyfile(os.path.join(path, os.path.join(file)), os.path.join(path, file))
+      print('Copied ' + os.path.basename(file))
     
-def _zip_and_copy_files(path, zip_name, current_dir, tmp_dir_name):
+def _zip_and_copy_files(path, zip_name, current_dir, tmp_dir='./tmp'):
   print('Zipping and copying ' + zip_name)
   # Check if there are any files in tmp_dir
-  tmp_dir = os.path.join(current_dir, tmp_dir_name)
   # Zip tmp_dir into current_dir
   print('Zipping ' + zip_name)
   shutil.make_archive(os.path.join(current_dir, zip_name.split('.')[0]), 'zip', tmp_dir)
@@ -578,29 +627,39 @@ def _zip_and_copy_files(path, zip_name, current_dir, tmp_dir_name):
   shutil.copyfile(os.path.join(current_dir, zip_name), os.path.join(path, zip_name))
   print('Copied ' + zip_name)
   
-def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_location = None):
+def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp'):
   zip_name = 'files.zip'
   current_dir = os.getcwd()
-  tmp_dir_name = 'tmp'
-  tmp_dir = os.path.join(current_dir, tmp_dir_name)
   files_list_path = os.path.join(tmp_dir, 'files_list')
+  pth_files_paths = [os.path.join(tmp_dir, file) for file in os.listdir(tmp_dir) if file.endswith('.pth')]
   if os.path.exists(files_list_path):
     if file_location is not None:
-      _copy_files_list(file_location, files_list_path)
+      _copy_other_files(file_location, files_list_path, pth_files_paths)
     if json_file_location != file_location and json_file_location is not None and type != 'png':
-      _copy_files_list(json_file_location, files_list_path)
+      _copy_other_files(json_file_location, files_list_path, pth_files_paths)
     if image_file_location != file_location and image_file_location is not None and type != 'json':
-      _copy_files_list(image_file_location, files_list_path)
+      _copy_other_files(image_file_location, files_list_path, pth_files_paths)
     # Remove files_list
     os.remove(files_list_path)
+    # Remove .pth files
+    for file in pth_files_paths:
+      os.remove(file)
       
-  if file_location is not None:
-    _zip_and_copy_files(file_location, zip_name, current_dir, tmp_dir_name)
-  if json_file_location != file_location and json_file_location is not None and type != 'png':
-    _zip_and_copy_files(json_file_location, zip_name, current_dir, tmp_dir_name)
-  if image_file_location != file_location and image_file_location is not None and type != 'json':
-    _zip_and_copy_files(image_file_location, zip_name, current_dir, tmp_dir_name)
-
+  # If there are no files left in tmp_dir, remove it
+  skip_zip = False
+  if not len(os.listdir(tmp_dir)):
+    skip_zip = True
+      
+  if not skip_zip:
+    if file_location is not None:
+      _zip_and_copy_files(file_location, zip_name, current_dir, tmp_dir)
+    if json_file_location != file_location and json_file_location is not None and type != 'png':
+      _zip_and_copy_files(json_file_location, zip_name, current_dir, tmp_dir)
+    if image_file_location != file_location and image_file_location is not None and type != 'json':
+      _zip_and_copy_files(image_file_location, zip_name, current_dir, tmp_dir)
+  else:
+    print('Skipped zipping and copying ' + zip_name)
+    
 def _get_files_list(file_location, json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', download_link=None, pre_download=False, from_remote_only=False, dedupe_and_remove_unpaired=True, skip_checks=False, num_download_connections=16, use_files_list=False, nested=False, tmp_dir_and_zip=False):
   basenames_to_locations_map={}
   basenames = []
@@ -653,6 +712,24 @@ def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_e
       return str(new_var)
   return var
 
+def _get_file_locations(file_location, json_file_location = None, image_file_location = None, use_files_list=False, nested=False, tmp_dir_and_zip=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False):
+  file_location = resolve_env_variable(file_location, 'FILE_LOCATION', allow_file_location_env)
+  json_file_location = resolve_env_variable(json_file_location, 'JSON_FILE_LOCATION', allow_json_file_location_env)
+  image_file_location = resolve_env_variable(image_file_location, 'IMAGE_FILE_LOCATION', allow_image_file_location_env)
+  use_files_list = resolve_env_variable(str(False), 'USE_FILES_LIST', True)
+  use_files_list = use_files_list is not None and use_files_list and use_files_list.lower() != 'false' and use_files_list.lower() != '0'
+  nested = resolve_env_variable(str(True), 'NESTED', True)
+  nested = not (nested is not None and nested and nested.lower() != 'true' and nested.lower() != '1')
+  tmp_dir, tmp_dir_and_zip, current_dir = _get_tmp_dir(tmp_dir_and_zip)
+  
+  if tmp_dir_and_zip:
+    _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir)
+    file_location = tmp_dir
+    json_file_location = tmp_dir
+    image_file_location = tmp_dir
+    
+  return file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip
+
 # Get file paths of data to load, using multiple locations and optionally a map.
 # If ran for a second time, it will use the previous files and otherwise error.
 # The limit will automatically be shuffled (but returned in same order).
@@ -674,20 +751,11 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   if download_link == 'default':
     download_link = DEFAULT_DOWNLOAD_LINK
   download_link = resolve_env_variable(download_link, 'DOWNLOAD_LINK', allow_download_link_env)
-  file_location = resolve_env_variable(file_location, 'FILE_LOCATION', allow_file_location_env)
-  json_file_location = resolve_env_variable(json_file_location, 'JSON_FILE_LOCATION', allow_json_file_location_env)
-  image_file_location = resolve_env_variable(image_file_location, 'IMAGE_FILE_LOCATION', allow_image_file_location_env)
   skip_remote = resolve_env_variable(str(False), 'SKIP_REMOTE', True)
   skip_remote = skip_remote is not None and skip_remote and skip_remote.lower() != 'false' and skip_remote.lower() != '0'
   skip_checks = resolve_env_variable(str(False), 'SKIP_CHECKS', True)
   skip_checks = skip_checks is not None and skip_checks and skip_checks.lower() != 'false' and skip_checks.lower() != '0'
   num_download_connections = int(resolve_env_variable(str(num_download_connections), 'NUM_DOWNLOAD_CONNECTIONS', allow_num_download_connections_env))
-  use_files_list = resolve_env_variable(str(False), 'USE_FILES_LIST', True)
-  use_files_list = use_files_list is not None and use_files_list and use_files_list.lower() != 'false' and use_files_list.lower() != '0'
-  nested = resolve_env_variable(str(True), 'NESTED', True)
-  nested = not (nested is not None and nested and nested.lower() != 'true' and nested.lower() != '1')
-  tmp_dir_and_zip = resolve_env_variable(str(False), 'TMP_DIR_AND_ZIP', True)
-  tmp_dir_and_zip = tmp_dir_and_zip is not None and tmp_dir_and_zip and tmp_dir_and_zip.lower() != 'false' and tmp_dir_and_zip.lower() != '0'
   if skip_checks:
     print('Warning: Skipping all checks')
     skip_remote = True
@@ -702,12 +770,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   original_file_location = file_location
   original_json_file_location = json_file_location
   original_image_file_location = image_file_location
-  tmp_dir = None
-  if tmp_dir_and_zip:
-    tmp_dir = _load_from_zips_to_tmp(file_location, json_file_location, image_file_location)
-    file_location = tmp_dir
-    json_file_location = tmp_dir
-    image_file_location = tmp_dir
+  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip = _get_file_locations(file_location, json_file_location, image_file_location, use_files_list, nested, tmp_dir_and_zip, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env)
   
   basenames, basenames_to_locations_map, downloadable_files, pre_downloaded_new_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks, num_download_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
   downloaded_new_files = pre_downloaded_new_files
@@ -770,7 +833,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
     json_file_location = original_json_file_location
     image_file_location = original_image_file_location
     if downloaded_new_files:
-      _save_to_zips_from_tmp(file_location, json_file_location, image_file_location)
+      _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir)
       
       
   # if no loading file, use the just discovered files

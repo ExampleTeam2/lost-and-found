@@ -1,10 +1,9 @@
 from torch.utils.data import Dataset
 
 class CustomImageNameDataset(Dataset):
-    def __init__(self, image_paths, json_paths, transform=None):
+    def __init__(self, image_paths, json_paths):
         self.image_paths = image_paths
         self.json_paths = json_paths
-        self.transform = transform
 
     def __len__(self):
         return len(self.image_paths)
