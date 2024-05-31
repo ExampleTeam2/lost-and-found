@@ -570,6 +570,8 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir='./tmp', always_l
   # Create tmp_dir if it does not exist
   if not os.path.exists(tmp_dir):
     os.makedirs(tmp_dir)
+  if not os.path.exists(path):
+    os.makedirs(path)
   skip_zip = False
   loaded_zip = False
   # Copy all .pth files to tmp_dir if they exist

@@ -21,9 +21,14 @@ if [ -d /content/drive/MyDrive ]; then
 	export FILE_LOCATION="/content/drive/MyDrive/.data"
 	export JSON_FILE_LOCATION="/content/drive/MyDrive/.data"
 	export IMAGE_FILE_LOCATION="/content/drive/MyDrive/.data"
+	export TMP_DIR_AND_ZIP="true"
+else
+	echo "Running on local"
+	export FILE_LOCATION="./.data"
+	export JSON_FILE_LOCATION="./.data"
+	export IMAGE_FILE_LOCATION="./.data"
 fi
 export NESTED="true"
 export USE_FILES_LIST="true"
-export TMP_DIR_AND_ZIP="true"
 export WANDB_TOKEN="$WANDB_TOKEN"
 poetry run python3 $OUTPUT_NAME.py
