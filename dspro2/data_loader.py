@@ -606,9 +606,9 @@ def _load_from_zips_to_tmp(file_location, json_file_location = None, image_file_
   if file_location is not None:
     loaded_zip = _copy_and_unzip_files(file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip)
   if json_file_location != file_location and json_file_location is not None and type != 'png':
-    loaded_zip = _copy_and_unzip_files(json_file_location, zip_name, current_dir, tmp_dir)
+    loaded_zip = _copy_and_unzip_files(json_file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip)
   if image_file_location != file_location and image_file_location is not None and type != 'json':
-    loaded_zip = _copy_and_unzip_files(image_file_location, zip_name, current_dir, tmp_dir)
+    loaded_zip = _copy_and_unzip_files(image_file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip)
     
   return loaded_zip
     
@@ -780,7 +780,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   pre_download = pre_download or countries_map is not None
   always_load_zip = pre_download
   
-  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env, always_load_zip=always_load_zip, return_zip_load_callback=return_zip_load_and_pth_save_callback)
+  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env)
   
   original_file_location = file_location
   original_json_file_location = json_file_location
