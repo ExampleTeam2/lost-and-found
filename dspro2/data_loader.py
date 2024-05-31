@@ -718,9 +718,11 @@ def _get_file_locations(file_location, json_file_location = None, image_file_loc
   image_file_location = resolve_env_variable(image_file_location, 'IMAGE_FILE_LOCATION', allow_image_file_location_env)
   use_files_list = resolve_env_variable(str(False), 'USE_FILES_LIST', True)
   use_files_list = use_files_list is not None and use_files_list and use_files_list.lower() != 'false' and use_files_list.lower() != '0'
-  nested = resolve_env_variable(str(True), 'NESTED', True)
+  nested = resolve_env_variable(str(False), 'NESTED', True)
   nested = not (nested is not None and nested and nested.lower() != 'true' and nested.lower() != '1')
   tmp_dir, tmp_dir_and_zip, current_dir = _get_tmp_dir()
+  if not use_files_list:
+    always_load_zip = False
   
   if tmp_dir_and_zip:
     _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=always_load_zip)
@@ -753,6 +755,12 @@ def _get_file_locations(file_location, json_file_location = None, image_file_loc
 # If a countries map is given, the files will automatically be pre-downloaded.
 # The countries_map_percentage_threshold is the minimum percentage of games (of the total) a country should have to be included in the map, it only works if allow_missing_in_map is set to True.
 # If countries_map_slack_factor is set (only works if countries_map_percentage_threshold is set), it will allow countries to be included in the map if they are within the slack factor of the percentage threshold. This can also be set to 1 to include countries that can be mapped but do not match countries_map_percentage_threshold.
+# If `NESTED=true` is set, the files will be loaded from and saved into nested directories, this is useful for large datasets.
+# If `USE_FILES_LIST=true` is set, the names of the files will be loaded from and saved into a files_list file in the directory, this is useful for large datasets.
+# If `TMP_DIR_AND_ZIP=true` is set, the files will be loaded from a zip file into the tmp directory and saved to a zip file into the tmp directory. This is useful for large datasets and slow file systems like Google Colab.
+# In that case if in the file_location `.pth` files are found, they will be copied to the tmp directory and copied back after the files are loaded. This is used for caching.
+# If this is true and `USE_FILES_LIST=true` is set, the copying of the `.zip` file will be skipped if `.pth` files are found.
+# If return_zip_load_callback is set to True, a callback function will be returned that can be used to load the zip file late if required.
 def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16, allow_num_download_connections_env=True, countries_map_cached_basenames_to_countries={}, return_basenames_too=False, return_zip_load_callback=False):
   if download_link == 'default':
     download_link = DEFAULT_DOWNLOAD_LINK
@@ -772,11 +780,12 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
     download_link = None
 
   pre_download = pre_download or countries_map is not None
+  always_load_zip = countries_map is not None
   
   original_file_location = file_location
   original_json_file_location = json_file_location
   original_image_file_location = image_file_location
-  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env, always_load_zip=pre_download, return_zip_load_callback=return_zip_load_callback)
+  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env, always_load_zip=always_load_zip, return_zip_load_callback=return_zip_load_callback)
   
   basenames, basenames_to_locations_map, downloadable_files, pre_downloaded_new_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks, num_download_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
   downloaded_new_files = pre_downloaded_new_files
