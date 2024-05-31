@@ -63,7 +63,7 @@ class RegionEnricher:
         print(self.gdf['country_code'].head())
         # to wkts
         self.gdf['middle_point'] = self.gdf['middle_point'].to_wkt()
-        self.gdf.to_file('../../data/admin_1_states_provinces.geojson', driver='GeoJSON')
+        self.gdf.to_file('../../data/admin_1_states_provinces.geojson', driver='GeoJSON', encoding='utf-8')
 
 
     def load_enriched_geojson(self):
@@ -95,25 +95,23 @@ class RegionEnricher:
         
         # Initialize results
         results = [
-                  [regions.iloc[idx]['name_en'] for idx in tree.query((point.x, point.y), k=k)[1]]
+                  [regions.iloc[idx]['name_en'] for idx in tree.query((point.y, point.x), k=k)[1]]
                   for point in points
               ]
 
         return results
 
     def get_region_from_points(self, gdf, points):
-        # Create a spatial index for the GeoDataFrame
+        gdf = gdf.to_crs(epsg=4326)
 
         # Convert points to a GeoSeries
-        points_gs = gpd.GeoSeries([Point(point) if not isinstance(point, Point) else point for point in points], crs=gdf.crs)
+        points_gs = gpd.GeoSeries([Point(point) if not isinstance(point, Point) else point for point in points], crs='EPSG:4326')
 
         # Check if the points are in any of the regions
         is_in_regions = [gdf.contains(point).any() for point in points_gs]
         print(is_in_regions)
 
         nearest_regions = self.find_nearest_regions(points_gs, gdf)
-        print(nearest_regions)
-
 
         return nearest_regions, is_in_regions
 

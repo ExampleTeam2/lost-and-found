@@ -51,7 +51,7 @@ class CountryEnricher:
                 return
               # skip if already processed
               if self.use_previous:
-                if 'country_name' in self.json_files:
+                if 'country_name' in self.json_files and 'region_name' in self.json_files:
                   return
               self.json_files[image_id] = json_data
               if not self.from_country:
@@ -90,9 +90,9 @@ class CountryEnricher:
     def enrich_with_country_info(self):
       if not self.from_country:
         self.json_files = convert_from_coordinates(self.coordinates, self.file_map, self.json_files)
+        self.json_files = self.region_enricher.add_regions_to_json(self.coordinates, self.file_map, self.json_files, self.gdf)
       else:
         self.json_files = convert_from_names(self.file_map, self.json_files)
-      self.json_files = self.region_enricher.add_regions_to_json(self.coordinates, self.file_map, self.json_files, self.gdf)
     
     def save_enriched_files(self, num_workers=16):
         os.makedirs(self.output_dir, exist_ok=True)
