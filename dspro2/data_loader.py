@@ -782,7 +782,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   pre_download = pre_download or countries_map is not None
   always_load_zip = pre_download
   
-  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env)
+  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env)
   
   original_file_location = file_location
   original_json_file_location = json_file_location
