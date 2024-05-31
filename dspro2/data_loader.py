@@ -569,6 +569,7 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir='./tmp', always_l
   if not os.path.exists(tmp_dir):
     os.makedirs(tmp_dir)
   skip_zip = False
+  loaded_zip = False
   # Copy all .pth files to tmp_dir if they exist
   for file in os.listdir(path):
     if file.endswith('.pth'):
@@ -578,6 +579,7 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir='./tmp', always_l
       shutil.copyfile(os.path.join(path, file), os.path.join(tmp_dir, file))
       print('Copied ' + file)
   if not skip_zip or always_load_zip:
+    loaded_zip = True
     # Check if zip file exists at path, if yes, unzip it into tmp_dir (so all files are in the tmp_dir)
     zip_path = os.path.join(path, zip_name)
     if os.path.exists(zip_path) or os.path.exists(os.path.join(current_dir, zip_name)):
@@ -596,14 +598,19 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir='./tmp', always_l
   if os.path.exists(files_list_path):
     shutil.copyfile(files_list_path, os.path.join(tmp_dir, 'files_list'))
     
+  return loaded_zip
+    
 def _load_from_zips_to_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp', always_load_zip=False):
   zip_name = 'files.zip'
+  loaded_zip = False
   if file_location is not None:
-    _copy_and_unzip_files(file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip)
+    loaded_zip = _copy_and_unzip_files(file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip)
   if json_file_location != file_location and json_file_location is not None and type != 'png':
-    _copy_and_unzip_files(json_file_location, zip_name, current_dir, tmp_dir)
+    loaded_zip = _copy_and_unzip_files(json_file_location, zip_name, current_dir, tmp_dir)
   if image_file_location != file_location and image_file_location is not None and type != 'json':
-    _copy_and_unzip_files(image_file_location, zip_name, current_dir, tmp_dir)
+    loaded_zip = _copy_and_unzip_files(image_file_location, zip_name, current_dir, tmp_dir)
+    
+  return loaded_zip
     
 def _copy_other_files(path, files_list_path, pth_files_paths):
   # Copy files_list to path if it exists
@@ -723,16 +730,18 @@ def _get_file_locations(file_location, json_file_location = None, image_file_loc
   tmp_dir, tmp_dir_and_zip, current_dir = _get_tmp_dir()
   if not use_files_list:
     always_load_zip = False
+    
+  loaded_zip = False
   
   if tmp_dir_and_zip:
-    _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=always_load_zip)
+    loaded_zip = _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=always_load_zip)
     file_location = tmp_dir
     json_file_location = tmp_dir
     image_file_location = tmp_dir
     
   if return_zip_load_callback:
     zip_load_callback = None
-    if tmp_dir_and_zip and not always_load_zip:
+    if tmp_dir_and_zip and not loaded_zip:
       zip_load_callback = lambda: _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=True)
     return file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback
     
