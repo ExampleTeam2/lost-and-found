@@ -662,7 +662,7 @@ def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_
       
   # If there are no files left in tmp_dir, remove it
   skip_zip = False
-  if not len(os.listdir(tmp_dir)) and not only_pth:
+  if only_pth or (not len(os.listdir(tmp_dir))):
     skip_zip = True
       
   if not skip_zip:
