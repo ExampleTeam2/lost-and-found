@@ -564,7 +564,7 @@ def _get_list_from_remote(download_link, file_location, json_file_location = Non
   print('All remote files: ' + str(len(all_files)))
   return basenames, basenames_to_locations_map
 
-def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir='./tmp'):
+def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir='./tmp', always_load_zip=False):
   # Create tmp_dir if it does not exist
   if not os.path.exists(tmp_dir):
     os.makedirs(tmp_dir)
@@ -577,7 +577,7 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir='./tmp'):
       print('Copying ' + file)
       shutil.copyfile(os.path.join(path, file), os.path.join(tmp_dir, file))
       print('Copied ' + file)
-  if not skip_zip:
+  if not skip_zip or always_load_zip:
     # Check if zip file exists at path, if yes, unzip it into tmp_dir (so all files are in the tmp_dir)
     zip_path = os.path.join(path, zip_name)
     if os.path.exists(zip_path) or os.path.exists(os.path.join(current_dir, zip_name)):
@@ -596,10 +596,10 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir='./tmp'):
   if os.path.exists(files_list_path):
     shutil.copyfile(files_list_path, os.path.join(tmp_dir, 'files_list'))
     
-def _load_from_zips_to_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp'):
+def _load_from_zips_to_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp', always_load_zip=False):
   zip_name = 'files.zip'
   if file_location is not None:
-    _copy_and_unzip_files(file_location, zip_name, current_dir, tmp_dir)
+    _copy_and_unzip_files(file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip)
   if json_file_location != file_location and json_file_location is not None and type != 'png':
     _copy_and_unzip_files(json_file_location, zip_name, current_dir, tmp_dir)
   if image_file_location != file_location and image_file_location is not None and type != 'json':
@@ -712,7 +712,7 @@ def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_e
       return str(new_var)
   return var
 
-def _get_file_locations(file_location, json_file_location = None, image_file_location = None, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False):
+def _get_file_locations(file_location, json_file_location = None, image_file_location = None, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, always_load_zip=False, return_zip_load_callback=False):
   file_location = resolve_env_variable(file_location, 'FILE_LOCATION', allow_file_location_env)
   json_file_location = resolve_env_variable(json_file_location, 'JSON_FILE_LOCATION', allow_json_file_location_env)
   image_file_location = resolve_env_variable(image_file_location, 'IMAGE_FILE_LOCATION', allow_image_file_location_env)
@@ -723,10 +723,16 @@ def _get_file_locations(file_location, json_file_location = None, image_file_loc
   tmp_dir, tmp_dir_and_zip, current_dir = _get_tmp_dir()
   
   if tmp_dir_and_zip:
-    _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir)
+    _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=always_load_zip)
     file_location = tmp_dir
     json_file_location = tmp_dir
     image_file_location = tmp_dir
+    
+  if return_zip_load_callback:
+    zip_load_callback = None
+    if tmp_dir_and_zip and not always_load_zip:
+      zip_load_callback = lambda: _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=True)
+    return file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback
     
   return file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip
 
@@ -747,7 +753,7 @@ def _get_file_locations(file_location, json_file_location = None, image_file_loc
 # If a countries map is given, the files will automatically be pre-downloaded.
 # The countries_map_percentage_threshold is the minimum percentage of games (of the total) a country should have to be included in the map, it only works if allow_missing_in_map is set to True.
 # If countries_map_slack_factor is set (only works if countries_map_percentage_threshold is set), it will allow countries to be included in the map if they are within the slack factor of the percentage threshold. This can also be set to 1 to include countries that can be mapped but do not match countries_map_percentage_threshold.
-def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16, allow_num_download_connections_env=True, countries_map_cached_basenames_to_countries={}, return_basenames_too=False):
+def get_data_to_load(loading_file = './data_list', file_location = os.path.join(os.path.dirname(__file__), '1_data_collection/.data'), json_file_location = None, image_file_location = None, filter_text='singleplayer', type='', limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16, allow_num_download_connections_env=True, countries_map_cached_basenames_to_countries={}, return_basenames_too=False, return_zip_load_callback=False):
   if download_link == 'default':
     download_link = DEFAULT_DOWNLOAD_LINK
   download_link = resolve_env_variable(download_link, 'DOWNLOAD_LINK', allow_download_link_env)
@@ -770,7 +776,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   original_file_location = file_location
   original_json_file_location = json_file_location
   original_image_file_location = image_file_location
-  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env)
+  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env, always_load_zip=pre_download, return_zip_load_callback=return_zip_load_callback)
   
   basenames, basenames_to_locations_map, downloadable_files, pre_downloaded_new_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks, num_download_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
   downloaded_new_files = pre_downloaded_new_files
@@ -860,7 +866,11 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   if skip_checks:
     actual_file_locations = _map_to_locations(files_to_load, basenames_to_locations_map, throw=True)
     if return_basenames_too:
+      if return_zip_load_callback:
+        return actual_file_locations, files_to_load, zip_load_callback
       return actual_file_locations, files_to_load
+    if return_zip_load_callback:
+      return actual_file_locations, zip_load_callback
     return actual_file_locations
   
   for file in files_to_load:
@@ -877,7 +887,12 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
     file.write('\n'.join(files_to_load))
     
   if return_basenames_too:
+    if return_zip_load_callback:
+      return actual_file_locations, files_to_load, zip_load_callback
     return actual_file_locations, files_to_load
+  
+  if return_zip_load_callback:
+    return actual_file_locations, zip_load_callback
     
   return actual_file_locations
 
