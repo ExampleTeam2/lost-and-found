@@ -69,8 +69,8 @@ def get_cached_file_path(file_names, config, name='data', suffix='.pth'):
   return os.path.join(dir_to_check, file_name)
   
 # Get the file path of cached processed data if it exists
-def potentially_get_cached_file_path(file_names, config, name=''):
-  file_path = get_cached_file_path(file_names, config, name)
+def potentially_get_cached_file_path(file_names, config, name='data', suffix='.pth'):
+  file_path = get_cached_file_path(file_names, config, name=name, suffix=suffix)
   if os.path.exists(file_path):
     return file_path
   return None
