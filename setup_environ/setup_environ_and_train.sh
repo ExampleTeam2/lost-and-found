@@ -8,7 +8,7 @@ poetry install --quiet
 echo "Dependencies installed"
 
 # Define the path to the notebook
-NOTEBOOK_PATH="dspro2/4_modeling/training_resnet_models.ipynb"
+NOTEBOOK_PATH="dspro2/4_modeling/training_models.ipynb"
 OUTPUT_NAME="temp_executed_notebook"
 OUTPUT_PATH="dspro2/4_modeling"
 
