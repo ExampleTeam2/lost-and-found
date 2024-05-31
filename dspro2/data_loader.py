@@ -613,8 +613,9 @@ def _load_from_zips_to_tmp(file_location, json_file_location = None, image_file_
   return loaded_zip
     
 def _copy_other_files(path, files_list_path, pth_files_paths):
-  # Copy files_list to path if it exists
-  shutil.copyfile(files_list_path, os.path.join(path, 'files_list'))
+  if files_list_path is not None:
+    # Copy files_list to path if it exists
+    shutil.copyfile(files_list_path, os.path.join(path, 'files_list'))
   # Copy .pth files to path if they exist
   for file in pth_files_paths:
     if file.endswith('.pth'):
@@ -634,27 +635,31 @@ def _zip_and_copy_files(path, zip_name, current_dir, tmp_dir='./tmp'):
   shutil.copyfile(os.path.join(current_dir, zip_name), os.path.join(path, zip_name))
   print('Copied ' + zip_name)
   
-def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp', always_skip_zip=False, skip_pth=True):
+def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp', only_pth=False, skip_pth=True):
   zip_name = 'files.zip'
   current_dir = os.getcwd()
-  files_list_path = os.path.join(tmp_dir, 'files_list')
+  files_list_path = os.path.join(tmp_dir, 'files_list') if not only_pth else None
+  if files_list_path is not None:
+    if not os.path.exists(files_list_path):
+      files_list_path = None
   pth_files_paths = [os.path.join(tmp_dir, file) for file in os.listdir(tmp_dir) if file.endswith('.pth')] if not skip_pth else []
-  if os.path.exists(files_list_path):
+  if files_list_path is not None or len(pth_files_paths):
     if file_location is not None:
       _copy_other_files(file_location, files_list_path, pth_files_paths)
     if json_file_location != file_location and json_file_location is not None and type != 'png':
       _copy_other_files(json_file_location, files_list_path, pth_files_paths)
     if image_file_location != file_location and image_file_location is not None and type != 'json':
       _copy_other_files(image_file_location, files_list_path, pth_files_paths)
-    # Remove files_list
-    os.remove(files_list_path)
+    if files_list_path is not None:
+      # Remove files_list
+      os.remove(files_list_path)
     # Remove .pth files
     for file in pth_files_paths:
       os.remove(file)
       
   # If there are no files left in tmp_dir, remove it
   skip_zip = False
-  if not len(os.listdir(tmp_dir)) and not always_skip_zip:
+  if not len(os.listdir(tmp_dir)) and not only_pth:
     skip_zip = True
       
   if not skip_zip:
@@ -862,9 +867,9 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
     file_location = original_file_location
     json_file_location = original_json_file_location
     image_file_location = original_image_file_location
-    pth_save_callback = lambda: _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_skip_zip=True, skip_pth=False)
+    pth_save_callback = lambda: _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, only_pth=True, skip_pth=False)
     if downloaded_new_files:
-      _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_skip_zip=False, skip_pth=True)
+      _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, only_pth=False, skip_pth=True)
       
   # if no loading file, use the just discovered files
   files_to_load = basenames
