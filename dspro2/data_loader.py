@@ -725,7 +725,7 @@ def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_e
       return str(new_var)
   return var
 
-def _get_file_locations(file_location, json_file_location = None, image_file_location = None, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, always_load_zip=False, return_zip_load_callback=False):
+def _get_file_locations(file_location, json_file_location = None, image_file_location = None, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False):
   file_location = resolve_env_variable(file_location, 'FILE_LOCATION', allow_file_location_env)
   json_file_location = resolve_env_variable(json_file_location, 'JSON_FILE_LOCATION', allow_json_file_location_env)
   image_file_location = resolve_env_variable(image_file_location, 'IMAGE_FILE_LOCATION', allow_image_file_location_env)
@@ -734,23 +734,6 @@ def _get_file_locations(file_location, json_file_location = None, image_file_loc
   nested = resolve_env_variable(str(False), 'NESTED', True)
   nested = not (nested is not None and nested and nested.lower() != 'true' and nested.lower() != '1')
   tmp_dir, tmp_dir_and_zip, current_dir = _get_tmp_dir()
-  if not use_files_list:
-    always_load_zip = False
-    
-  loaded_zip = False
-  
-  if tmp_dir_and_zip:
-    loaded_zip = _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=always_load_zip)
-    file_location = tmp_dir
-    json_file_location = tmp_dir
-    image_file_location = tmp_dir
-    
-  if return_zip_load_callback:
-    zip_load_callback = None
-    if tmp_dir_and_zip and not loaded_zip:
-      zip_load_callback = lambda: _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=True)
-    return file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback
-    
   return file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip
 
 # Get file paths of data to load, using multiple locations and optionally a map.
@@ -797,10 +780,25 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   pre_download = pre_download or countries_map is not None
   always_load_zip = pre_download
   
+  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env, always_load_zip=always_load_zip, return_zip_load_callback=return_zip_load_and_pth_save_callback)
+  
   original_file_location = file_location
   original_json_file_location = json_file_location
   original_image_file_location = image_file_location
-  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env, always_load_zip=always_load_zip, return_zip_load_callback=return_zip_load_and_pth_save_callback)
+  
+  if not use_files_list:
+    always_load_zip = True
+  loaded_zip = False
+  if tmp_dir_and_zip:
+    loaded_zip = _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=always_load_zip)
+    file_location = tmp_dir
+    json_file_location = tmp_dir
+    image_file_location = tmp_dir
+    if return_zip_load_and_pth_save_callback:
+      zip_load_callback = None
+      if tmp_dir_and_zip and not loaded_zip:
+        zip_load_callback = lambda: _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=True)
+      return file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip, zip_load_callback
   
   basenames, basenames_to_locations_map, downloadable_files, pre_downloaded_new_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks, num_download_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
   downloaded_new_files = pre_downloaded_new_files
