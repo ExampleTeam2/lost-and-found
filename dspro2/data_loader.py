@@ -39,7 +39,7 @@ def hash_filenames(file_names):
   hash_digest = hash_object.hexdigest()
   return hash_digest
 
-def _get_tmp_dir(tmp_dir_and_zip=False):
+def _get_tmp_dir():
   tmp_dir_and_zip = resolve_env_variable(str(False), 'TMP_DIR_AND_ZIP', True)
   tmp_dir_and_zip = tmp_dir_and_zip is not None and tmp_dir_and_zip and tmp_dir_and_zip.lower() != 'false' and tmp_dir_and_zip.lower() != '0'
   
@@ -52,7 +52,7 @@ def _get_tmp_dir(tmp_dir_and_zip=False):
     
   return tmp_dir, tmp_dir_and_zip, current_dir
 
-def get_cached_file_path(file_names, config, name='data', suffix='.pth', tmp_dir_and_zip=False):
+def get_cached_file_path(file_names, config, name='data', suffix='.pth'):
   file_name = hash_filenames(file_names) + suffix
   config_keys = reversed(sorted(list(config.keys())))
   first = True
@@ -62,7 +62,7 @@ def get_cached_file_path(file_names, config, name='data', suffix='.pth', tmp_dir
      
   file_name = name + '_' + file_name
   
-  tmp_dir, tmp_dir_and_zip, current_dir = _get_tmp_dir(tmp_dir_and_zip)
+  tmp_dir, _, current_dir = _get_tmp_dir()
   dir_to_check = tmp_dir if tmp_dir is not None else current_dir
   
   return os.path.join(dir_to_check, file_name)
@@ -712,7 +712,7 @@ def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_e
       return str(new_var)
   return var
 
-def _get_file_locations(file_location, json_file_location = None, image_file_location = None, use_files_list=False, nested=False, tmp_dir_and_zip=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False):
+def _get_file_locations(file_location, json_file_location = None, image_file_location = None, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False):
   file_location = resolve_env_variable(file_location, 'FILE_LOCATION', allow_file_location_env)
   json_file_location = resolve_env_variable(json_file_location, 'JSON_FILE_LOCATION', allow_json_file_location_env)
   image_file_location = resolve_env_variable(image_file_location, 'IMAGE_FILE_LOCATION', allow_image_file_location_env)
@@ -720,7 +720,7 @@ def _get_file_locations(file_location, json_file_location = None, image_file_loc
   use_files_list = use_files_list is not None and use_files_list and use_files_list.lower() != 'false' and use_files_list.lower() != '0'
   nested = resolve_env_variable(str(True), 'NESTED', True)
   nested = not (nested is not None and nested and nested.lower() != 'true' and nested.lower() != '1')
-  tmp_dir, tmp_dir_and_zip, current_dir = _get_tmp_dir(tmp_dir_and_zip)
+  tmp_dir, tmp_dir_and_zip, current_dir = _get_tmp_dir()
   
   if tmp_dir_and_zip:
     _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir)
@@ -770,7 +770,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
   original_file_location = file_location
   original_json_file_location = json_file_location
   original_image_file_location = image_file_location
-  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip = _get_file_locations(file_location, json_file_location, image_file_location, use_files_list, nested, tmp_dir_and_zip, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env)
+  file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env)
   
   basenames, basenames_to_locations_map, downloadable_files, pre_downloaded_new_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks, num_download_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
   downloaded_new_files = pre_downloaded_new_files
