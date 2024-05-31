@@ -232,7 +232,7 @@ class GeoModelTrainer:
           if self.test_data_path is not None:
             # Copy test data to run directory
             wandb_test_data_path = os.path.join(wandb.run.dir, 'test_data.pth')
-            # write json file
+            # copy .pth file
             shutil.copy(self.test_data_path, wandb_test_data_path)
             wandb.save(wandb_test_data_path)
               
