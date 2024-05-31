@@ -30,10 +30,6 @@ class ImageDataHandler:
           
         self.batch_size = batch_size
         
-        preprocessing_config['train_ratio'] = train_ratio
-        preprocessing_config['val_ratio'] = val_ratio
-        preprocessing_config['test_ratio'] = test_ratio
-        
         json_paths, image_paths = split_json_and_image_files(list_files)
         
         combined_names = list(zip(image_paths, json_paths))
