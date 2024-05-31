@@ -853,6 +853,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
       # If there is a zip file, download the previous files
       if zip_load_callback:
         zip_load_callback()
+        zip_load_callback = None
       _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location, num_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
       
   pth_save_callback = None
