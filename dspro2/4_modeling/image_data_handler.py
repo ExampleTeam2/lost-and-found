@@ -16,7 +16,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class TestImageDataHandler:
   def __init__(self, test_path='./test_data.pth', country_to_index_path='./country_to_index.json', batch_size=100):
+    print(f"Loading test data from {os.path.basename(test_path)}")
     test_data = torch.load(test_path)
+    print("Test data loaded.")
     images, countries, coordinates = test_data['test_images'], test_data['test_countries'], test_data['test_coordinates']
         
     with open(country_to_index_path, 'r') as f:
@@ -25,7 +27,7 @@ class TestImageDataHandler:
     self.test_loader = DataLoader(CustomImageDataset(images, coordinates, countries, country_to_index=self.country_to_index), batch_size=batch_size, shuffle=False)
 
 class ImageDataHandler:
-    def __init__(self, list_files, base_transform, augmented_transform, final_transform, preprocessing_config={}, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_pth_save_callback=None):
+    def __init__(self, list_files, base_transform, augmented_transform, final_transform, preprocessing_config={}, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_pth_save_callback=None, save_test_data=True):
         assert train_ratio + val_ratio + test_ratio - 1 <= 0.001, "Ratios should sum to 1"
           
         self.batch_size = batch_size
@@ -61,6 +63,7 @@ class ImageDataHandler:
           
           print(f"Using cached data from: {os.path.basename(cached_data)}")
           data = torch.load(cached_data)
+          print("Data loaded.")
           self.train_images = data['train_images']
           self.val_images = data['val_images']
           self.test_images = data['test_images']
@@ -118,19 +121,26 @@ class ImageDataHandler:
                 'val_coordinates': self.val_coordinates,
                 'test_coordinates': self.test_coordinates
             }
+            print("Caching data...")
             torch.save(data, get_cached_file_path(list_files, preprocessing_config))
+            print("Data cached.")
             del data
             if cache_pth_save_callback is not None:
               cache_pth_save_callback()
-            
-        test_data = {
-          'test_images': self.test_images,
-          'test_countries': self.test_countries,
-          'test_coordinates': self.test_coordinates
-        }
-        self.test_data_path = './test_data.pth'
-        torch.save(test_data, self.test_data_path)
-        del test_data
+              
+        self.test_data_path = None
+        
+        if save_test_data:
+          test_data = {
+            'test_images': self.test_images,
+            'test_countries': self.test_countries,
+            'test_coordinates': self.test_coordinates
+          }
+          self.test_data_path = './test_data.pth'
+          print(f"Saving test data to {os.path.basename(self.test_data_path)}")
+          torch.save(test_data, self.test_data_path)
+          print("Test data saved.")
+          del test_data
                 
         self.countries = [*self.train_countries, *self.val_countries, *self.test_countries]
         
@@ -138,7 +148,7 @@ class ImageDataHandler:
         self.country_to_index = self._get_country_to_index()
         
         # Initialize datasets and loaders
-        self.train_loader, self.val_loader, self.test_loader = self._create_loaders(train_ratio, val_ratio, test_ratio)
+        self.train_loader, self.val_loader, self.test_loader = self._create_loaders()
         
     def _get_country_to_index(self):
         # Gather all unique countries and create a global country_to_index mapping
