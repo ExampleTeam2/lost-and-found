@@ -52,6 +52,7 @@ def _get_tmp_dir():
     
   return tmp_dir, tmp_dir_and_zip, current_dir
 
+# Get the file path for caching processed data
 def get_cached_file_path(file_names, config, name='data', suffix='.pth'):
   file_name = hash_filenames(file_names) + suffix
   config_keys = reversed(sorted(list(config.keys())))
@@ -67,6 +68,7 @@ def get_cached_file_path(file_names, config, name='data', suffix='.pth'):
   
   return os.path.join(dir_to_check, file_name)
   
+# Get the file path of cached processed data if it exists
 def potentially_get_cached_file_path(file_names, config, name=''):
   file_path = get_cached_file_path(file_names, config, name)
   if os.path.exists(file_path):
