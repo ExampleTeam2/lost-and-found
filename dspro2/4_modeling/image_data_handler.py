@@ -14,6 +14,13 @@ sys.path.insert(0, '../')
 from data_loader import split_json_and_image_files, load_json_files, load_image_files, potentially_get_cached_file_path, get_cached_file_path
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+# Helper function to inspect transformed images, back to PIL format and display
+def inspect_transformed_images(transformed_images, num_images=5):
+    for i in range(num_images):
+        img = transformed_images[i]
+        img = transforms.ToPILImage()(img)
+        img.show()
+        
 class TestImageDataHandler:
   def __init__(self, test_path='./test_data.pth', country_to_index_path='./country_to_index.json', batch_size=100):
     print(f"Loading test data from {os.path.basename(test_path)}")
@@ -27,7 +34,7 @@ class TestImageDataHandler:
     self.test_loader = DataLoader(CustomImageDataset(images, coordinates, countries, country_to_index=self.country_to_index), batch_size=batch_size, shuffle=False)
 
 class ImageDataHandler:
-    def __init__(self, list_files, base_transform, augmented_transform, final_transform, preprocessing_config={}, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_additional_save_callback=None, save_test_data=True, random_seed=42):
+    def __init__(self, list_files, base_transform, augmented_transform, final_transform, preprocessing_config={}, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_additional_save_callback=None, save_test_data=True, random_seed=42, inspect_transformed=False):
         assert train_ratio + val_ratio + test_ratio - 1 <= 0.001, "Ratios should sum to 1"
           
         self.batch_size = batch_size
@@ -95,6 +102,9 @@ class ImageDataHandler:
               self.train_coordinates.extend([item['coordinates'] for item in labels])
               for image in images:
                   self.train_images.append(train_transform(image))
+                  
+          if inspect_transformed:
+              inspect_transformed_images(self.train_images, num_images=5)
               
           random.seed(random_seed)
           torch.manual_seed(random_seed)    
