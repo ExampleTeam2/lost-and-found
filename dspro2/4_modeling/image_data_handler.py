@@ -27,7 +27,7 @@ class TestImageDataHandler:
     self.test_loader = DataLoader(CustomImageDataset(images, coordinates, countries, country_to_index=self.country_to_index), batch_size=batch_size, shuffle=False)
 
 class ImageDataHandler:
-    def __init__(self, list_files, base_transform, augmented_transform, final_transform, preprocessing_config={}, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_pth_save_callback=None, save_test_data=True, random_seed=42):
+    def __init__(self, list_files, base_transform, augmented_transform, final_transform, preprocessing_config={}, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_additional_save_callback=None, save_test_data=True, random_seed=42):
         assert train_ratio + val_ratio + test_ratio - 1 <= 0.001, "Ratios should sum to 1"
           
         self.batch_size = batch_size
@@ -132,22 +132,37 @@ class ImageDataHandler:
             torch.save(data, get_cached_file_path(list_files, preprocessing_config))
             print("Data cached.")
             del data
-            if cache_pth_save_callback is not None:
-              cache_pth_save_callback()
+            if cache_additional_save_callback is not None:
+              cache_additional_save_callback()
               
         self.test_data_path = None
+        self.run_link = None
+        self.run_link_path = None
         
         if save_test_data:
-          test_data = {
-            'test_images': self.test_images,
-            'test_countries': self.test_countries,
-            'test_coordinates': self.test_coordinates
-          }
-          self.test_data_path = './test_data.pth'
-          print(f"Saving test data to {os.path.basename(self.test_data_path)}")
-          torch.save(test_data, self.test_data_path)
-          print("Test data saved.")
-          del test_data
+          # If previous run already saved test data, use that run link
+          cached_run_link = potentially_get_cached_file_path(list_files, preprocessing_config, 'run', '.wandb')
+          if cached_run_link is not None:
+            print(f"Using run link from: {os.path.basename(cached_run_link)}")
+            # Read first line as text, strip whitespace, and split by newline
+            with open(cached_run_link, 'r') as f:
+              self.run_link = f.readline().strip()
+            print('Skipping test data saving.')
+              
+          else:
+            self.run_link_path = get_cached_file_path(list_files, preprocessing_config, 'run', '.wandb')
+            print(f"Creating new run link at {os.path.basename(self.run_link_path)}")
+            
+            test_data = {
+              'test_images': self.test_images,
+              'test_countries': self.test_countries,
+              'test_coordinates': self.test_coordinates
+            }
+            self.test_data_path = './test_data.pth'
+            print(f"Saving test data to {os.path.basename(self.test_data_path)}")
+            torch.save(test_data, self.test_data_path)
+            print("Test data saved.")
+            del test_data
                 
         self.countries = [*self.train_countries, *self.val_countries, *self.test_countries]
         

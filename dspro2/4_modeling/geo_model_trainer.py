@@ -19,7 +19,7 @@ import uuid
 
 
 class GeoModelTrainer:
-  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=True, country_to_index=None, test_data_path=None):
+  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=True, country_to_index=None, test_data_path=None, run_start_callback=None):
       self.num_classes = num_classes
       self.train_dataloader = train_dataloader
       self.val_dataloader = val_dataloader
@@ -31,6 +31,7 @@ class GeoModelTrainer:
       self.model = None
       self.country_to_index = country_to_index
       self.test_data_path = test_data_path
+      self.run_start_callback = run_start_callback
       
   def set_seed(self, seed=42):
     np.random.seed(seed)
@@ -134,6 +135,10 @@ class GeoModelTrainer:
   def train(self):
       with wandb.init(reinit=True) as run:
           config = run.config
+          
+          if self.run_start_callback is not None:
+              self.run_start_callback(config, run)
+          
           self.set_seed(config.seed)
           
           # Set seeds, configure optimizers, losses, etc.
@@ -235,6 +240,8 @@ class GeoModelTrainer:
             # copy .pth file
             shutil.copy(self.test_data_path, wandb_test_data_path)
             wandb.save(wandb_test_data_path)
+            # Only save the test data once
+            self.test_data_path = None
               
           torch.save(best_model.state_dict(), wandb_model_path)
           wandb.save(wandb_model_path)
