@@ -32,6 +32,21 @@ ___
 
 # Data collection
 
+To talk about:
+
+Why Geoguessr?
+
+Why Multiplayer initially
+
+Why not just Multiplayer, mapping Singleplayer to distribution instead
+
+Scraping flow (rate-limiting, double-joins, screenshotting, coordinate extraction, ...)
+
+Playwright, auto-restarting & fault tolerance
+
+Data inspection
+
+(Error correction with more scraping)
 ## test 1
 ### test 2
 
@@ -51,6 +66,16 @@ ___
 We can't train the classifier using images in a high resolution, because our resources are limited, and also often images (like from missing persons) are also very low quality. So we decided to reduce the resolution, at the beginning of the processing, about the 1/4 of the original resolution of 1280p x 720p. This also helps to move the images for learning to the server or also between us and also loading takes lot less time for future processing steps. 
 
 
+To talk about:
+
+Enriching (Singleplayer coordinates, Multiplayer names)
+
+(Issues with reverse geocoding, country name matching)
+
+Regions Enriching (Source, Mapping)
+
+Filtering (Color, Blur, Duplicates, Corrupt)
+
 ___
 **Requirements:**
 1. **Core Competency in Data Science:** Data processing is a fundamental step in any data science project. Demonstrating this process shows the student's ability to handle and prepare data for analysis, which is a critical skill in the field.
@@ -60,6 +85,18 @@ ___
 # Methods
 
 Follows...
+
+To talk about:
+
+Basic method (Cross-entropy, ...)
+
+DIfferent pre-trained models
+
+(Coordinates attempt)
+
+Data augmentation
+
+Regions with custom loss
 
 ___
 **Requirements:**
@@ -85,6 +122,20 @@ ___
 # Machine Learning Operations (MLOps)
 
 Follows...
+
+To talk about:
+
+Project structure (from last time, should run out of the box)
+
+Issues with large amount of files
+
+Data-Loader, Datalists and Server
+
+Mitigation of issues on Colab (with drive, nested, files-lists and zips)
+
+Caching of transformed data (Hashing)
+
+Pushing to WandB (data as well, but only test and only once)
 
 ___
 **Requirements:**
