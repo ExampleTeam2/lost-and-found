@@ -24,6 +24,10 @@ Follows...
 ### Common architectures
 Follows...
 
+
+#### Sources
+[Data Augmentation](LINK)
+
 ___
 **Requirements (2-3 pages with a minimum of 7 sources):**
 1. **Foundation of Knowledge:** A literature review establishes the theoretical foundation and current state of research in the field. By requiring a minimum number of sources, students are encouraged to engage deeply with existing literature, ensuring a comprehensive understanding of the subject.  
