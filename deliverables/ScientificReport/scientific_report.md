@@ -13,10 +13,18 @@ style: nestedList
 includeLinks: true
 ```
 
-# Literature review
+# Business Understanding
+This project explores the development of an Image Classification model, focusing on simple street-view images grouped by countries to predict the country where an image was taken. Given limited prior experience with Image Classification, this initiative aims to enhance understanding and skills in this domain. The first objective is to create a model capable of identifying the country from a given image. Building upon this, a second model will be developed to predict the exact district of the image, providing a more precise location than just the country.
 
-## Business Understanding
-Follows...
+The main goal is to develop a robust Image Classification model that can serve as a foundational tool for various applications. This overarching objective supports the specific sub-goals of predicting the country and coordinates of an image. This leads to the question: for what main purposes could an image classifier for countries or coordinates be valuable? By exploring potential applications, the project aims to demonstrate the broader utility of the developed models in real-world scenarios.
+
+- **Helping find missing persons**: Our solution can help find where missing people might be by analyzing pictures shared publicly. The emotional impact of helping reunite families or providing important clues is huge. Especially when the model will be used in addition to the search process for the police. For missing people, every second counts after a kidnapping, especially when the search is international.
+- **Rediscovering memories and family history**: Have you ever come across an old image of someone close to you? Maybe of a deceased family member or someone who may just not remember where it was taken. Our model can try to predict the rough location to help you rediscover your past.
+- **Supporting humanitarian action:** In disaster situations, it could help to quickly identify the most affected areas by analyzing current images from social media or aid organizations. This would improve the coordination of rescue and relief efforts and offer hope and support to those impacted.
+- **Discovering new travel destinations:** Have you ever encountered stunning images of places on Instagram or other social media platforms and wondered where they were taken? Our image classifier can help you with that. By analyzing the image, our classifier can identify the location and provide you with the information you need to plan your next visit to this amazing place. This way, you can discover new and exciting travel destinations that you may have never known about before.
+- **Classification as a service**: With this service, we will help other companies or data science projects label their data. Sometimes companies want to block, permit, or deploy individual versions of their applications in different countries. Some countries have more restrictions for deploying applications, therefore the image predictor can help the companies have the right version on the right devices for these countries.
+
+# Literature review
 
 ## Common approaches
 Follows...
@@ -24,9 +32,15 @@ Follows...
 ### Common architectures
 Follows...
 
+#### Possible Sources
+[EfficientNet Rethinking Model Scaling for CNNs](https://arxiv.org/pdf/1905.11946)
+[MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/pdf/1801.04381)
+[Deep Residual Learning for Image Recognition / ResNet](https://arxiv.org/pdf/1512.03385)
+[Efficient ResNets: Residual Network Design](https://arxiv.org/pdf/2306.12100)
+[Pigeon for calculating loss](https://arxiv.org/pdf/2307.05845)
 
-#### Sources
-[Data Augmentation](LINK)
+[Data Augmentation and overfitting](https://arxiv.org/abs/2201.03299)
+[Data Augmentation in Training CNNs](https://arxiv.org/pdf/2307.06855)
 
 ___
 **Requirements (2-3 pages with a minimum of 7 sources):**
