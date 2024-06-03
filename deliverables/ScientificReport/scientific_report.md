@@ -1,4 +1,4 @@
-# Scientific Report
+# Lost & Found: Predicting Locations from Images
 
 Team name: ExampleTeam
 
@@ -29,7 +29,7 @@ The main goal is to develop a robust Image Classification model that can serve a
 ## Common approaches
 Follows...
 
-### Common architectures
+## Common architectures
 Follows...
 
 #### Possible Sources
