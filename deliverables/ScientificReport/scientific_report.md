@@ -148,6 +148,8 @@ Caching of transformed data (Hashing)
 
 Pushing to WandB (data as well, but only test and only once)
 
+Creating the demo for the geoguessr wizard and how we are deploying the model in this real-world scenario
+
 ___
 **Requirements:**
 1. Practical Application: This section emphasizes the practical aspect of machine learning. It’s not just about building models but also about deploying them effectively in real-world scenarios.
