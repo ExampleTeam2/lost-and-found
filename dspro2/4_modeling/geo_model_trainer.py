@@ -9,8 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
-from torchvision.models import mobilenet_v2, mobilenet_v3_small, mobilenet_v3_large
-from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152, efficientnet_b1, efficientnet_b3, efficientnet_b4, efficientnet_b7
+from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152, mobilenet_v2, efficientnet_b1, efficientnet_b3, efficientnet_b4, efficientnet_b7
 from torchvision.models import ResNet18_Weights, ResNet34_Weights, ResNet50_Weights, ResNet101_Weights, ResNet152_Weights
 from torchvision.models.efficientnet import EfficientNet_B1_Weights, EfficientNet_B3_Weights, EfficientNet_B4_Weights, EfficientNet_B7_Weights
 import numpy as np
@@ -20,19 +19,20 @@ import uuid
 
 
 class GeoModelTrainer:
-  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=True, country_to_index=None, test_data_path=None, run_start_callback=None):
+  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=False, country_to_index=None, regionHandler=None, test_data_path=None, predict_regions=True):
       self.num_classes = num_classes
       self.train_dataloader = train_dataloader
       self.val_dataloader = val_dataloader
       self.datasize = datasize
       self.use_coordinates = predict_coordinates
+      self.use_regions = predict_regions
       self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
       self.patience = 5
       self.model_type = None
       self.model = None
       self.country_to_index = country_to_index
       self.test_data_path = test_data_path
-      self.run_start_callback = run_start_callback
+      self.regionHandler = regionHandler
       
   def set_seed(self, seed=42):
     np.random.seed(seed)
@@ -62,10 +62,6 @@ class GeoModelTrainer:
           model = resnet152(weights=ResNet152_Weights.DEFAULT)
       elif self.model_type == 'mobilenet_v2':
           model = mobilenet_v2(weights='IMAGENET1K_V2')
-      elif self.model_type == 'mobilenet_v3_small':
-          model = mobilenet_v3_small(weights='IMAGENET1K_V1')
-      elif self.model_type == 'mobilenet_v3_large':
-          model = mobilenet_v3_large(weights='IMAGENET1K_V1')
       elif self.model_type == 'efficientnet_b1':
           model = efficientnet_b1(weights=EfficientNet_B1_Weights.DEFAULT)
       elif self.model_type == 'efficientnet_b3':
@@ -105,16 +101,6 @@ class GeoModelTrainer:
           # Initialize weights of the classifier
           nn.init.kaiming_normal_(model.classifier[1].weight, mode='fan_out', nonlinearity='relu')
           nn.init.constant_(model.classifier[1].bias, 0)
-      elif "efficientnet_v3" in self.model_type:
-          if self.model_type == "mobilenet_v3_small":
-              in_features = 1024
-          else:
-              in_features = 1280
-          # Modify the final layer based on the number of classes
-          model.classifier[3] = torch.nn.Linear(in_features=in_features, out_features=self.num_classes, bias=True)
-          # Initialize weights of the classifier
-          nn.init.kaiming_normal_(model.classifier[3].weight, mode='fan_out', nonlinearity='relu')
-          nn.init.constant_(model.classifier[3].bias, 0)
       return model
   
   def coordinates_to_cartesian(self, lon, lat, R=6371):
@@ -150,10 +136,6 @@ class GeoModelTrainer:
   def train(self):
       with wandb.init(reinit=True) as run:
           config = run.config
-          
-          if self.run_start_callback is not None:
-              self.run_start_callback(config, run)
-          
           self.set_seed(config.seed)
           
           # Set seeds, configure optimizers, losses, etc.
@@ -170,6 +152,8 @@ class GeoModelTrainer:
 
           if self.use_coordinates:
             criterion = nn.MSELoss()
+          elif self.use_regions:
+            criterion = nn.MSELoss() # is not used
           else:
             criterion = nn.CrossEntropyLoss()
 
@@ -178,7 +162,7 @@ class GeoModelTrainer:
                   {"params": [p for n, p in self.model.named_parameters() if not n.startswith('fc')], "lr": config.learning_rate * 0.1},
                   {"params": self.model.fc.parameters(), "lr": config.learning_rate}
               ]
-          elif "efficientnet" in self.model_type or "mobilenet" in self.model_type:
+          elif "efficientnet" in self.model_type or self.model_type == "mobilenet_v2":
               optimizer_grouped_parameters = [
                   {"params": [p for n, p in self.model.named_parameters() if not n.startswith('classifier')], "lr": config.learning_rate * 0.1},
                   {"params": self.model.classifier.parameters(), "lr": config.learning_rate}
@@ -216,7 +200,7 @@ class GeoModelTrainer:
               scheduler.step()
 
               # Log metrics to wandb
-              if self.use_coordinates:
+              if self.use_coordinates or self.use_regions:
                 wandb.log({
                     "Train Loss": train_loss,
                     "Train Distance (km)": train_metric,
@@ -252,11 +236,9 @@ class GeoModelTrainer:
           if self.test_data_path is not None:
             # Copy test data to run directory
             wandb_test_data_path = os.path.join(wandb.run.dir, 'test_data.pth')
-            # copy .pth file
+            # write json file
             shutil.copy(self.test_data_path, wandb_test_data_path)
             wandb.save(wandb_test_data_path)
-            # Only save the test data once
-            self.test_data_path = None
               
           torch.save(best_model.state_dict(), wandb_model_path)
           wandb.save(wandb_model_path)
@@ -267,6 +249,46 @@ class GeoModelTrainer:
 
           gc.collect()
           torch.cuda.empty_cache()  
+
+  def haversine_distance(coord1, coord2):
+      """
+      Calculate the Haversine distance between two points on the Earth specified in decimal degrees.
+      """
+      R = 6371  # Radius of the earth in kilometers
+
+      lat1, lon1 = coord1
+      lat2, lon2 = coord2
+
+      # Convert decimal degrees to radians 
+      lat1, lon1, lat2, lon2 = map(torch.radians, [lat1, lon1, lat2, lon2])
+
+      # Haversine formula 
+      dlat = lat2 - lat1 
+      dlon = lon2 - lon1 
+      a = torch.sin(dlat/2)**2 + torch.cos(lat1) * torch.cos(lat2) * torch.sin(dlon/2)**2
+      c = 2 * torch.asin(torch.sqrt(a))
+      distance = R * c  # Result in kilometers
+      return distance
+  
+  #  haversine_smoothing loss function
+  def haversine_smoothing_loss(self, outputs, targets, geocell_centroids, true_coords, tau=1.0):
+      batch_size = outputs.size(0)
+      num_classes = outputs.size(1)
+      loss = 0.0
+      for i in range(batch_size):
+          for j in range(num_classes):
+              geocell_centroid = geocell_centroids[j]
+              true_geocell_centroid = geocell_centroids[targets[i].item()]
+
+              d_true = self.haversine_distance(geocell_centroid, true_coords[i])
+              d_pred = self.haversine_distance(true_geocell_centroid, true_coords[i])
+
+              yn_i = torch.exp(-(d_true - d_pred) / self.tau)
+              pn_i = outputs[i, j]
+
+              loss += -torch.log(pn_i) * yn_i
+
+      return loss
 
   def run_epoch(self, criterion, optimizer, is_train=True):
     if is_train:
@@ -281,14 +303,14 @@ class GeoModelTrainer:
     top5_correct = 0
     data_loader = self.train_dataloader if is_train else self.val_dataloader
 
-    for images, coordinates, country_indices in data_loader:
+    for images, coordinates, country_indices, region_indices in data_loader:
         with torch.set_grad_enabled(is_train):
             images = images.to(self.device)
-            targets = coordinates.to(self.device) if self.use_coordinates else country_indices.to(self.device)
+            targets = coordinates.to(self.device) if self.use_coordinates else (country_indices.to(self.device) if self.use_regions else region_indices.to(self.device))
             optimizer.zero_grad()
             outputs = self.model(images)
             probabilities = F.softmax(outputs, dim=1)
-            loss = criterion(outputs, targets)
+            loss = criterion(outputs, targets) if not self.use_regions else self.haversine_smoothing_loss(outputs, targets, self.regionHandler.region_middle_points, coordinates)
 
             if is_train:
                 loss.backward()
@@ -297,6 +319,8 @@ class GeoModelTrainer:
             total_loss += loss.item() * images.size(0)
             if self.use_coordinates:
                 total_metric += self.mean_spherical_distance(outputs, targets).item() * images.size(0)
+            elif self.use_regions:
+                total_metric += loss.item() * images.size(0)
             else:
                 # Get the top 5 predictions for each image
                 _, predicted_top5 = probabilities.topk(5, 1, True, True)
@@ -310,7 +334,7 @@ class GeoModelTrainer:
 
     avg_loss = total_loss / len(data_loader.dataset)
 
-    if self.use_coordinates:
+    if self.use_coordinates or self.use_regions:
         avg_metric = total_metric / len(data_loader.dataset)
         return avg_loss, avg_metric
     else:
