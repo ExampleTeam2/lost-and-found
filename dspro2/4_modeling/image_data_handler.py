@@ -9,6 +9,7 @@ from torchvision import transforms
 
 from custom_image_name_dataset import CustomImageNameDataset
 from custom_image_dataset import CustomImageDataset
+from region_handler import RegionHandler
 
 sys.path.insert(0, '../')
 from data_loader import split_json_and_image_files, load_json_files, load_image_files, potentially_get_cached_file_path, get_cached_file_path
@@ -26,12 +27,14 @@ class TestImageDataHandler:
     print(f"Loading test data from {os.path.basename(test_path)}")
     test_data = torch.load(test_path)
     print("Test data loaded.")
-    images, countries, coordinates = test_data['test_images'], test_data['test_countries'], test_data['test_coordinates']
+    images, countries, coordinates, regions = test_data['test_images'], test_data['test_countries'], test_data['test_coordinates'], test_data['test_regions']
         
     with open(country_to_index_path, 'r') as f:
       self.country_to_index = json.load(f)
     
-    self.test_loader = DataLoader(CustomImageDataset(images, coordinates, countries, country_to_index=self.country_to_index), batch_size=batch_size, shuffle=False)
+    self.region_handler = RegionHandler()
+    
+    self.test_loader = DataLoader(CustomImageDataset(images, coordinates, countries, regions, country_to_index=self.country_to_index, region_to_index=self.region_handler), batch_size=batch_size, shuffle=False)
 
 class ImageDataHandler:
     def __init__(self, list_files, base_transform, augmented_transform, final_transform, preprocessing_config={}, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_additional_save_callback=None, save_test_data=True, random_seed=42, inspect_transformed=False):
@@ -39,6 +42,8 @@ class ImageDataHandler:
           
         self.batch_size = batch_size
         self.random_seed = random_seed
+
+        self.region_handler = RegionHandler()
         
         json_paths, image_paths = split_json_and_image_files(list_files)
         
@@ -63,6 +68,9 @@ class ImageDataHandler:
         self.train_coordinates = []
         self.val_coordinates = []
         self.test_coordinates = []
+        self.train_regions = []
+        self.val_regions = []
+        self.test_regions = []
         
         cached_data = potentially_get_cached_file_path(list_files, preprocessing_config) if cache else None
         if cache and cached_data is None and cache_zip_load_callback is not None:
@@ -81,6 +89,9 @@ class ImageDataHandler:
           self.train_coordinates = data['train_coordinates']
           self.val_coordinates = data['val_coordinates']
           self.test_coordinates = data['test_coordinates']
+          self.train_regions = data['train_regions']
+          self.val_regions = data['val_regions']
+          self.test_regions = data['test_regions']
           del data
           
         else:
@@ -100,6 +111,7 @@ class ImageDataHandler:
               labels = load_json_files(batch_label_files)
               self.train_countries.extend([item['country_name'] for item in labels])
               self.train_coordinates.extend([item['coordinates'] for item in labels])
+              self.train_regions.extend([item['regions'][0] for item in labels])
               for image in images:
                   self.train_images.append(train_transform(image))
                   
@@ -113,6 +125,7 @@ class ImageDataHandler:
               labels = load_json_files(batch_label_files)
               self.val_countries.extend([item['country_name'] for item in labels])
               self.val_coordinates.extend([item['coordinates'] for item in labels])
+              self.val_regions.extend([item['regions'][0] for item in labels])
               for image in images:
                   self.val_images.append(val_transform(image))
                   
@@ -123,6 +136,7 @@ class ImageDataHandler:
               labels = load_json_files(batch_label_files)
               self.test_countries.extend([item['country_name'] for item in labels])
               self.test_coordinates.extend([item['coordinates'] for item in labels])
+              self.test_regions.extend([item['regions'][0] for item in labels])
               for image in images:
                   self.test_images.append(test_transform(image))
                   
@@ -136,7 +150,10 @@ class ImageDataHandler:
                 'test_countries': self.test_countries,
                 'train_coordinates': self.train_coordinates,
                 'val_coordinates': self.val_coordinates,
-                'test_coordinates': self.test_coordinates
+                'test_coordinates': self.test_coordinates,
+                'train_regions': self.train_regions,
+                'val_regions': self.val_regions,
+                'test_regions': self.test_regions
             }
             print("Caching data...")
             torch.save(data, get_cached_file_path(list_files, preprocessing_config))
@@ -175,9 +192,12 @@ class ImageDataHandler:
             del test_data
                 
         self.countries = [*self.train_countries, *self.val_countries, *self.test_countries]
+
         
         # Create a global country_to_index mapping
         self.country_to_index = self._get_country_to_index()
+
+  
         
         # Initialize datasets and loaders
         self.train_loader, self.val_loader, self.test_loader = self._create_loaders()
@@ -187,12 +207,13 @@ class ImageDataHandler:
         all_countries = set(self.countries)
         country_to_index = {country: idx for idx, country in enumerate(sorted(all_countries))}
         return country_to_index
+  
 
     def _create_loaders(self):
         # Create train, val, and test datasets with the same mapping
-        train_dataset = CustomImageDataset(self.train_images, self.train_coordinates, self.train_countries, country_to_index=self.country_to_index)
-        val_dataset = CustomImageDataset(self.val_images, self.val_coordinates, self.val_countries, country_to_index=self.country_to_index)
-        test_dataset = CustomImageDataset(self.test_images, self.test_coordinates, self.test_countries, country_to_index=self.country_to_index)
+        train_dataset = CustomImageDataset(self.train_images, self.train_coordinates, self.train_countries, self.train_regions, country_to_index=self.country_to_index, region_to_index=self.region_handler)
+        val_dataset = CustomImageDataset(self.val_images, self.val_coordinates, self.val_countries, self.val_regions, country_to_index=self.country_to_index, region_to_index=self.region_handler)
+        test_dataset = CustomImageDataset(self.test_images, self.test_coordinates, self.test_countries, self.test_regions,country_to_index=self.country_to_index, region_to_index=self.region_handler)
 
         # Create train, val, and test dataloaders
         random.seed(self.random_seed)

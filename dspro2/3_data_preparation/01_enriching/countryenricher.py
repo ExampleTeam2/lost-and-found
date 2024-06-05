@@ -51,7 +51,7 @@ class CountryEnricher:
                 return
               # skip if already processed
               if self.use_previous:
-                if 'country_name' in self.json_files and 'region_name' in self.json_files:
+                if 'country_name' in self.json_files and 'regions' in self.json_files:
                   return
               self.json_files[image_id] = json_data
               if not self.from_country:

@@ -53,21 +53,32 @@ def convert_from_coordinates(coordinates, file_map, json_files):
       json_files[image_id]['country_code'] = country_code
   return json_files
 
-def convert_country_to_correct_name(country_name):
+def convert_country_to_correct_name(country_name, allow_error=False):
   countries = []
-  try:
-    countries = pycountry.countries.search_fuzzy(country_name)
-  except LookupError:
-    matched_name = get_closest_additional_country_or_region_from_name(country_name)
-    if matched_name is not None:
-      country_code = additional_countries_and_regions_from_name.get(matched_name, None)
-      country = AdditionalCountryOrRegion(country_code, matched_name)
-      countries.append(country)
+  matched_name = get_closest_additional_country_or_region_from_name(country_name)
+  if matched_name is not None:
+    country_code = additional_countries_and_regions_from_name.get(matched_name, None)
+    country = AdditionalCountryOrRegion(country_code, matched_name)
+    countries.append(country)
+  else:
+    try:
+      countries = pycountry.countries.search_fuzzy(country_name)
+    except LookupError:
+      pass
   if not len(countries):
+    if allow_error:
+      print(f"Country {country_name} not found")
+      return None
     raise ValueError(f"Country {country_name} not found")
   country = countries[0]
   return country
-  
+
+def convert_country_from_names(country_names):
+  countries = [convert_country_to_correct_name(country_name, allow_error=True) for country_name in country_names]
+  country_names = [country.name if country is not None else None for country in countries]
+  country_codes = [country.alpha_2 if country is not None else None for country in countries]
+  return country_names, country_codes
+
 
 def convert_from_names(file_map, json_files):
   for country_name, image_ids in file_map.items():
