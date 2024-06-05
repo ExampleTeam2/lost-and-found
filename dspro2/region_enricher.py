@@ -105,7 +105,7 @@ class RegionEnricher:
     
 
     # Find the top 5 nearest regions for each point
-    def find_nearest_regions(self, points, regions, k=1):
+    def find_nearest_regions(self, points, regions, k=5):
         # Get the centroids of the regions
         centroids = np.array(list(regions.geometry.centroid.apply(lambda x: (x.x, x.y))))
         
