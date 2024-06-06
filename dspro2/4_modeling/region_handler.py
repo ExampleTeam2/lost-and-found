@@ -19,6 +19,9 @@ class RegionHandler(Dataset):
         region = self.regions[idx]
         return region
     
+    def __getitem__(self, index):
+        return self.get_item(index)
+    
     def get_idx(self, region_name):
         return self.region_names.index(region_name)
     
