@@ -1,13 +1,14 @@
 from torch.utils.data import Dataset
 import geopandas as gpd
 import os
+import fiona
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 class RegionHandler(Dataset):
     def __init__(self):
+        print(fiona.supported_drivers)
         self.gdf = gpd.read_file('./../data/admin_1_states_provinces.geojson', driver='GeoJSON', crs='EPSG:4326')
-
         # create a sorted list of region names and middle points for easy access and indexing both in one list
         self.region_names = self.gdf['name_en'].tolist()
         self.region_middle_points = self.gdf['middle_point'].tolist()
