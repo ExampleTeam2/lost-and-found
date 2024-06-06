@@ -17,9 +17,6 @@ class CustomImageDataset(Dataset):
         if missing_countries:
             print(f"Warning: The following countries are missing in the mapping: {missing_countries}")
 
-        missing_regions = set(self.regions) - set(self.region_to_index.keys())
-        if missing_regions:
-            print(f"Warning: The following regions are missing in the mapping: {missing_regions}")
 
     def __len__(self):
         return len(self.images)
