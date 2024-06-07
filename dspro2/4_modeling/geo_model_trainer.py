@@ -290,7 +290,7 @@ class GeoModelTrainer:
               d_true = self.haversine_distance(geocell_centroid, true_coords[i])
               d_pred = self.haversine_distance(true_geocell_centroid, true_coords[i])
 
-              yn_i = torch.exp(-(d_true - d_pred) / self.tau)
+              yn_i = torch.exp(-(d_true - d_pred) / tau)
               pn_i = outputs[i, j]
 
               loss += -torch.log(pn_i) * yn_i
