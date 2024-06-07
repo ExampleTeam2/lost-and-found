@@ -12,9 +12,6 @@ class CustomImageDataset(Dataset):
         self.country_to_index = country_to_index
         self.region_to_index = region_to_index
 
-        print(f"First 5 regions: {regions[:5]}", "length: ", len(regions)) 
-        print(f"Region_to_index: {region_to_index[:5]}")
-
         # Debugging: print the mapping and check for missing countries
         missing_countries = set(self.countries) - set(self.country_to_index.keys())
         if missing_countries:
@@ -27,14 +24,11 @@ class CustomImageDataset(Dataset):
     def __getitem__(self, idx):
         image = self.images[idx]
         country = self.countries[idx]
-        print(f"IDX: {idx}, COUNTRY: {country}")
         region = self.regions[idx]
-        print(f"IDX: {idx}, REGION: {region}")
         if country not in self.country_to_index:
             raise ValueError(f"Country '{country}' at index {idx} is not in the country_to_index mapping.")
         country_index = self.country_to_index[country]
         region_index = self.region_to_index.get_idx(region[0])
-        print(f"IDX: {idx}, REGION_INDEX: {region_index}")
         coordinates = torch.tensor(self.coordinates[idx], dtype=torch.float32)
 
         return image, coordinates, country_index, region_index
