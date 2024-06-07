@@ -12,8 +12,8 @@ class CustomImageDataset(Dataset):
         self.country_to_index = country_to_index
         self.region_to_index = region_to_index
 
-        print(f"Regions: {regions}, Length: {len(regions)}")  
-        print(f"Region_to_index: {region_to_index}, Length: {len(region_to_index)}")
+        print(f"First 5 regions: {regions[:5]}", "length: ", len(regions)) 
+        print(f"Region_to_index: {region_to_index[:5]}, Length: {len(region_to_index)}")
 
         # Debugging: print the mapping and check for missing countries
         missing_countries = set(self.countries) - set(self.country_to_index.keys())
