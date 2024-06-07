@@ -256,10 +256,8 @@ class GeoModelTrainer:
       Calculate the Haversine distance between two points on the Earth specified in decimal degrees.
       """
       R = 6371  # Radius of the earth in kilometers
-      if not isinstance(coord1, Point):
-          coord1 = Point(coord1)
 
-      print(coord1)
+      print(f"coord1: {coord1}, DType: {coord1.dtype}")
       lat1, lon1 = coord1.x, coord1.y
       lat2, lon2 = coord2
 
