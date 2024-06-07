@@ -265,6 +265,7 @@ class GeoModelTrainer:
 
       print(f"lat1: {lat1}, lon1: {lon1}, lat2: {lat2}, lon2: {lon2}")
 
+      lat1, lon1, lat2, lon2 = map(lambda x: torch.tensor(x, dtype=torch.float64), [lat1, lon1, lat2, lon2])
       # Convert decimal degrees to radians 
       lat1, lon1, lat2, lon2 = map(torch.deg2rad, [lat1, lon1, lat2, lon2])
 
