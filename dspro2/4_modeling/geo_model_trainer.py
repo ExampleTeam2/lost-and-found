@@ -250,7 +250,7 @@ class GeoModelTrainer:
           gc.collect()
           torch.cuda.empty_cache()  
 
-  def haversine_distance(coord1, coord2):
+  def haversine_distance(self, coord1, coord2):
       """
       Calculate the Haversine distance between two points on the Earth specified in decimal degrees.
       """
