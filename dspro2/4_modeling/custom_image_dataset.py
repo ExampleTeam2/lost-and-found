@@ -24,6 +24,7 @@ class CustomImageDataset(Dataset):
     def __getitem__(self, idx):
         image = self.images[idx]
         country = self.countries[idx]
+        print(f"IDX: {idx}, COUNTRY: {country}")
         region = self.regions[idx]
         if country not in self.country_to_index:
             raise ValueError(f"Country '{country}' at index {idx} is not in the country_to_index mapping.")
