@@ -255,7 +255,7 @@ class GeoModelTrainer:
       """
       Calculate the Haversine distance between two points on the Earth specified in decimal degrees.
       """
-      R = 6371  # Radius of the earth in kilometers
+      R = 6371.0  # Radius of the earth in kilometers
 
       print(f"coord1: {coord1}, coord2: {coord2}")
 
@@ -266,7 +266,7 @@ class GeoModelTrainer:
       print(f"lat1: {lat1}, lon1: {lon1}, lat2: {lat2}, lon2: {lon2}")
 
       # Convert decimal degrees to radians 
-      lat1, lon1, lat2, lon2 = map(torch.radians, [lat1, lon1, lat2, lon2])
+      lat1, lon1, lat2, lon2 = map(torch.deg2rad, [lat1, lon1, lat2, lon2])
 
       # Haversine formula 
       dlat = lat2 - lat1 
