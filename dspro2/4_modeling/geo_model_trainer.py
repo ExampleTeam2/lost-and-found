@@ -255,7 +255,8 @@ class GeoModelTrainer:
       Calculate the Haversine distance between two points on the Earth specified in decimal degrees.
       """
       R = 6371  # Radius of the earth in kilometers
-
+      
+      print(coord1, coord2)
       lat1, lon1 = coord1
       lat2, lon2 = coord2
 
