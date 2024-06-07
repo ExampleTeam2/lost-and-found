@@ -261,7 +261,7 @@ class GeoModelTrainer:
 
       # split the coordinates coord1 is a point and coord2 is a tensor of latitude and longitude
       lat1, lon1 = coord1[0], coord1[1]
-      lat2, lon2 = coord2[:, 0], coord2[:, 1]
+      lat2, lon2 = coord2[0], coord2[1]
 
       print(f"lat1: {lat1}, lon1: {lon1}, lat2: {lat2}, lon2: {lon2}")
 
