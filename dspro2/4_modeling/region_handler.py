@@ -10,7 +10,7 @@ class RegionHandler(Dataset):
         print(fiona.supported_drivers)
         self.gdf = gpd.read_file('./../data/admin_1_states_provinces.geojson', driver='GeoJSON', crs='EPSG:4326')
         # create a sorted list of region names and middle points for easy access and indexing both in one list
-        self.region_names = self.gdf['name_en'].tolist()
+        self.region_names = self.gdf['region_name'].tolist()
         self.region_middle_points = self.gdf['middle_point'].tolist()
         # create a list of tuples with region name and middle point sorted by region name
         self.regions = sorted(list(zip(self.region_names, self.region_middle_points)), key=lambda x: x[0])
