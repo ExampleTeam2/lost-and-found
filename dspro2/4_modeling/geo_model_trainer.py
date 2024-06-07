@@ -256,8 +256,7 @@ class GeoModelTrainer:
       """
       R = 6371  # Radius of the earth in kilometers
       
-      print(coord1, coord2)
-      lat1, lon1 = coord1
+      lat1, lon1 = coord1.x, coord1.y
       lat2, lon2 = coord2
 
       # Convert decimal degrees to radians 
