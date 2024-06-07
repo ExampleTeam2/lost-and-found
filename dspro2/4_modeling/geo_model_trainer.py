@@ -257,9 +257,13 @@ class GeoModelTrainer:
       """
       R = 6371  # Radius of the earth in kilometers
 
-      print(f"coord1: {coord1}, DType: {coord1.dtype}")
-      lat1, lon1 = coord1.x, coord1.y
-      lat2, lon2 = coord2
+      print(f"coord1: {coord1}, coord2: {coord2}")
+
+      # split the coordinates coord1 is a point and coord2 is a tensor of latitude and longitude
+      lat1, lon1 = coord1[0], coord1[1]
+      lat2, lon2 = coord2[:, 0], coord2[:, 1]
+
+      print(f"lat1: {lat1}, lon1: {lon1}, lat2: {lat2}, lon2: {lon2}")
 
       # Convert decimal degrees to radians 
       lat1, lon1, lat2, lon2 = map(torch.radians, [lat1, lon1, lat2, lon2])
