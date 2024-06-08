@@ -261,8 +261,8 @@ class GeoModelTrainer:
         print(f"coord1: {coord1.shape}", f"coord2: {coord2.shape}")
         # show the first 5 elements of the tensors
         print(f"coord1: {coord1[:5]}", f"coord2: {coord2[:5]}")
-        lat1, lon1 = coord1[:, 0], coord1[:, 1]
-        lat2, lon2 = coord2[:, 0], coord2[:, 1]
+        lat1, lon1 = coord1[..., 0], coord1[..., 1]
+        lat2, lon2 = coord2[..., 0], coord2[..., 1]
 
         lat1 = torch.tensor(lat1, dtype=torch.float64).to(self.device) if not torch.is_tensor(lat1) else lat1.to(self.device)
         lon1 = torch.tensor(lon1, dtype=torch.float64).to(self.device) if not torch.is_tensor(lon1) else lon1.to(self.device)
@@ -290,8 +290,8 @@ class GeoModelTrainer:
         
         true_centroids = geocell_centroids[targets]
 
-        d_true = self.haversine_distance(geocell_centroids.unsqueeze(1), true_coords.unsqueeze(1))
-        d_pred = self.haversine_distance(true_centroids.unsqueeze(1), true_coords.unsqueeze(1))
+        d_true = self.haversine_distance(geocell_centroids.unsqueeze(1), true_coords.unsqueeze(0))
+        d_pred = self.haversine_distance(true_centroids.unsqueeze(1), true_coords.unsqueeze(0))
 
         yn = torch.exp(-(d_true - d_pred) / tau)
 
