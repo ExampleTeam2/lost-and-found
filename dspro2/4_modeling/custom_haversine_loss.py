@@ -67,11 +67,7 @@ class GeolocalizationLoss(nn.Module):
         # Smooth the labels
         smoothed_labels = self.smooth_labels(haversine_distances)
 
-        # Ensure the smoothed_labels tensor has the same length as the number of classes
-        if smoothed_labels.size(0) != num_classes:
-            raise ValueError(f"Smoothed labels should have the same length as the number of classes. Expected {num_classes}, got {smoothed_labels.size(0)}.")
-
         # Compute the cross-entropy loss
-        loss = F.cross_entropy(outputs, targets, weight=smoothed_labels.to(device), reduction='mean')
+        loss = F.cross_entropy(outputs, smoothed_labels.to(device), reduction='mean')
         
         return loss
