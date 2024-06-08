@@ -291,10 +291,22 @@ class GeoModelTrainer:
 
       true_centroids = geocell_centroids[targets]
 
+      # print first 5 geocell_centroids and true_centroids
+      print(f"geocell_centroids: {geocell_centroids[:5]}")
+      print(f"true_centroids: {true_centroids[:5]}")
+
       # Vectorize Haversine distance calculation
       lat1, lon1 = geocell_centroids.unsqueeze(1).repeat(1, batch_size, 1).unbind(-1)
       lat2, lon2 = true_coords.unsqueeze(0).repeat(num_classes, 1, 1).unbind(-1)
       dlat, dlon = lat2 - lat1, lon2 - lon1
+      # print first 5 dlat and dlon and lat1 and lat2 and lon1 and lon2
+      print(f"dlat: {dlat[:5]}")
+      print(f"dlon: {dlon[:5]}")
+      print(f"lat1: {lat1[:5]}")
+      print(f"lat2: {lat2[:5]}")
+      print(f"lon1: {lon1[:5]}")
+      print(f"lon2: {lon2[:5]}")
+      
       a = torch.sin(dlat / 2)**2 + torch.cos(lat1) * torch.cos(lat2) * torch.sin(dlon / 2)**2
       c = 2 * torch.asin(torch.sqrt(a))
       R = 6371.0  # Radius of the earth in kilometers
@@ -308,20 +320,12 @@ class GeoModelTrainer:
       c_pred = 2 * torch.asin(torch.sqrt(a_pred))
       d_pred = R * c_pred
 
-      print(f"True distances shape: {d_true.shape}")
-      print(f"Predicted distances shape: {d_pred.shape}")
-
       # Ensure d_true and d_pred have the same shape
       d_true = d_true.unsqueeze(0).repeat(batch_size, 1, 1)
       d_pred = d_pred.unsqueeze(1).unsqueeze(2).repeat(1, batch_size, num_classes)
 
-      print(f"True distances shape after expansion: {d_true.shape}")
-      print(f"Predicted distances shape after expansion: {d_pred.shape}")
-
       # Adjust the shape of d_pred to match d_true
       d_pred = d_pred.permute(0, 2, 1)
-
-      print(f"Predicted distances shape after permutation: {d_pred.shape}")
       
       yn = torch.exp(-(d_true - d_pred) / tau)
 
