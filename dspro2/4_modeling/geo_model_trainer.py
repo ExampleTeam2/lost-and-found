@@ -290,8 +290,11 @@ class GeoModelTrainer:
         
         true_centroids = geocell_centroids[targets]
 
-        d_true = self.haversine_distance(geocell_centroids.unsqueeze(1), true_coords.unsqueeze(0))
-        d_pred = self.haversine_distance(true_centroids.unsqueeze(1), true_coords.unsqueeze(0))
+        d_true = self.haversine_distance(geocell_centroids.expand(-1, batch_size, -1), true_coords.expand(num_classes, -1, -1))  # Shape: (num_classes, batch_size)
+        d_pred = self.haversine_distance(true_centroids.expand(-1, num_classes, -1), true_coords.expand(batch_size, -1, -1))  # Shape: (batch_size, num_classes)
+
+        # Expand d_pred to match the shape of d_true for subtraction
+        d_pred = d_pred.transpose(0, 1)  # Shape: (num_classes, batch_size)
 
         yn = torch.exp(-(d_true - d_pred) / tau)
 
