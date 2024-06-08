@@ -281,8 +281,13 @@ class GeoModelTrainer:
       batch_size = outputs.size(0)
       num_classes = outputs.size(1)
 
+      device = self.device
+      outputs = outputs.to(device)
+      targets = targets.to(device)
+      true_coords = true_coords.to(device)
+
       # Extract latitude and longitude from Point objects
-      geocell_centroids = torch.tensor([(point.x, point.y) for point in geocell_centroids], dtype=torch.float64).to(self.device)
+      geocell_centroids = torch.tensor([(point.x, point.y) for point in geocell_centroids], dtype=torch.float64).to(device)
 
       true_centroids = geocell_centroids[targets]
 
