@@ -25,6 +25,16 @@ class GeolocalizationLoss(nn.Module):
 
         true_geocell_centroids = geocell_centroids[targets]
 
+        lat1, lon1 = true_coords[:, 0], true_coords[:, 1]
+        lat2, lon2 = true_geocell_centroids[:, 0], true_geocell_centroids[:, 1]
+        lat2_centroids, lon2_centroids = geocell_centroids[:, 0], geocell_centroids[:, 1]
+
+        lat1, lon1, lat2, lon2, lat2_centroids, lon2_centroids = lat1.unsqueeze(1), lon1.unsqueeze(1), lat2.unsqueeze(1), lon2.unsqueeze(1), lat2_centroids.unsqueeze(0), lon2_centroids.unsqueeze(0)
+
+        # print lat1, lon1, lat2, lon2, lat2_centroids, lon2_centroids
+        print(lat1.shape, lon1.shape, lat2.shape, lon2.shape, lat2_centroids.shape, lon2_centroids.shape)
+        print(lat1, lon1, lat2, lon2, lat2_centroids, lon2_centroids)
+
         distances_to_geocells, distances_to_true_geocells = self.haversine_distance(
             true_coords[:, 0].unsqueeze(1), 
             true_coords[:, 1].unsqueeze(1), 
