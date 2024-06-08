@@ -280,13 +280,10 @@ class GeoModelTrainer:
   def haversine_smoothing_loss(self, outputs, targets, geocell_centroids, true_coords, tau=1.0):
         batch_size = outputs.size(0)
         num_classes = outputs.size(1)
-
         # Extract latitude and longitude from Point objects
         geocell_centroids = [(point.x, point.y) for point in geocell_centroids]
-        true_coords = [(point.x, point.y) for point in true_coords]
 
         geocell_centroids = torch.tensor(geocell_centroids, dtype=torch.float64).to(self.device)
-        true_coords = torch.tensor(true_coords, dtype=torch.float64).to(self.device)
         
         true_centroids = geocell_centroids[targets]
 
