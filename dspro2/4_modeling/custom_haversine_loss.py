@@ -51,6 +51,7 @@ class GeolocalizationLoss(nn.Module):
         adj_distances = distances - distances.min(dim=-1, keepdim=True)[0]
         smoothed_labels = torch.exp(-adj_distances / self.temperature)
         smoothed_labels = torch.nan_to_num(smoothed_labels, nan=0.0, posinf=0.0, neginf=0.0)
+        smoothed_labels = smoothed_labels.mean(dim=0)  # Average over batch dimension to get shape (num_geocells,)
         return smoothed_labels
 
     def forward(self, outputs, targets, geocell_centroids, true_coords):
@@ -66,7 +67,11 @@ class GeolocalizationLoss(nn.Module):
         # Smooth the labels
         smoothed_labels = self.smooth_labels(haversine_distances)
 
+        # Ensure the smoothed_labels tensor has the same length as the number of classes
+        if smoothed_labels.size(0) != num_classes:
+            raise ValueError(f"Smoothed labels should have the same length as the number of classes. Expected {num_classes}, got {smoothed_labels.size(0)}.")
+
         # Compute the cross-entropy loss
-        loss = F.cross_entropy(outputs, targets, weight=smoothed_labels, reduction='mean')
+        loss = F.cross_entropy(outputs, targets, weight=smoothed_labels.to(device), reduction='mean')
         
         return loss
