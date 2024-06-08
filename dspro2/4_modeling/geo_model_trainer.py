@@ -12,11 +12,13 @@ from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152, mobilenet_v2, efficientnet_b1, efficientnet_b3, efficientnet_b4, efficientnet_b7
 from torchvision.models import ResNet18_Weights, ResNet34_Weights, ResNet50_Weights, ResNet101_Weights, ResNet152_Weights
 from torchvision.models.efficientnet import EfficientNet_B1_Weights, EfficientNet_B3_Weights, EfficientNet_B4_Weights, EfficientNet_B7_Weights
-import numpy as np
+import numpy as n
 
 import wandb
 import uuid
 from shapely.geometry import Point
+
+from custom_haversine_loss import GeolocalizationLoss
 
 
 class GeoModelTrainer:
@@ -154,7 +156,7 @@ class GeoModelTrainer:
           if self.use_coordinates:
             criterion = nn.MSELoss()
           elif self.use_regions:
-            criterion = nn.MSELoss() # is not used
+            criterion = GeolocalizationLoss(temperature=75)
           else:
             criterion = nn.CrossEntropyLoss()
 
@@ -251,35 +253,18 @@ class GeoModelTrainer:
           gc.collect()
           torch.cuda.empty_cache()  
 
-  def haversine_distance(self, coord1, coord2):
-        """
-        Calculate the Haversine distance between two points on the Earth specified in decimal degrees.
-        """
-        R = 6371.0  # Radius of the earth in kilometers
+  def haversine_distance(self, lat1, lon1, lat2, lon2):
+        radius = 6371  # km
 
-
-        lat1, lon1 = coord1[..., 0], coord1[..., 1]
-        lat2, lon2 = coord2[..., 0], coord2[..., 1]
-
-        lat1 = torch.tensor(lat1, dtype=torch.float64).to(self.device) if not torch.is_tensor(lat1) else lat1.to(self.device)
-        lon1 = torch.tensor(lon1, dtype=torch.float64).to(self.device) if not torch.is_tensor(lon1) else lon1.to(self.device)
-        lat2 = torch.tensor(lat2, dtype=torch.float64).to(self.device) if not torch.is_tensor(lat2) else lat2.to(self.device)
-        lon2 = torch.tensor(lon2, dtype=torch.float64).to(self.device) if not torch.is_tensor(lon2) else lon2.to(self.device)
-
-        # Convert decimal degrees to radians
-        lat1, lon1, lat2, lon2 = map(torch.deg2rad, [lat1, lon1, lat2, lon2])
-
-        # Haversine formula
-        dlat = lat2 - lat1
-        dlon = lon2 - lon1
-        a = torch.sin(dlat / 2)**2 + torch.cos(lat1) * torch.cos(lat2) * torch.sin(dlon / 2)**2
-        c = 2 * torch.asin(torch.sqrt(a))
-        distance = R * c
+        dlat = torch.radians(lat2 - lat1)
+        dlon = torch.radians(lon2 - lon1)
+        a = torch.sin(dlat / 2) ** 2 + torch.cos(torch.radians(lat1)) * torch.cos(torch.radians(lat2)) * torch.sin(dlon / 2) ** 2
+        c = 2 * torch.atan2(torch.sqrt(a), torch.sqrt(1 - a))
+        distance = radius * c
         return distance
 
-  def haversine_smoothing_loss(self, outputs, targets, geocell_centroids, true_coords, tau=1.0):
-      batch_size = outputs.size(0)
-      num_classes = outputs.size(1)
+  def haversine_smoothing_loss(self, outputs, targets, geocell_centroids, true_coords, tau=0.75):
+      batch_size, num_classes = outputs.size()
 
       device = self.device
       outputs = outputs.to(device)
@@ -289,57 +274,14 @@ class GeoModelTrainer:
       # Extract latitude and longitude from Point objects
       geocell_centroids = torch.tensor([(point.x, point.y) for point in geocell_centroids], dtype=torch.float64).to(device)
 
-      true_centroids = geocell_centroids[targets]
+      true_geocell_centroids = geocell_centroids[targets]
 
-      # print first 5 geocell_centroids and true_centroids
-      print(f"geocell_centroids: {geocell_centroids[:5]}")
-      print(f"true_centroids: {true_centroids[:5]}")
+      distances_to_geocells = self.haversine_distance(true_coords[:, 0], true_coords[:, 1], geocell_centroids[:, 0], geocell_centroids[:, 1])
+      distances_to_true_geocells = self.haversine_distance(true_coords[:, 0], true_coords[:, 1], true_geocell_centroids[:, 0], true_geocell_centroids[:, 1])
+      targets = torch.exp(-(distances_to_geocells - distances_to_true_geocells) / self.temperature)
+      loss = -torch.sum(outputs * targets, dim=1)
+      return torch.mean(loss)
 
-      # Vectorize Haversine distance calculation
-      lat1, lon1 = geocell_centroids.unsqueeze(1).repeat(1, batch_size, 1).unbind(-1)
-      lat2, lon2 = true_coords.unsqueeze(0).repeat(num_classes, 1, 1).unbind(-1)
-      dlat, dlon = lat2 - lat1, lon2 - lon1
-      # print first 5 dlat and dlon and lat1 and lat2 and lon1 and lon2
-      print(f"dlat: {dlat[:5]}")
-      print(f"dlon: {dlon[:5]}")
-      print(f"lat1: {lat1[:5]}")
-      print(f"lat2: {lat2[:5]}")
-      print(f"lon1: {lon1[:5]}")
-      print(f"lon2: {lon2[:5]}")
-      
-      a = torch.sin(dlat / 2)**2 + torch.cos(lat1) * torch.cos(lat2) * torch.sin(dlon / 2)**2
-      c = 2 * torch.asin(torch.sqrt(a))
-      R = 6371.0  # Radius of the earth in kilometers
-      d_true = R * c
-
-      # Calculate distances with repeated tensors
-      lat1_pred, lon1_pred = true_centroids.unbind(-1)
-      lat2_pred, lon2_pred = true_coords.unbind(-1)
-      dlat_pred, dlon_pred = lat2_pred - lat1_pred, lon2_pred - lon1_pred
-      a_pred = torch.sin(dlat_pred / 2)**2 + torch.cos(lat1_pred) * torch.cos(lat2_pred) * torch.sin(dlon_pred / 2)**2
-      c_pred = 2 * torch.asin(torch.sqrt(a_pred))
-      d_pred = R * c_pred
-
-      # Ensure d_true and d_pred have the same shape
-      d_true = d_true.unsqueeze(0).repeat(batch_size, 1, 1)
-      d_pred = d_pred.unsqueeze(1).unsqueeze(2).repeat(1, batch_size, num_classes)
-
-      # Adjust the shape of d_pred to match d_true
-      d_pred = d_pred.permute(0, 2, 1)
-      
-      yn = torch.exp(-(d_true - d_pred) / tau)
-
-      # Adjust pn to match the dimensions of yn
-      pn = outputs[torch.arange(batch_size), targets]
-      pn_expanded = pn.unsqueeze(1).unsqueeze(2).expand(batch_size, num_classes, yn.size(2))
-      
-      print(f"pn_expanded shape: {pn_expanded.shape}")
-      print(f"yn shape: {yn.shape}")
-
-      loss_matrix = -torch.log(pn_expanded) * yn
-      loss = loss_matrix.sum()
-
-      return loss
 
   def run_epoch(self, criterion, optimizer, is_train=True):
     if is_train:
@@ -361,7 +303,7 @@ class GeoModelTrainer:
             optimizer.zero_grad()
             outputs = self.model(images)
             probabilities = F.softmax(outputs, dim=1)
-            loss = criterion(outputs, targets) if not self.use_regions else self.haversine_smoothing_loss(outputs, targets, self.regionHandler.region_middle_points, coordinates)
+            loss = criterion(outputs, targets) if not self.use_regions else criterion(outputs, targets, self.regionHandler.region_middle_points, coordinates)
 
             if is_train:
                 loss.backward()
