@@ -304,8 +304,8 @@ class GeoModelTrainer:
       d_pred = R * 2 * torch.asin(torch.sqrt(torch.sin((true_centroids - true_coords) / 2)**2))
 
       # Ensure d_true and d_pred have the same shape
-      d_true = d_true.unsqueeze(0).repeat(batch_size, 1)
-      d_pred = d_pred.unsqueeze(1).repeat(1, num_classes)
+      d_true = d_true.unsqueeze(0).repeat(batch_size, 1,1)
+      d_pred = d_pred.unsqueeze(1).repeat(1, num_classes,1)
 
       # Calculate loss matrix
       yn = torch.exp(-(d_true - d_pred) / tau)
