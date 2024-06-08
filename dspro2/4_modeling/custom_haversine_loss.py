@@ -9,9 +9,9 @@ class GeolocalizationLoss(nn.Module):
 
     def haversine_distance(self, lat1, lon1, lat2, lon2):
         radius = 6371  # km
-        dlat = torch.radians(lat2 - lat1)
-        dlon = torch.radians(lon2 - lon1)
-        a = torch.sin(dlat / 2) ** 2 + torch.cos(torch.radians(lat1)) * torch.cos(torch.radians(lat2)) * torch.sin(dlon / 2) ** 2
+        dlat = torch.deg2rad(lat2 - lat1)
+        dlon = torch.deg2rad(lon2 - lon1)
+        a = torch.sin(dlat / 2) ** 2 + torch.cos(torch.deg2rad(lat1)) * torch.cos(torch.deg2rad(lat2)) * torch.sin(dlon / 2) ** 2
         c = 2 * torch.atan2(torch.sqrt(a), torch.sqrt(1 - a))
         distance = radius * c
         return distance
