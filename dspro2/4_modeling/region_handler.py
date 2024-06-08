@@ -3,6 +3,7 @@ import geopandas as gpd
 import os
 import fiona
 from shapely import wkt
+import torch
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -15,6 +16,7 @@ class RegionHandler(Dataset):
         self.region_middle_points = self.gdf['middle_point'].tolist()
         # convert the middle points to shapely Points
         self.region_middle_points = [wkt.loads(point) for point in self.region_middle_points]
+        self.region_middle_points = torch.tensor([(point.x, point.y) for point in self.region_middle_points], dtype=torch.float64)
         # create a list of tuples with region name and middle point sorted by region name
         self.regions = sorted(list(zip(self.region_names, self.region_middle_points)), key=lambda x: x[0])
 
