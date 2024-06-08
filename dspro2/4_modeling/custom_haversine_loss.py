@@ -88,7 +88,7 @@ class GeolocalizationLoss(nn.Module):
         true_geocell = true_geocell.to(outputs.device)
         
         # Calculate the smoothed labels
-        smoothed_labels = self.haversine_smooth(true_coords, true_geocell, self.centroids)
+        smoothed_labels = self.haversine_smooth(true_coords, true_geocell)
 
         # Calculate the cross-entropy loss using the smoothed labels
         log_probs = F.log_softmax(outputs, dim=1)
