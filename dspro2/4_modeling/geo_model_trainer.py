@@ -280,6 +280,7 @@ class GeoModelTrainer:
                 loss.backward()
                 optimizer.step()
 
+            print (f"Loss: {loss.item()}")
             total_loss += loss.item() * images.size(0)
             if self.use_coordinates:
                 total_metric += self.mean_spherical_distance(outputs, targets).item() * images.size(0)
