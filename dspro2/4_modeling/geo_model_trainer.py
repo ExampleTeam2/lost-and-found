@@ -286,7 +286,10 @@ class GeoModelTrainer:
             if self.use_coordinates:
                 total_metric += self.mean_spherical_distance(outputs, targets).item() * images.size(0)
             elif self.use_regions:
-                total_metric += self.mean_spherical_distance(middle_points[outputs.argmax(dim=1)], targets).item() * images.size(0)
+                preds = middle_points[outputs.argmax(dim=1)]
+                print (f"Preds: {preds}")
+                print (f"Targets: {targets}")
+                total_metric += self.mean_spherical_distance(preds, targets).item() * images.size(0)
             else:
                 # Get the top 5 predictions for each image
                 _, predicted_top5 = probabilities.topk(5, 1, True, True)
