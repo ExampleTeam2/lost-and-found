@@ -61,7 +61,7 @@ class GeolocalizationLoss(nn.Module):
 
         # Compute the haversine distance between the predicted geocell centroids and the true geocell centroids
         print(F"true_geocell_centroids: {true_geocell_centroids.shape}", F"true_coords: {true_coords.shape}")
-        haversine_distances = self.haversine_matrix(true_geocell_centroids, true_coords.T)
+        haversine_distances = self.haversine_matrix(geocell_centroids, true_coords.T)
 
         # Smooth the labels
         smoothed_labels = self.smooth_labels(haversine_distances)
