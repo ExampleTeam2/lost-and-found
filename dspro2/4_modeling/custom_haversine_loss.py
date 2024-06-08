@@ -60,14 +60,16 @@ class GeolocalizationLoss(nn.Module):
         true_coords = true_coords.to(device)
         true_geocell_centroids = geocell_centroids[targets]
 
+        print(f"True coords: {true_coords.shape}, True geocell centroids: {true_geocell_centroids.shape}, Geocell centroids: {geocell_centroids.shape}")
+
         # Compute the haversine distance between the true coordinates and the transformed geocell centroids
-        haversine_distances = self.haversine_matrix(true_coords, geocell_centroids.T)
+        haversine_distances = self.haversine_matrix(true_coords, geocell_centroids)
 
         # Smooth the labels
         smoothed_labels = self.smooth_labels(haversine_distances)
 
         # print shapes
-        print(f"Smoothed labels: {smoothed_labels.shape}, Outputs: {outputs.shape}, Targets: {targets.shape}, True coords: {true_coords.shape}")
+        print(f"Smoothed labels: {smoothed_labels.shape}, Outputs: {outputs.shape}, Targets: {targets.shape}, True coords: {true_coords.shape}, Haversine distances: {haversine_distances.shape}")
 
         # Compute the cross-entropy loss
         loss = F.cross_entropy(outputs, targets, weight=smoothed_labels, reduction='mean')
