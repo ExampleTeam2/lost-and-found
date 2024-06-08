@@ -251,55 +251,60 @@ class GeoModelTrainer:
           gc.collect()
           torch.cuda.empty_cache()  
 
-  def haversine_distance_vectorized(self, lat1, lon1, lat2, lon2, device=torch.device('cpu')):
-    """
-    Calculate the Haversine distance between two sets of points on the Earth specified in decimal degrees.
-    """
-    R = 6371.0  # Radius of the earth in kilometers
-    
-    # Convert decimal degrees to radians
-    lat1 = torch.deg2rad(lat1).to(device)
-    lon1 = torch.deg2rad(lon1).to(device)
-    lat2 = torch.deg2rad(lat2).to(device)
-    lon2 = torch.deg2rad(lon2).to(device)
+  def haversine_distance(self, coord1, coord2):
+        """
+        Calculate the Haversine distance between two points on the Earth specified in decimal degrees.
+        """
+        R = 6371.0  # Radius of the earth in kilometers
 
-    # Haversine formula
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = torch.sin(dlat / 2) ** 2 + torch.cos(lat1) * torch.cos(lat2) * torch.sin(dlon / 2) ** 2
-    c = 2 * torch.asin(torch.sqrt(a))
-    distance = R * c
-    return distance
+
+        lat1, lon1 = coord1[..., 0], coord1[..., 1]
+        lat2, lon2 = coord2[..., 0], coord2[..., 1]
+
+        lat1 = torch.tensor(lat1, dtype=torch.float64).to(self.device) if not torch.is_tensor(lat1) else lat1.to(self.device)
+        lon1 = torch.tensor(lon1, dtype=torch.float64).to(self.device) if not torch.is_tensor(lon1) else lon1.to(self.device)
+        lat2 = torch.tensor(lat2, dtype=torch.float64).to(self.device) if not torch.is_tensor(lat2) else lat2.to(self.device)
+        lon2 = torch.tensor(lon2, dtype=torch.float64).to(self.device) if not torch.is_tensor(lon2) else lon2.to(self.device)
+
+        # Convert decimal degrees to radians
+        lat1, lon1, lat2, lon2 = map(torch.deg2rad, [lat1, lon1, lat2, lon2])
+
+        # Haversine formula
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = torch.sin(dlat / 2)**2 + torch.cos(lat1) * torch.cos(lat2) * torch.sin(dlon / 2)**2
+        c = 2 * torch.asin(torch.sqrt(a))
+        distance = R * c
+        return distance
 
   def haversine_smoothing_loss(self, outputs, targets, geocell_centroids, true_coords, tau=1.0):
       batch_size = outputs.size(0)
       num_classes = outputs.size(1)
 
-      # convert geo cell centroids to tensor
-      geocell_centroids = [(point.x, point.y) for point in geocell_centroids]
-      
-      # Extract latitude and longitude from geocell_centroids and true_coords
-      geocell_centroids_lat = torch.tensor([coord[0] for coord in geocell_centroids], device=outputs.device)
-      geocell_centroids_lon = torch.tensor([coord[1] for coord in geocell_centroids], device=outputs.device)
-      true_coords_lat = true_coords[:, 0]
-      true_coords_lon = true_coords[:, 1]
+      # Extract latitude and longitude from Point objects
+      geocell_centroids = torch.tensor([(point.x, point.y) for point in geocell_centroids], dtype=torch.float64).to(self.device)
 
-      # Reshape tensors to ensure compatibility
-      geocell_centroids_lat = geocell_centroids_lat.unsqueeze(0).repeat(batch_size, 1)
-      geocell_centroids_lon = geocell_centroids_lon.unsqueeze(0).repeat(batch_size, 1)
-      true_coords_lat = true_coords_lat.unsqueeze(1).repeat(1, num_classes)
-      true_coords_lon = true_coords_lon.unsqueeze(1).repeat(1, num_classes)
-      
-      true_geocell_centroid_lat = geocell_centroids_lat[torch.arange(batch_size), targets]
-      true_geocell_centroid_lon = geocell_centroids_lon[torch.arange(batch_size), targets]
-      d_true = self.haversine_distance_vectorized(geocell_centroids_lat, geocell_centroids_lon, true_coords_lat, true_coords_lon, device=outputs.device)
-      d_pred = self.haversine_distance_vectorized(true_geocell_centroid_lat, true_geocell_centroid_lon, true_coords_lat, true_coords_lon, device=outputs.device)
+      true_centroids = geocell_centroids[targets]
 
-      # Calculate loss
-      yn_i = torch.exp(-(d_true - d_pred) / tau)
-      pn_i = outputs.gather(1, targets.unsqueeze(1)).squeeze(1)
-      loss = -(pn_i * torch.log(pn_i) * yn_i).sum() / batch_size
-      
+      # Vectorize Haversine distance calculation
+      lat1, lon1 = geocell_centroids.unsqueeze(1).repeat(1, batch_size, 1).unbind(-1)
+      lat2, lon2 = true_coords.unsqueeze(0).repeat(num_classes, 1, 1).unbind(-1)
+      dlat, dlon = lat2 - lat1, lon2 - lon1
+      a = torch.sin(dlat / 2)**2 + torch.cos(lat1) * torch.cos(lat2) * torch.sin(dlon / 2)**2
+      c = 2 * torch.asin(torch.sqrt(a))
+      R = 6371.0  # Radius of the earth in kilometers
+      d_true = R * c
+
+      # Calculate distances with repeated tensors
+      d_pred = R * 2 * torch.asin(torch.sqrt(torch.sin((true_centroids - true_coords) / 2)**2))
+
+      # Calculate loss matrix
+      yn = torch.exp(-(d_true - d_pred) / tau)
+      pn = outputs[torch.arange(batch_size), targets]
+      pn_expanded = pn.unsqueeze(0).expand(num_classes, batch_size)
+      loss_matrix = -torch.log(pn_expanded) * yn
+      loss = loss_matrix.sum()
+
       return loss
 
   def run_epoch(self, criterion, optimizer, is_train=True):
