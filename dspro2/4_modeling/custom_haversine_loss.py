@@ -26,19 +26,19 @@ class GeolocalizationLoss(nn.Module):
 
         true_geocell_centroids = geocell_centroids[targets]
 
-        distances_to_geocells = self.haversine_distance(
+        distances_to_geocells, distances_to_true_geocells = self.haversine_distance(
             true_coords[:, 0].unsqueeze(1), 
             true_coords[:, 1].unsqueeze(1), 
             geocell_centroids[:, 0].unsqueeze(0), 
             geocell_centroids[:, 1].unsqueeze(0)
-        )
-
-        distances_to_true_geocells = self.haversine_distance(
+        ), self.haversine_distance(
             true_coords[:, 0], 
             true_coords[:, 1], 
             true_geocell_centroids[:, 0], 
             true_geocell_centroids[:, 1]
         ).unsqueeze(1)
+
+        
 
         targets_smoothed = torch.exp(-(distances_to_geocells - distances_to_true_geocells) / self.temperature)
         
