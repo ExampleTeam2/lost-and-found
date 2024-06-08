@@ -290,15 +290,21 @@ class GeoModelTrainer:
         
         true_centroids = geocell_centroids[targets]
 
-        d_true = self.haversine_distance(geocell_centroids.expand(num_classes, batch_size, 2), true_coords.expand(num_classes, batch_size, 2))  # Shape: (num_classes, batch_size)
-        d_pred = self.haversine_distance(true_centroids.expand(batch_size, num_classes, 2), true_coords.expand(batch_size, num_classes, 2))  # Shape: (batch_size, num_classes)
+        # Adjust tensor shapes for broadcasting
+        geocell_centroids = geocell_centroids.unsqueeze(1).expand(-1, batch_size, -1)  # Shape: (num_classes, batch_size, 2)
+        true_coords = true_coords.unsqueeze(0).expand(num_classes, -1, -1)  # Shape: (num_classes, batch_size, 2)
+        true_centroids = true_centroids.unsqueeze(1).expand(-1, num_classes, -1)  # Shape: (batch_size, num_classes, 2)
 
-        # Expand d_pred to match the shape of d_true for subtraction
-        d_pred = d_pred.transpose(0, 1)  # Shape: (num_classes, batch_size)
+        # Calculate distances with expanded tensors
+        d_true = self.haversine_distance(geocell_centroids, true_coords)  # Shape: (num_classes, batch_size)
+        d_pred = self.haversine_distance(true_centroids, true_coords.transpose(0, 1))  # Shape: (batch_size, num_classes)
 
-        yn = torch.exp(-(d_true - d_pred) / tau)
+        yn = torch.exp(-(d_true - d_pred.transpose(0, 1)) / tau)
 
-        loss_matrix = -torch.log(outputs) * yn
+        # Get probabilities for targets
+        pn = outputs[torch.arange(batch_size), targets]
+
+        loss_matrix = -torch.log(pn.unsqueeze(1).expand_as(yn)) * yn  # Shape: (batch_size, num_classes)
         loss = loss_matrix.sum()
 
         return loss
