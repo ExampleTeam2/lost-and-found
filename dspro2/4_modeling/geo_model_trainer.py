@@ -283,13 +283,18 @@ class GeoModelTrainer:
       geocell_centroids_lon = torch.tensor([coord[1] for coord in geocell_centroids], device=outputs.device)
       true_coords_lat = true_coords[:, 0]
       true_coords_lon = true_coords[:, 1]
+
+      # Reshape tensors to ensure compatibility
+      geocell_centroids_lat = geocell_centroids_lat.unsqueeze(0).repeat(batch_size, 1)
+      geocell_centroids_lon = geocell_centroids_lon.unsqueeze(0).repeat(batch_size, 1)
+      true_coords_lat = true_coords_lat.unsqueeze(1).repeat(1, num_classes)
+      true_coords_lon = true_coords_lon.unsqueeze(1).repeat(1, num_classes)
       
-      # Calculate true and predicted distances
-      true_geocell_centroid_lat = geocell_centroids_lat[targets]
-      true_geocell_centroid_lon = geocell_centroids_lon[targets]
+      true_geocell_centroid_lat = geocell_centroids_lat[torch.arange(batch_size), targets]
+      true_geocell_centroid_lon = geocell_centroids_lon[torch.arange(batch_size), targets]
       d_true = self.haversine_distance_vectorized(geocell_centroids_lat, geocell_centroids_lon, true_coords_lat, true_coords_lon, device=outputs.device)
       d_pred = self.haversine_distance_vectorized(true_geocell_centroid_lat, true_geocell_centroid_lon, true_coords_lat, true_coords_lon, device=outputs.device)
-      
+
       # Calculate loss
       yn_i = torch.exp(-(d_true - d_pred) / tau)
       pn_i = outputs.gather(1, targets.unsqueeze(1)).squeeze(1)
