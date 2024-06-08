@@ -258,8 +258,8 @@ class GeoModelTrainer:
         R = 6371.0  # Radius of the earth in kilometers
 
         # Ensure the coordinates are in tensor format and on the correct device
-        lat1, lon1 = coord1
-        lat2, lon2 = coord2
+        lat1, lon1 = coord1[:, 0], coord1[:, 1]
+        lat2, lon2 = coord2[:, 0], coord2[:, 1]
 
         lat1 = torch.tensor(lat1, dtype=torch.float64).to(self.device) if not torch.is_tensor(lat1) else lat1.to(self.device)
         lon1 = torch.tensor(lon1, dtype=torch.float64).to(self.device) if not torch.is_tensor(lon1) else lon1.to(self.device)
