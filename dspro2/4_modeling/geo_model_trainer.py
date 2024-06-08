@@ -281,15 +281,11 @@ class GeoModelTrainer:
                 loss.backward()
                 optimizer.step()
 
-            print (f"Loss: {loss.item()}")
             total_loss += loss.item() * images.size(0)
             if self.use_coordinates:
                 total_metric += self.mean_spherical_distance(outputs, targets).item() * images.size(0)
             elif self.use_regions:
-                preds = middle_points[outputs.argmax(dim=1)]
-                print (f"Preds: {preds}")
-                print (f"Targets: {targets}")
-                total_metric += self.mean_spherical_distance(preds, targets).item() * images.size(0)
+                total_metric += self.mean_spherical_distance(middle_points[outputs.argmax(dim=1)], middle_points[targets]).item() * images.size(0)
             else:
                 # Get the top 5 predictions for each image
                 _, predicted_top5 = probabilities.topk(5, 1, True, True)
@@ -305,6 +301,7 @@ class GeoModelTrainer:
 
     if self.use_coordinates or self.use_regions:
         avg_metric = total_metric / len(data_loader.dataset)
+        print(f"Average Loss: {avg_loss:.4f}, Average Distance: {avg_metric:.4f}")
         return avg_loss, avg_metric
     else:
         top1_accuracy = top1_correct / len(data_loader.dataset)
