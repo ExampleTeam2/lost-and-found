@@ -310,6 +310,8 @@ class GeoModelTrainer:
       d_true = d_true.unsqueeze(0).repeat(batch_size, 1,1)
       d_pred = d_pred.unsqueeze(1).repeat(1, num_classes,1)
 
+      print(f"True distances shape after expansion: {d_true.shape}")
+      print(f"Predicted distances shape after expansion: {d_pred.shape}")
       # Calculate loss matrix
       yn = torch.exp(-(d_true - d_pred) / tau)
       pn = outputs[torch.arange(batch_size), targets]
