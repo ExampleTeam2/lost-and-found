@@ -33,40 +33,22 @@ class GeolocalizationLoss(nn.Module):
         num_geocells = self.centroids.size(0)
         
         true_geocell_centroid = self.centroids[true_geocell]  # Shape: [batch_size, 2]
-        true_coords = true_coords.unsqueeze(1).expand(-1, num_geocells, -1)  # Shape: [batch_size, num_geocells, 2]
-        true_geocell_centroid = true_geocell_centroid.unsqueeze(1).expand(-1, num_geocells, -1)  # Shape: [batch_size, num_geocells, 2]
+        true_coords_expanded = true_coords.unsqueeze(1).expand(-1, num_geocells, -1)  # Shape: [batch_size, num_geocells, 2]
+        true_geocell_centroid_expanded = true_geocell_centroid.unsqueeze(1).expand(-1, num_geocells, -1)  # Shape: [batch_size, num_geocells, 2]
 
-        true_distances = self.haversine_distance(true_coords.view(-1, 2), true_geocell_centroid.view(-1, 2))  # Shape: [batch_size * num_geocells]
-        true_distances = true_distances.view(batch_size, num_geocells)  # Shape: [batch_size, num_geocells]
+        true_distances = self.haversine_distance(true_coords_expanded.reshape(-1, 2), true_geocell_centroid_expanded.reshape(-1, 2))  # Shape: [batch_size * num_geocells]
+        true_distances = true_distances.reshape(batch_size, num_geocells)  # Shape: [batch_size, num_geocells]
         
         smoothed_labels = []
         for i in range(num_geocells):
             centroid = self.centroids[i].unsqueeze(0).expand(batch_size, -1)  # Shape: [batch_size, 2]
-            centroid_distance = self.haversine_distance(true_coords[:, i, :], centroid)
+            centroid_distance = self.haversine_distance(true_coords_expanded[:, i, :], centroid)
             smoothed_label = torch.exp(-(centroid_distance - true_distances[:, i]) / self.temperature)
             smoothed_labels.append(smoothed_label.unsqueeze(1))
         smoothed_labels = torch.cat(smoothed_labels, dim=1)  # Shape: [batch_size, num_geocells]
 
         return smoothed_labels
 
-    def haversine_matrix(self, x,y):
-      """Computes the haversine distance between two matrices of points
-
-      Args:
-          x (Tensor): matrix 1 (lon, lat) -> shape (N, 2)
-          y (Tensor): matrix 2 (lon, lat) -> shape (2, M)
-
-      Returns:
-          Tensor: haversine distance in km -> shape (N, M)
-      """
-      x_rad, y_rad = torch.deg2rad(x), torch.deg2rad(y)
-      delta = x_rad.unsqueeze(2) - y_rad
-      p = torch.cos(x_rad[:, 1]).unsqueeze(1) * torch.cos(y_rad[1, :]).unsqueeze(0)
-      a = torch.sin(delta[:, 1, :] / 2)**2 + p * torch.sin(delta[:, 0, :] / 2)**2
-      c = 2 * torch.arcsin(torch.sqrt(a))
-      km = (self.rad_torch * c) / 1000
-      return km
-    
 
     def smooth_labels(self, distances):
         """Haversine smooths labels for shared representation learning across geocells.
