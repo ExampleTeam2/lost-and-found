@@ -37,6 +37,10 @@ class GeolocalizationLoss(nn.Module):
             true_geocell_centroids[:, 1]
         ).unsqueeze(1)
 
+
+        # Stabilize the calculation
+        distances_to_geocells = torch.clamp(distances_to_geocells, min=1e-6)
+        distances_to_true_geocells = torch.clamp(distances_to_true_geocells, min=1e-6)
         
 
         targets_smoothed = torch.exp(-(distances_to_geocells - distances_to_true_geocells) / self.temperature)

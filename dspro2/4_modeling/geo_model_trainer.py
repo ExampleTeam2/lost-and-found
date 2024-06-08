@@ -281,12 +281,8 @@ class GeoModelTrainer:
 
             if is_train:
                 loss.backward()
-                for name, param in self.model.named_parameters():
-                    if param.grad is not None and torch.isnan(param.grad).any():
-                        print(f"NaN gradient found in {name}")
                 optimizer.step()
 
-            print(f"Loss: {loss.item()}")
             total_loss += loss.item() * images.size(0)
             print(f"Total Loss: {total_loss}")
             if self.use_coordinates:
