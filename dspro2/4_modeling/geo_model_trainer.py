@@ -301,21 +301,27 @@ class GeoModelTrainer:
       d_true = R * c
 
       # Calculate distances with repeated tensors
-      d_pred = R * 2 * torch.asin(torch.sqrt(torch.sin((true_centroids - true_coords) / 2)**2))
+      lat1_pred, lon1_pred = true_centroids.unbind(-1)
+      lat2_pred, lon2_pred = true_coords.unbind(-1)
+      dlat_pred, dlon_pred = lat2_pred - lat1_pred, lon2_pred - lon1_pred
+      a_pred = torch.sin(dlat_pred / 2)**2 + torch.cos(lat1_pred) * torch.cos(lat2_pred) * torch.sin(dlon_pred / 2)**2
+      c_pred = 2 * torch.asin(torch.sqrt(a_pred))
+      d_pred = R * c_pred
 
       print(f"True distances shape: {d_true.shape}")
       print(f"Predicted distances shape: {d_pred.shape}")
 
       # Ensure d_true and d_pred have the same shape
-      d_true = d_true.unsqueeze(0).repeat(batch_size, 1,1)
-      d_pred = d_pred.unsqueeze(0).unsqueeze(2).repeat(batch_size, num_classes, 1)
+      d_true = d_true.unsqueeze(0).repeat(batch_size, 1, 1)
+      d_pred = d_pred.unsqueeze(1).unsqueeze(2).repeat(1, batch_size, num_classes)
 
       print(f"True distances shape after expansion: {d_true.shape}")
       print(f"Predicted distances shape after expansion: {d_pred.shape}")
+
       # Calculate loss matrix
       yn = torch.exp(-(d_true - d_pred) / tau)
       pn = outputs[torch.arange(batch_size), targets]
-      pn_expanded = pn.unsqueeze(0).expand(num_classes, batch_size)
+      pn_expanded = pn.unsqueeze(1).expand(batch_size, num_classes)
       loss_matrix = -torch.log(pn_expanded) * yn
       loss = loss_matrix.sum()
 
