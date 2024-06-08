@@ -252,46 +252,49 @@ class GeoModelTrainer:
           torch.cuda.empty_cache()  
 
   def haversine_distance(self, coord1, coord2):
-      """
-      Calculate the Haversine distance between two points on the Earth specified in decimal degrees.
-      """
-      R = 6371.0  # Radius of the earth in kilometers
+        """
+        Calculate the Haversine distance between two points on the Earth specified in decimal degrees.
+        """
+        R = 6371.0  # Radius of the earth in kilometers
 
-      # split the coordinates coord1 is a point and coord2 is a tensor of latitude and longitude
-      lat1, lon1 = coord1.x, coord1.y
-      lat2, lon2 = coord2[0], coord2[1]
+        # Ensure the coordinates are in tensor format and on the correct device
+        lat1, lon1 = coord1
+        lat2, lon2 = coord2
 
-      lat1, lon1, lat2, lon2 = map(lambda x: torch.tensor(x, dtype=torch.float64), [lat1, lon1, lat2, lon2])
-      # Convert decimal degrees to radians 
-      lat1, lon1, lat2, lon2 = map(torch.deg2rad, [lat1, lon1, lat2, lon2])
+        lat1 = torch.tensor(lat1, dtype=torch.float64).to(self.device) if not torch.is_tensor(lat1) else lat1.to(self.device)
+        lon1 = torch.tensor(lon1, dtype=torch.float64).to(self.device) if not torch.is_tensor(lon1) else lon1.to(self.device)
+        lat2 = torch.tensor(lat2, dtype=torch.float64).to(self.device) if not torch.is_tensor(lat2) else lat2.to(self.device)
+        lon2 = torch.tensor(lon2, dtype=torch.float64).to(self.device) if not torch.is_tensor(lon2) else lon2.to(self.device)
 
-      # Haversine formula 
-      dlat = lat2 - lat1 
-      dlon = lon2 - lon1 
-      a = torch.sin(dlat/2)**2 + torch.cos(lat1) * torch.cos(lat2) * torch.sin(dlon/2)**2
-      c = 2 * torch.asin(torch.sqrt(a))
-      distance = R * c  # Result in kilometers
-      return distance
-  
-  #  haversine_smoothing loss function
+        # Convert decimal degrees to radians
+        lat1, lon1, lat2, lon2 = map(torch.deg2rad, [lat1, lon1, lat2, lon2])
+
+        # Haversine formula
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = torch.sin(dlat / 2)**2 + torch.cos(lat1) * torch.cos(lat2) * torch.sin(dlon / 2)**2
+        c = 2 * torch.asin(torch.sqrt(a))
+        distance = R * c
+        return distance
+
   def haversine_smoothing_loss(self, outputs, targets, geocell_centroids, true_coords, tau=1.0):
-      batch_size = outputs.size(0)
-      num_classes = outputs.size(1)
-      loss = 0.0
-      for i in range(batch_size):
-          for j in range(num_classes):
-              geocell_centroid = geocell_centroids[j]
-              true_geocell_centroid = geocell_centroids[targets[i].item()]
+        batch_size = outputs.size(0)
+        num_classes = outputs.size(1)
 
-              d_true = self.haversine_distance(geocell_centroid, true_coords[i])
-              d_pred = self.haversine_distance(true_geocell_centroid, true_coords[i])
+        geocell_centroids = torch.tensor(geocell_centroids, dtype=torch.float64).to(self.device)
+        true_coords = torch.tensor(true_coords, dtype=torch.float64).to(self.device)
+        
+        true_centroids = geocell_centroids[targets]
 
-              yn_i = torch.exp(-(d_true - d_pred) / tau)
-              pn_i = outputs[i, j]
+        d_true = self.haversine_distance(geocell_centroids.unsqueeze(1), true_coords.unsqueeze(0))
+        d_pred = self.haversine_distance(true_centroids.unsqueeze(1), true_coords.unsqueeze(0))
 
-              loss += -torch.log(pn_i) * yn_i
+        yn = torch.exp(-(d_true - d_pred) / tau)
 
-      return loss
+        loss_matrix = -torch.log(outputs) * yn
+        loss = loss_matrix.sum()
+
+        return loss
 
   def run_epoch(self, criterion, optimizer, is_train=True):
     if is_train:
