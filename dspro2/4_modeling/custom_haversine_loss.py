@@ -27,17 +27,13 @@ class GeolocalizationLoss(nn.Module):
         Returns:
             Tensor: haversine distance in km -> shape (N, M)
         """
-        x_lat, x_lon = x[:, 0].unsqueeze(1), x[:, 1].unsqueeze(1)
-        y_lat, y_lon = y[:, 0].unsqueeze(0), y[:, 1].unsqueeze(0)
-        
-        dlat = torch.deg2rad(y_lat - x_lat)
-        dlon = torch.deg2rad(y_lon - x_lon)
-        
-        a = torch.sin(dlat / 2) ** 2 + torch.cos(torch.deg2rad(x_lat)) * torch.cos(torch.deg2rad(y_lat)) * torch.sin(dlon / 2) ** 2
-        c = 2 * torch.atan2(torch.sqrt(a), torch.sqrt(1 - a))
-        
-        distance = 6371 * c  # Radius of Earth in kilometers
-        return distance
+        x_rad, y_rad = torch.deg2rad(x), torch.deg2rad(y)
+        delta = x_rad.unsqueeze(2) - y_rad
+        p = torch.cos(x_rad[:, 1]).unsqueeze(1) * torch.cos(y_rad[1, :]).unsqueeze(0)
+        a = torch.sin(delta[:, 1, :] / 2)**2 + p * torch.sin(delta[:, 0, :] / 2)**2
+        c = 2 * torch.arcsin(torch.sqrt(a))
+        km = (rad_torch * c) / 1000
+        return km
 
     def smooth_labels(self, distances):
         """Haversine smooths labels for shared representation learning across geocells.
@@ -60,10 +56,10 @@ class GeolocalizationLoss(nn.Module):
         true_coords = true_coords.to(device)
         true_geocell_centroids = geocell_centroids[targets]
 
-        print(f"True coords: {true_coords.shape}, True geocell centroids: {true_geocell_centroids.shape}, Geocell centroids: {geocell_centroids.shape}")
+        print(f"True coords: {true_coords.shape}, True geocell centroids: {true_geocell_centroids.shape}, Geocell centroids: {geocell_centroids.T.shape}")
 
         # Compute the haversine distance between the true coordinates and the transformed geocell centroids
-        haversine_distances = self.haversine_matrix(true_coords, geocell_centroids)
+        haversine_distances = self.haversine_matrix(true_coords, geocell_centroids.T)
 
         # Smooth the labels
         smoothed_labels = self.smooth_labels(haversine_distances)
