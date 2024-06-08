@@ -175,7 +175,7 @@ class GeoModelTrainer:
           scheduler = StepLR(optimizer, step_size=10, gamma=0.1)
 
           for epoch in range(config.epochs):
-              if self.use_coordinates:
+              if self.use_coordinates or self.use_regions:
                   train_loss, train_metric = self.run_epoch(criterion, optimizer, is_train=True)
                   val_loss, val_metric = self.run_epoch(criterion, optimizer, is_train=False)
               else:
@@ -252,35 +252,6 @@ class GeoModelTrainer:
 
           gc.collect()
           torch.cuda.empty_cache()  
-
-  def haversine_distance(self, lat1, lon1, lat2, lon2):
-        radius = 6371  # km
-
-        dlat = torch.radians(lat2 - lat1)
-        dlon = torch.radians(lon2 - lon1)
-        a = torch.sin(dlat / 2) ** 2 + torch.cos(torch.radians(lat1)) * torch.cos(torch.radians(lat2)) * torch.sin(dlon / 2) ** 2
-        c = 2 * torch.atan2(torch.sqrt(a), torch.sqrt(1 - a))
-        distance = radius * c
-        return distance
-
-  def haversine_smoothing_loss(self, outputs, targets, geocell_centroids, true_coords, tau=0.75):
-      batch_size, num_classes = outputs.size()
-
-      device = self.device
-      outputs = outputs.to(device)
-      targets = targets.to(device)
-      true_coords = true_coords.to(device)
-
-      # Extract latitude and longitude from Point objects
-      geocell_centroids = torch.tensor([(point.x, point.y) for point in geocell_centroids], dtype=torch.float64).to(device)
-
-      true_geocell_centroids = geocell_centroids[targets]
-
-      distances_to_geocells = self.haversine_distance(true_coords[:, 0], true_coords[:, 1], geocell_centroids[:, 0], geocell_centroids[:, 1])
-      distances_to_true_geocells = self.haversine_distance(true_coords[:, 0], true_coords[:, 1], true_geocell_centroids[:, 0], true_geocell_centroids[:, 1])
-      targets = torch.exp(-(distances_to_geocells - distances_to_true_geocells) / self.temperature)
-      loss = -torch.sum(outputs * targets, dim=1)
-      return torch.mean(loss)
 
 
   def run_epoch(self, criterion, optimizer, is_train=True):
