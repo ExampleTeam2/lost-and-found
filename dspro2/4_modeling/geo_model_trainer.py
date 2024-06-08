@@ -156,7 +156,8 @@ class GeoModelTrainer:
           if self.use_coordinates:
             criterion = nn.MSELoss()
           elif self.use_regions:
-            criterion = GeolocalizationLoss(self.regionHandler.region_middle_points.to(self.device), temperature=75)
+           # criterion = GeolocalizationLoss(self.regionHandler.region_middle_points.to(self.device), temperature=75)
+            criterion = GeolocalizationLoss(temperature=75)
           else:
             criterion = nn.CrossEntropyLoss()
 
@@ -275,7 +276,7 @@ class GeoModelTrainer:
             optimizer.zero_grad()
             outputs = self.model(images)
             probabilities = F.softmax(outputs, dim=1)
-            loss = criterion(outputs, targets) if not self.use_regions else criterion(outputs, coordinates, targets)
+            loss = criterion(outputs, targets) if not self.use_regions else criterion(outputs, targets, middle_points, coordinates)
             
             print(f"Loss: {loss.item()}")
 
