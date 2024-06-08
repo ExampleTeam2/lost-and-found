@@ -80,6 +80,9 @@ class GeolocalizationLoss(nn.Module):
         return smoothed_labels
 
     def forward(self, outputs, true_coords, true_geocell):
+        self.centroids = self.centroids.to(outputs.device)
+        true_coords = true_coords.to(outputs.device)
+        true_geocell = true_geocell.to(outputs.device)
         
         # Calculate the smoothed labels
         smoothed_labels = self.haversine_smooth(true_coords, true_geocell, self.centroids)
