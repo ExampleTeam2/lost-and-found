@@ -1,21 +1,46 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
 
 class GeolocalizationLoss(nn.Module):
-    def __init__(self, temperature=75):
+    def __init__(self, centroids, temperature=75):
         super(GeolocalizationLoss, self).__init__()
         self.temperature = temperature
+        self.centroids = centroids
         self.rad_torch = torch.tensor(6378137.0, dtype=torch.float64)
 
-    def haversine_distance(self, lat1, lon1, lat2, lon2):
-        radius = 6371  # km
-        dlat = torch.deg2rad(lat2 - lat1)
-        dlon = torch.deg2rad(lon2 - lon1)
-        a = torch.sin(dlat / 2) ** 2 + torch.cos(torch.deg2rad(lat1)) * torch.cos(torch.deg2rad(lat2)) * torch.sin(dlon / 2) ** 2
+    def haversine_distance(self, p1, p2):
+        # Haversine formula to compute the distance between two points (in radians)
+        r = 6371  # Earth's radius in kilometers
+        lambda1, phi1 = p1[:, 0], p1[:, 1]
+        lambda2, phi2 = p2[:, 0], p2[:, 1]
+
+        delta_phi = phi2 - phi1
+        delta_lambda = lambda2 - lambda1
+
+        a = torch.sin(delta_phi / 2) ** 2 + torch.cos(phi1) * torch.cos(phi2) * torch.sin(delta_lambda / 2) ** 2
         c = 2 * torch.atan2(torch.sqrt(a), torch.sqrt(1 - a))
-        distance = radius * c
+        distance = r * c
         return distance
+
+    def haversine_smooth(self, true_coords, true_geocell, predicted_geocells):
+        # Calculate smoothed labels based on the Haversine distance
+        true_geocell_centroid = self.centroids[true_geocell]
+        true_distances = self.haversine_distance(true_coords, true_geocell_centroid.unsqueeze(0))
+
+        smoothed_labels = []
+        for i, centroid in enumerate(self.centroids):
+            centroid_distance = self.haversine_distance(true_coords, centroid.unsqueeze(0))
+            smoothed_label = torch.exp(-(centroid_distance - true_distances) / self.temperature)
+            smoothed_labels.append(smoothed_label)
+        smoothed_labels = torch.stack(smoothed_labels).squeeze()
+
+        return smoothed_labels
 
     def haversine_matrix(self, x,y):
       """Computes the haversine distance between two matrices of points
@@ -50,23 +75,14 @@ class GeolocalizationLoss(nn.Module):
         smoothed_labels = torch.nan_to_num(smoothed_labels, nan=0.0, posinf=0.0, neginf=0.0)
         return smoothed_labels
 
-    def forward(self, outputs, targets, geocell_centroids, true_coords):
-        batch_size, num_classes = outputs.size()
-        device = outputs.device
+    def forward(self, outputs, true_coords, true_geocell):
+        
+        # Calculate the smoothed labels
+        smoothed_labels = self.haversine_smooth(true_coords, true_geocell, self.centroids)
 
-        #geocell_centroids = torch.tensor([(point.x, point.y) for point in geocell_centroids], dtype=torch.float64).to(device)
-        true_coords = true_coords.to(device)
-
-        true_geocell_centroids = geocell_centroids[targets]
-
-        # Compute the haversine distance between the predicted geocell centroids and the true geocell centroids
-        print(F"true_geocell_centroids: {true_geocell_centroids.shape}", F"true_coords: {true_coords.shape}")
-        haversine_distances = self.haversine_matrix(geocell_centroids, true_coords.T)
-
-        # Smooth the labels
-        smoothed_labels = self.smooth_labels(haversine_distances)
-
-        # Compute the cross-entropy loss
-        loss = F.cross_entropy(outputs, targets, weight=smoothed_labels, reduction='mean')
+        # Calculate the cross-entropy loss using the smoothed labels
+        log_probs = F.log_softmax(outputs, dim=1)
+        loss = -torch.sum(smoothed_labels * log_probs, dim=1).mean()
+        
         
         return loss
