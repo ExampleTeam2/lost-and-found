@@ -21,7 +21,6 @@ class GeolocalizationLoss(nn.Module):
         device = outputs.device
 
         #geocell_centroids = torch.tensor([(point.x, point.y) for point in geocell_centroids], dtype=torch.float64).to(device)
-        geocell_centroids = geocell_centroids.to(device)
         true_coords = true_coords.to(device)
 
         true_geocell_centroids = geocell_centroids[targets]

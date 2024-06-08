@@ -266,6 +266,7 @@ class GeoModelTrainer:
     top3_correct = 0
     top5_correct = 0
     data_loader = self.train_dataloader if is_train else self.val_dataloader
+    middle_points = self.regionHandler.region_middle_points.to(self.device) if self.use_regions else None
 
     for images, coordinates, country_indices, region_indices in data_loader:
         with torch.set_grad_enabled(is_train):
@@ -274,7 +275,7 @@ class GeoModelTrainer:
             optimizer.zero_grad()
             outputs = self.model(images)
             probabilities = F.softmax(outputs, dim=1)
-            loss = criterion(outputs, targets) if not self.use_regions else criterion(outputs, targets, self.regionHandler.region_middle_points, coordinates)
+            loss = criterion(outputs, targets) if not self.use_regions else criterion(outputs, targets, middle_points, coordinates)
 
             if is_train:
                 loss.backward()
@@ -285,7 +286,7 @@ class GeoModelTrainer:
             if self.use_coordinates:
                 total_metric += self.mean_spherical_distance(outputs, targets).item() * images.size(0)
             elif self.use_regions:
-                total_metric += self.mean_spherical_distance(self.regionHandler.region_middle_points[outputs.argmax(dim=1)], targets).item() * images.size(0)
+                total_metric += self.mean_spherical_distance(middle_points[outputs.argmax(dim=1)], targets).item() * images.size(0)
             else:
                 # Get the top 5 predictions for each image
                 _, predicted_top5 = probabilities.topk(5, 1, True, True)
