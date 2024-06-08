@@ -322,11 +322,16 @@ class GeoModelTrainer:
       d_pred = d_pred.permute(0, 2, 1)
 
       print(f"Predicted distances shape after permutation: {d_pred.shape}")
-
-      # Calculate loss matrix
+      
       yn = torch.exp(-(d_true - d_pred) / tau)
+
+      # Adjust pn to match the dimensions of yn
       pn = outputs[torch.arange(batch_size), targets]
-      pn_expanded = pn.unsqueeze(1).expand(batch_size, num_classes)
+      pn_expanded = pn.unsqueeze(1).unsqueeze(2).expand(batch_size, num_classes, yn.size(2))
+      
+      print(f"pn_expanded shape: {pn_expanded.shape}")
+      print(f"yn shape: {yn.shape}")
+
       loss_matrix = -torch.log(pn_expanded) * yn
       loss = loss_matrix.sum()
 
