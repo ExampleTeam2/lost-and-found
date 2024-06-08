@@ -17,24 +17,27 @@ class GeolocalizationLoss(nn.Module):
         distance = radius * c
         return distance
 
-    def haversine_matrix(self, x,y):
-      """Computes the haversine distance between two matrices of points
+    def haversine_matrix(self, x, y):
+        """Computes the haversine distance between two matrices of points
 
-      Args:
-          x (Tensor): matrix 1 (lon, lat) -> shape (N, 2)
-          y (Tensor): matrix 2 (lon, lat) -> shape (2, M)
+        Args:
+            x (Tensor): matrix 1 (N, 2) -> (lat, lon)
+            y (Tensor): matrix 2 (M, 2) -> (lat, lon)
 
-      Returns:
-          Tensor: haversine distance in km -> shape (N, M)
-      """
-      x_rad, y_rad = torch.deg2rad(x), torch.deg2rad(y)
-      delta = x_rad.unsqueeze(2) - y_rad
-      p = torch.cos(x_rad[:, 1]).unsqueeze(1) * torch.cos(y_rad[1, :]).unsqueeze(0)
-      a = torch.sin(delta[:, 1, :] / 2)**2 + p * torch.sin(delta[:, 0, :] / 2)**2
-      c = 2 * torch.arcsin(torch.sqrt(a))
-      km = (self.rad_torch * c) / 1000
-      return km
-    
+        Returns:
+            Tensor: haversine distance in km -> shape (N, M)
+        """
+        x_lat, x_lon = x[:, 0].unsqueeze(1), x[:, 1].unsqueeze(1)
+        y_lat, y_lon = y[:, 0].unsqueeze(0), y[:, 1].unsqueeze(0)
+        
+        dlat = torch.deg2rad(y_lat - x_lat)
+        dlon = torch.deg2rad(y_lon - x_lon)
+        
+        a = torch.sin(dlat / 2) ** 2 + torch.cos(torch.deg2rad(x_lat)) * torch.cos(torch.deg2rad(y_lat)) * torch.sin(dlon / 2) ** 2
+        c = 2 * torch.atan2(torch.sqrt(a), torch.sqrt(1 - a))
+        
+        distance = 6371 * c  # Radius of Earth in kilometers
+        return distance
 
     def smooth_labels(self, distances):
         """Haversine smooths labels for shared representation learning across geocells.
@@ -54,9 +57,7 @@ class GeolocalizationLoss(nn.Module):
         batch_size, num_classes = outputs.size()
         device = outputs.device
 
-        #geocell_centroids = torch.tensor([(point.x, point.y) for point in geocell_centroids], dtype=torch.float64).to(device)
         true_coords = true_coords.to(device)
-
         true_geocell_centroids = geocell_centroids[targets]
 
         # Compute the haversine distance between the predicted geocell centroids and the true geocell centroids
