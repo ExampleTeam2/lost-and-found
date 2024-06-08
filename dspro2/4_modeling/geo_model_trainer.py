@@ -290,8 +290,8 @@ class GeoModelTrainer:
         
         true_centroids = geocell_centroids[targets]
 
-        d_true = self.haversine_distance(geocell_centroids.unsqueeze(1), true_coords.unsqueeze(0))
-        d_pred = self.haversine_distance(true_centroids.unsqueeze(1), true_coords.unsqueeze(0))
+        d_true = self.haversine_distance(geocell_centroids.unsqueeze(1), true_coords.unsqueeze(1))
+        d_pred = self.haversine_distance(true_centroids.unsqueeze(1), true_coords.unsqueeze(1))
 
         yn = torch.exp(-(d_true - d_pred) / tau)
 
