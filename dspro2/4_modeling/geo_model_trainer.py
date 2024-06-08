@@ -303,6 +303,9 @@ class GeoModelTrainer:
       # Calculate distances with repeated tensors
       d_pred = R * 2 * torch.asin(torch.sqrt(torch.sin((true_centroids - true_coords) / 2)**2))
 
+      print(f"True distances shape: {d_true.shape}")
+      print(f"Predicted distances shape: {d_pred.shape}")
+
       # Ensure d_true and d_pred have the same shape
       d_true = d_true.unsqueeze(0).repeat(batch_size, 1,1)
       d_pred = d_pred.unsqueeze(1).repeat(1, num_classes,1)
