@@ -258,6 +258,9 @@ class GeoModelTrainer:
         R = 6371.0  # Radius of the earth in kilometers
 
         # Ensure the coordinates are in tensor format and on the correct device
+        print(f"coord1: {coord1.shape}", f"coord2: {coord2.shape}")
+        # show the first 5 elements of the tensors
+        print(f"coord1: {coord1[:5]}", f"coord2: {coord2[:5]}")
         lat1, lon1 = coord1[:, 0], coord1[:, 1]
         lat2, lon2 = coord2[:, 0], coord2[:, 1]
 
