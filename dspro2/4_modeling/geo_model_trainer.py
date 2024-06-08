@@ -182,8 +182,8 @@ class GeoModelTrainer:
                   train_loss, train_top1_accuracy, train_top3_accuracy, train_top5_accuracy = self.run_epoch(criterion, optimizer, is_train=True)
                   val_loss, val_top1_accuracy, val_top3_accuracy, val_top5_accuracy = self.run_epoch(criterion, optimizer, is_train=False)
 
-              if (self.use_coordinates and val_metric < best_val_metric) or (not self.use_coordinates and val_top1_accuracy > best_val_metric):
-                  if self.use_coordinates:
+              if (self.use_coordinates or self.use_regions and val_metric < best_val_metric) or (not self.use_coordinates or self.use_regions and val_top1_accuracy > best_val_metric):
+                  if self.use_coordinates or self.use_regions:
                       best_val_metric = val_metric
                   else:
                       best_val_metric = val_top1_accuracy
