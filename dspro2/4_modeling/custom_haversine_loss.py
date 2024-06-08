@@ -30,12 +30,16 @@ class GeolocalizationLoss(nn.Module):
 
     def haversine_smooth(self, true_coords, true_geocell, predicted_geocells):
         # Calculate smoothed labels based on the Haversine distance
-        true_geocell_centroid = self.centroids[true_geocell]
-        true_distances = self.haversine_distance(true_coords, true_geocell_centroid.unsqueeze(0))
+        true_geocell_centroid = self.centroids[true_geocell].unsqueeze(0)
+        true_coords = true_coords.unsqueeze(0)
+        print(f"true_coords: {true_coords.shape}")
+        print(f"true_geocell_centroid: {true_geocell_centroid.shape}")
+        true_distances = self.haversine_distance(true_coords, true_geocell_centroid)
 
         smoothed_labels = []
         for i, centroid in enumerate(self.centroids):
-            centroid_distance = self.haversine_distance(true_coords, centroid.unsqueeze(0))
+            centroid = centroid.unsqueeze(0)
+            centroid_distance = self.haversine_distance(true_coords, centroid)
             smoothed_label = torch.exp(-(centroid_distance - true_distances) / self.temperature)
             smoothed_labels.append(smoothed_label)
         smoothed_labels = torch.stack(smoothed_labels).squeeze()
