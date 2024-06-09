@@ -277,15 +277,13 @@ class GeoModelTrainer:
             outputs = self.model(images)
             probabilities = F.softmax(outputs, dim=1)
             loss = criterion(outputs, targets) if not self.use_regions else criterion(outputs, targets, middle_points, coordinates)
-            
-            print(f"Loss: {loss.item()}")
-
+      
             if is_train:
                 loss.backward()
                 optimizer.step()
 
             total_loss += loss.item() * images.size(0)
-            print(f"Total Loss: {total_loss}")
+
             if self.use_coordinates:
                 total_metric += self.mean_spherical_distance(outputs, targets).item() * images.size(0)
             elif self.use_regions:
