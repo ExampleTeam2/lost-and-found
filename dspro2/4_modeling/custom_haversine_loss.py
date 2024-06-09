@@ -7,6 +7,7 @@ class GeolocalizationLoss(nn.Module):
         super(GeolocalizationLoss, self).__init__()
         self.temperature = temperature
         self.rad_torch = torch.tensor(6378137.0, dtype=torch.float64)
+        self.loss_fc = nn.CrossEntropyLoss()
 
     def haversine_distance(self, lat1, lon1, lat2, lon2):
         radius = 6371  # km
@@ -68,6 +69,6 @@ class GeolocalizationLoss(nn.Module):
         print(f"Smoothed labels: {smoothed_labels.shape}, Outputs: {outputs.shape}, Targets: {targets.shape}, True coords: {true_coords.shape}, Haversine distances: {haversine_distances.shape}")
 
         # Compute the cross-entropy loss
-        loss = F.cross_entropy(outputs, targets, weight=smoothed_labels, reduction='mean')
+        loss = self.loss_fc(outputs, smoothed_labels)
         
         return loss
