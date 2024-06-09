@@ -276,7 +276,7 @@ class GeoModelTrainer:
             optimizer.zero_grad()
             outputs = self.model(images)
             probabilities = F.softmax(outputs, dim=1)
-            loss = criterion(outputs, targets) if not self.use_regions else criterion(outputs, targets, middle_points, coordinates)
+            loss = criterion(outputs, targets) if not self.use_regions else criterion(outputs, middle_points, coordinates)
       
             if is_train:
                 loss.backward()

@@ -50,12 +50,10 @@ class GeolocalizationLoss(nn.Module):
         smoothed_labels = torch.nan_to_num(smoothed_labels, nan=0.0, posinf=0.0, neginf=0.0)
         return smoothed_labels
 
-    def forward(self, outputs, targets, geocell_centroids, true_coords):
-        batch_size, num_classes = outputs.size()
+    def forward(self, outputs, geocell_centroids, true_coords):
         device = outputs.device
 
         true_coords = true_coords.to(device)
-        true_geocell_centroids = geocell_centroids[targets]
 
 
         # Compute the haversine distance between the true coordinates and the transformed geocell centroids
@@ -63,8 +61,6 @@ class GeolocalizationLoss(nn.Module):
 
         # Smooth the labels
         smoothed_labels = self.smooth_labels(haversine_distances)
-
-        # print shapes
 
         # Compute the cross-entropy loss
         loss = self.loss_fc(outputs, smoothed_labels)
