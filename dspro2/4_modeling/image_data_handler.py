@@ -21,20 +21,6 @@ def inspect_transformed_images(transformed_images, num_images=5):
         img = transformed_images[i]
         img = transforms.ToPILImage()(img)
         img.show()
-        
-class TestImageDataHandler:
-  def __init__(self, test_path='./test_data.pth', country_to_index_path='./country_to_index.json', batch_size=100):
-    print(f"Loading test data from {os.path.basename(test_path)}")
-    test_data = torch.load(test_path)
-    print("Test data loaded.")
-    images, countries, coordinates, regions = test_data['test_images'], test_data['test_countries'], test_data['test_coordinates'], test_data['test_regions']
-        
-    with open(country_to_index_path, 'r') as f:
-      self.country_to_index = json.load(f)
-    
-    self.region_handler = RegionHandler()
-    
-    self.test_loader = DataLoader(CustomImageDataset(images, coordinates, countries, regions, country_to_index=self.country_to_index, region_to_index=self.region_handler), batch_size=batch_size, shuffle=False)
 
 class ImageDataHandler:
     def __init__(self, list_files, base_transform, augmented_transform, final_transform, preprocessing_config={}, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_additional_save_callback=None, save_test_data=True, random_seed=42, inspect_transformed=False):
