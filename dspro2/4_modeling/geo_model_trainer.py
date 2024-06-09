@@ -303,7 +303,6 @@ class GeoModelTrainer:
 
     if self.use_coordinates or self.use_regions:
         avg_metric = total_metric / len(data_loader.dataset)
-        print(f"Average Loss: {avg_loss:.4f}, Average Distance: {avg_metric:.4f}")
         return avg_loss, avg_metric
     else:
         top1_accuracy = top1_correct / len(data_loader.dataset)
