@@ -9,7 +9,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
-from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152, mobilenet_v2, efficientnet_b1, efficientnet_b3, efficientnet_b4, efficientnet_b7
+from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152, efficientnet_b1, efficientnet_b3, efficientnet_b4, efficientnet_b7
+from torchvision.models import mobilenet_v2, mobilenet_v3_small, mobilenet_v3_large
 from torchvision.models import ResNet18_Weights, ResNet34_Weights, ResNet50_Weights, ResNet101_Weights, ResNet152_Weights
 from torchvision.models.efficientnet import EfficientNet_B1_Weights, EfficientNet_B3_Weights, EfficientNet_B4_Weights, EfficientNet_B7_Weights
 import numpy as np
@@ -65,6 +66,10 @@ class GeoModelTrainer:
           model = resnet152(weights=ResNet152_Weights.DEFAULT)
       elif self.model_type == 'mobilenet_v2':
           model = mobilenet_v2(weights='IMAGENET1K_V2')
+      elif self.model_type == 'mobilenet_v3_small':
+          model = mobilenet_v3_small(weights='IMAGENET1K_V1')
+      elif self.model_type == 'mobilenet_v3_large':
+          model = mobilenet_v3_large(weights='IMAGENET1K_V1')
       elif self.model_type == 'efficientnet_b1':
           model = efficientnet_b1(weights=EfficientNet_B1_Weights.DEFAULT)
       elif self.model_type == 'efficientnet_b3':
@@ -74,7 +79,7 @@ class GeoModelTrainer:
       elif self.model_type == 'efficientnet_b7':
           model = efficientnet_b7(weights=EfficientNet_B7_Weights.DEFAULT)
       else:
-          raise ValueError("Unsupported model type. Supported types are: resnet18, resnet34, resnet50, resnet101, resnet152.")
+          raise ValueError("Unsupported model type. Supported types are: resnet18, resnet34, resnet50, resnet101, resnet152, mobilenet_v2, mobilenet_v3_small, mobilenet_v3_large, efficientnet_b1, efficientnet_b3, efficientnet_b4, efficientnet_b7")
 
       if "resnet" in self.model_type:
           # Modify the final layer based on the number of classes
@@ -104,6 +109,16 @@ class GeoModelTrainer:
           # Initialize weights of the classifier
           nn.init.kaiming_normal_(model.classifier[1].weight, mode='fan_out', nonlinearity='relu')
           nn.init.constant_(model.classifier[1].bias, 0)
+      elif "mobilenet_v3" in self.model_type:
+          if self.model_type == "mobilenet_v3_small":
+              in_features = 1024
+          else:
+              in_features = 1280
+          # Modify the final layer based on the number of classes
+          model.classifier[3] = torch.nn.Linear(in_features=in_features, out_features=self.num_classes, bias=True)
+          # Initialize weights of the classifier
+          nn.init.kaiming_normal_(model.classifier[3].weight, mode='fan_out', nonlinearity='relu')
+          nn.init.constant_(model.classifier[3].bias, 0)
       return model
   
   def coordinates_to_cartesian(self, lon, lat, R=6371):
@@ -166,7 +181,7 @@ class GeoModelTrainer:
                   {"params": [p for n, p in self.model.named_parameters() if not n.startswith('fc')], "lr": config.learning_rate * 0.1},
                   {"params": self.model.fc.parameters(), "lr": config.learning_rate}
               ]
-          elif "efficientnet" in self.model_type or self.model_type == "mobilenet_v2":
+          elif "efficientnet" in self.model_type or "mobilenet" in self.model_type:
               optimizer_grouped_parameters = [
                   {"params": [p for n, p in self.model.named_parameters() if not n.startswith('classifier')], "lr": config.learning_rate * 0.1},
                   {"params": self.model.classifier.parameters(), "lr": config.learning_rate}
