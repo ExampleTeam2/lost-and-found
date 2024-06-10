@@ -1,5 +1,7 @@
 import torch
 import sys
+import requests
+import io
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -8,14 +10,18 @@ from geo_model_trainer import GeoModelTrainer
 from custom_haversine_loss import GeolocalizationLoss
 
 class GeoModelTester(GeoModelTrainer):
-    def __init__(self, datasize, train_dataloader, val_dataloader, test_dataloader, num_classes=2, predict_coordinates=False, country_to_index=None, regionHandler=None, test_data_path=None, predict_regions=True):
+    def __init__(self, datasize, train_dataloader, val_dataloader, test_dataloader, num_classes=2, predict_coordinates=False, country_to_index=None, regionHandler=None, test_data_path=None, predict_regions=False):
         super().__init__(datasize, train_dataloader, val_dataloader, num_classes, predict_coordinates, country_to_index, regionHandler, test_data_path, predict_regions)
         self.test_dataloader = test_dataloader
 
-    def test(self, model_path):
+    def test(self, model_type, model_path):
         # Load the model
-        self.model = self.initialize_model(model_type=self.model_type).to(self.device)
-        self.model.load_state_dict(torch.load(model_path))
+        self.model = self.initialize_model(model_type=model_type).to(self.device)
+        model_response = requests.get(model_path)
+        model_response.raise_for_status()
+        pretrained_weights = io.BytesIO(model_response.content)
+        self.model.load_state_dict(torch.load(pretrained_weights, map_location=self.device))
+
         self.model.eval()
         
         total_loss = 0.0
