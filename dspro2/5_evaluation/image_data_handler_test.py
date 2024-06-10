@@ -1,24 +1,38 @@
 import sys
 import json
+import requests
+import io
 import os
 import torch
 from torch.utils.data import DataLoader
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 sys.path.insert(0, '../4_modeling')
 from custom_image_dataset import CustomImageDataset
 from region_handler import RegionHandler
 
 class TestImageDataHandler:
-  def __init__(self, test_path='./test_data.pth', country_to_index_path='./country_to_index.json', batch_size=100):
-    print(f"Loading test data from {os.path.basename(test_path)}")
-    test_data = torch.load(test_path)
-    print("Test data loaded.")
-    images, countries, coordinates, regions = test_data['test_images'], test_data['test_countries'], test_data['test_coordinates'], test_data['test_regions']
+    def __init__(self, test_path='./test_data.pth', country_to_index_path='./country_to_index.json', batch_size=100, regions=False):
+        self.regions = regions
+        # Load the test data
+        print(f"Loading test data from {os.path.basename(test_path)}")
+        dataset_response = requests.get(test_path)
+        dataset_response.raise_for_status()
+        dataset_file = io.BytesIO(dataset_response.content)
+        test_data = torch.load(dataset_file)
+        print("Test data loaded.")
+        if self.regions:
+            images, countries, coordinates, regions = test_data['test_images'], test_data['test_countries'], test_data['test_coordinates'], test_data['test_regions']
+            self.region_handler = RegionHandler()
+        else:
+            images, countries, coordinates = test_data['test_images'], test_data['test_countries'], test_data['test_coordinates']
+            self.region_handler = False
+            self.region_handler = RegionHandler()
+            
+        # Load the country_to_index mapping
+        json_response = requests.get(country_to_index_path)
+        json_response.raise_for_status()  # Check if the download was successful
+
+        # Load the file into a variable
+        self.country_to_index = json.loads(json_response.text)
         
-    with open(country_to_index_path, 'r') as f:
-      self.country_to_index = json.load(f)
-    
-    self.region_handler = RegionHandler()
-    
-    self.test_loader = DataLoader(CustomImageDataset(images, coordinates, countries, regions, country_to_index=self.country_to_index, region_to_index=self.region_handler), batch_size=batch_size, shuffle=False)
+        self.test_loader = DataLoader(CustomImageDataset(images, coordinates, countries, regions, country_to_index=self.country_to_index, region_to_index=self.region_handler), batch_size=batch_size, shuffle=False)
