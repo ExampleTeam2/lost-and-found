@@ -171,7 +171,6 @@ class GeoModelTrainer:
           if self.use_coordinates:
             criterion = nn.MSELoss()
           elif self.use_regions:
-           # criterion = GeolocalizationLoss(self.regionHandler.region_middle_points.to(self.device), temperature=75)
             criterion = GeolocalizationLoss(temperature=75)
           else:
             criterion = nn.CrossEntropyLoss()
