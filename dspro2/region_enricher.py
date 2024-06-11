@@ -11,9 +11,12 @@ import os
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
+BASE_PATH = CURRENT_DIR + '/3_data_preparation/00_preparing/data/'
+
 class RegionEnricher:
     def __init__(self):
-        self.file_path = CURRENT_DIR + '/data/admin_1_states_provinces.json'
+        self.geojson_file_path = BASE_PATH + 'admin_1_states_provinces.geojson'
+        self.file_path = BASE_PATH + 'admin_1_states_provinces.json'
         warnings.filterwarnings("ignore", message="Geometry is in a geographic CRS")
 
     def load_geojson(self, file):
@@ -78,11 +81,11 @@ class RegionEnricher:
         # to wkts
         self.gdf['middle_point'] = self.gdf['middle_point'].to_wkt()
         self.gdf['inscribed_point'] = self.gdf['inscribed_point'].to_wkt()
-        self.gdf.to_file(CURRENT_DIR + '/data/admin_1_states_provinces.geojson', driver='GeoJSON', encoding='utf-8')
+        self.gdf.to_file(self.geojson_file_path, driver='GeoJSON', encoding='utf-8')
 
 
     def load_enriched_geojson(self):
-        gdf = gpd.read_file(CURRENT_DIR + '/data/admin_1_states_provinces.geojson', driver='GeoJSON', crs='EPSG:4326')
+        gdf = gpd.read_file(self.geojson_file_path, driver='GeoJSON', crs='EPSG:4326')
         region_names = gdf['region_name'].values
         # assert that the region names are unique and there are no missing values
         assert gdf['region_name'].notnull().all()
