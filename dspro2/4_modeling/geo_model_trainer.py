@@ -190,13 +190,17 @@ class GeoModelTrainer:
           scheduler = StepLR(optimizer, step_size=10, gamma=0.1)
 
           for epoch in range(config.epochs):
-              if self.use_coordinates or self.use_regions:
+              if self.use_coordinates:
                   train_loss, train_metric = self.run_epoch(criterion, optimizer, is_train=True)
                   val_loss, val_metric = self.run_epoch(criterion, optimizer, is_train=False)
+              elif self.use_regions:
+                  train_loss, train_metric, train_top1_accuracy, train_top3_accuracy, train_top5_accuracy, train_top1_correct_country, train_top3_correct_country, train_top5_correct_country = self.run_epoch(criterion, optimizer, is_train=True)
+                  val_loss, val_metric, val_top1_accuracy, val_top3_accuracy, val_top5_accuracy, val_top1_correct_country, val_top3_correct_country, val_top5_correct_country = self.run_epoch(criterion, optimizer, is_train=False)
               else:
                   train_loss, train_top1_accuracy, train_top3_accuracy, train_top5_accuracy = self.run_epoch(criterion, optimizer, is_train=True)
                   val_loss, val_top1_accuracy, val_top3_accuracy, val_top5_accuracy = self.run_epoch(criterion, optimizer, is_train=False)
 
+              # Even for predicting regions, always use the best model based on validation distance
               if (self.use_coordinates or self.use_regions and val_metric < best_val_metric) or (not self.use_coordinates or self.use_regions and val_top1_accuracy > best_val_metric):
                   if self.use_coordinates or self.use_regions:
                       best_val_metric = val_metric
@@ -218,12 +222,31 @@ class GeoModelTrainer:
               scheduler.step()
 
               # Log metrics to wandb
-              if self.use_coordinates or self.use_regions:
+              if self.use_coordinates:
                 wandb.log({
                     "Train Loss": train_loss,
                     "Train Distance (km)": train_metric,
                     "Validation Loss": val_loss,
                     "Validation Distance (km)": val_metric
+                })
+              elif self.use_regions:
+                wandb.log({
+                    "Train Loss": train_loss,
+                    "Train Distance (km)": train_metric,
+                    "Train Accuracy Top 1": train_top1_accuracy,
+                    "Train Accuracy Top 3": train_top3_accuracy,
+                    "Train Accuracy Top 5": train_top5_accuracy,
+                    "Train Accuracy Top 1 Country": train_top1_correct_country,
+                    "Train Accuracy Top 3 Country": train_top3_correct_country,
+                    "Train Accuracy Top 5 Country": train_top5_correct_country,
+                    "Validation Loss": val_loss,
+                    "Validation Distance (km)": val_metric,
+                    "Validation Accuracy Top 1": val_top1_accuracy,
+                    "Validation Accuracy Top 3": val_top3_accuracy,
+                    "Validation Accuracy Top 5": val_top5_accuracy,
+                    "Validation Accuracy Top 1 Country": val_top1_correct_country,
+                    "Validation Accuracy Top 3 Country": val_top3_correct_country,
+                    "Validation Accuracy Top 5 Country": val_top5_correct_country
                 })
               else:
                 wandb.log({
@@ -278,8 +301,11 @@ class GeoModelTrainer:
     total_loss = 0.0
     total_metric = 0.0
     top1_correct = 0
+    top1_correct_country = 0
     top3_correct = 0
+    top3_correct_country = 0
     top5_correct = 0
+    top5_correct_country = 0
     data_loader = self.train_dataloader if is_train else self.val_dataloader
     middle_points = self.regionHandler.region_middle_points.to(self.device) if self.use_regions else None
 
@@ -300,9 +326,9 @@ class GeoModelTrainer:
 
             if self.use_coordinates:
                 total_metric += self.mean_spherical_distance(outputs, targets).item() * images.size(0)
-            elif self.use_regions:
+            if self.use_regions:
                 total_metric += self.mean_spherical_distance(middle_points[outputs.argmax(dim=1)], middle_points[targets]).item() * images.size(0)
-            else:
+            if not self.use_coordinates:
                 # Get the top 5 predictions for each image
                 _, predicted_top5 = probabilities.topk(5, 1, True, True)
 
@@ -312,14 +338,31 @@ class GeoModelTrainer:
                 top1_correct += correct[:, 0].sum().item()
                 top3_correct += correct[:, :3].sum().item()
                 top5_correct += correct[:, :5].sum().item()
+                if self.use_regions:
+                    # Get the country for each region
+                    target_countries = self.regionHandler.get_country_from_index(targets)
+                    predicted_countries = self.regionHandler.get_country_from_index(outputs.argmax(dim=1))
+                    # Calculate different accuracies
+                    top1_correct_country += sum([1 for i in range(len(target_countries)) if target_countries[i] == predicted_countries[i]])
+                    top3_correct_country += sum([1 for i in range(len(target_countries)) if target_countries[i] in predicted_countries[i:i+3]])
+                    top5_correct_country += sum([1 for i in range(len(target_countries)) if target_countries[i] in predicted_countries[i:i+5]])
 
     avg_loss = total_loss / len(data_loader.dataset)
-
+    
     if self.use_coordinates or self.use_regions:
         avg_metric = total_metric / len(data_loader.dataset)
-        return avg_loss, avg_metric
-    else:
+
+    if not self.use_coordinates:
         top1_accuracy = top1_correct / len(data_loader.dataset)
         top3_accuracy = top3_correct / len(data_loader.dataset)
         top5_accuracy = top5_correct / len(data_loader.dataset)
+
+    if self.use_coordinates:
+        return avg_loss, avg_metric
+    elif self.use_regions:
+        top1_correct_country = top1_correct_country / len(data_loader.dataset)
+        top3_correct_country = top3_correct_country / len(data_loader.dataset)
+        top5_correct_country = top5_correct_country / len(data_loader.dataset)
+        return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country
+    else:
         return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy
