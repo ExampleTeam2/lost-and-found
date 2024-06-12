@@ -32,7 +32,6 @@ class RegionHandler(Dataset):
     def get_middle_point_by_list_of_idx(self, idx_list):
         return [self.region_middle_points[idx] for idx in idx_list]
       
-    def get_country_from_index(self, idx):
-        regions = self.region_names[idx]
-        countries = [region.split("_")[0] for region in regions]
+    def get_country_from_index(self, idx_list):
+        countries = [region.split("_")[0] for region in [self.region_names[idx] for idx in idx_list]]
         return countries
