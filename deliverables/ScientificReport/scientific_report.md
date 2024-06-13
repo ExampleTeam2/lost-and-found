@@ -110,6 +110,10 @@ Enriching (Singleplayer coordinates, Multiplayer names)
 
 Regions Enriching (Source, Mapping)
 
+## Region Enriching
+So to predict the Region of the image, we first searched for a list of regions around the world. And decide to use the geojson file from Natural Earth.
+
+
 ## Mapping to a distribution
 
 As mentioned in the previous section (Web scraping), our singleplayer data is skewed towards a few countries, with some countries only appearing very rarely. To address this, we are mapping our singleplayer data to the country distribution of our multiplayer data. This allows us to have a better distribution while still not having every country appear with the same frequency to account for size and coverage differences. It, however, comes with the downside of not being able to use all of our data, although some tests showed that using all of our data unmapped performed worse <-CHECK AND MENTION RESULTS>.
