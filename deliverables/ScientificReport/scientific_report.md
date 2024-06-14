@@ -13,7 +13,8 @@ style: nestedList
 includeLinks: true
 ```
 
-# Business Understanding
+# Introduction
+## Problem description (not finished, also include RQ or Hypothesis)
 This project explores the development of an Image Classification model, focusing on simple street-view images grouped by countries to predict the country where an image was taken. Given limited prior experience with Image Classification, this initiative aims to enhance understanding and skills in this domain. The first objective is to create a model capable of identifying the country from a given image. Building upon this, a second model will be developed to predict the exact district of the image, providing a more precise location than just the country.
 
 The main goal is to develop a robust Image Classification model that can serve as a foundational tool for various applications. This overarching objective supports the specific sub-goals of predicting the country and coordinates of an image. This leads to the question: for what main purposes could an image classifier for countries or coordinates be valuable? By exploring potential applications, the project aims to demonstrate the broader utility of the developed models in real-world scenarios.
@@ -24,13 +25,11 @@ The main goal is to develop a robust Image Classification model that can serve a
 - **Discovering new travel destinations:** Have you ever encountered stunning images of places on Instagram or other social media platforms and wondered where they were taken? Our image classifier can help you with that. By analyzing the image, our classifier can identify the location and provide you with the information you need to plan your next visit to this amazing place. This way, you can discover new and exciting travel destinations that you may have never known about before.
 - **Classification as a service**: With this service, we will help other companies or data science projects label their data. Sometimes companies want to block, permit, or deploy individual versions of their applications in different countries. Some countries have more restrictions for deploying applications, therefore the image predictor can help the companies have the right version on the right devices for these countries.
 
-# Literature review
-
-## Common approaches
+## Literature review / State of the Art
 Follows...
 
-## Common architectures
-Follows...
+___
+Here are written the common approaches and what makes them different and what we want to do better in our project. Als write why they used their approaches from the papers.
 
 #### Possible Sources
 [EfficientNet Rethinking Model Scaling for CNNs](https://arxiv.org/pdf/1905.11946)
@@ -47,10 +46,13 @@ ___
 1. **Foundation of Knowledge:** A literature review establishes the theoretical foundation and current state of research in the field. By requiring a minimum number of sources, students are encouraged to engage deeply with existing literature, ensuring a comprehensive understanding of the subject.  
 2. **Critical Thinking and Contextualization:** Analyzing and synthesizing various sources enhances critical thinking skills. It allows students to understand different perspectives and place their work within the broader context of the field.
 ___
+## Contributions
+Follows...
 
-# Data collection
+# Methods (REPRODUCIBILIY is the main goal)
+## Data collection
 
-## Data source
+### Data source
 
 When it comes to relatively uniform street imagery, there are not many sources. Google Street View <-LINK> being by far the biggest. But instead of sourcing our images directly from Google, we wanted to have a more representative distribution, as well as a more interactive demonstration.
 
@@ -76,7 +78,7 @@ To remedy this, we instead use the country distribution of our multiplayer games
 
 <-POTENTIALLY INSERT MAPPED SINGLEPLAYER GRAPH>
 
-## Web scraping
+### Web scraping
 
 To collect this data we built our own scraper, utilizing the testing and browser automation framework "Playwright" <-LINK>. We then deployed 5 parallel instances of this script to a server and periodically retrieved the newly collect data.
 
@@ -95,9 +97,9 @@ To make sure our data is collected correctly, we manually inspected it periodica
 ___
 No Requirements, it is good to show what we did to achieve our goal with data. Maybe also ask Umberto if we should include it.
 ___
-# Data processing
+## Data processing
 
-## Resizing of the images
+### Resizing of the images
 
 We can't train the classifier using images in a high resolution, because our resources are limited, and also often images (like from missing persons) are also very low quality. So we decided to reduce the resolution, at the beginning of the processing, about the 1/4 of the original resolution of 1280p x 720p. This also helps to move the images for learning to the server or also between us and also loading takes lot less time for future processing steps. 
 
@@ -110,13 +112,13 @@ Enriching (Singleplayer coordinates, Multiplayer names)
 
 Regions Enriching (Source, Mapping)
 
-## Region Enriching
+### Region Enriching
 
 So to predict the Region of the image, we first searched for a list of regions around the world. And decide to use the geojson file from Natural Earth.
 Since for each region we had a list of coordinates, which marks the border of the region, we had to get the middle point of each one. Where the python library "geopands" comes in handy.
 This library has the advantage to be able to work with geojson files and to have an integrated middle point calculation function. In addition, we add a unique region_name for each region using the name of the region + country name + id. This is needed since some region names have similar or the same name. 
 After this preparation, we used the middle point to get the region for each image using their coordinates using k-nearest neighbor method. 
-## Mapping to a distribution
+### Mapping to a distribution
 
 As mentioned in the previous section (Web scraping), our singleplayer data is skewed towards a few countries, with some countries only appearing very rarely. To address this, we are mapping our singleplayer data to the country distribution of our multiplayer data. This allows us to have a better distribution while still not having every country appear with the same frequency to account for size and coverage differences. It, however, comes with the downside of not being able to use all of our data, although some tests showed that using all of our data unmapped performed worse <-CHECK AND MENTION RESULTS>.
 
@@ -126,7 +128,7 @@ Finally, we saved this as a list of file names using our "data-loader", and comm
 
 <-POTENTIALLY INSERT MAPPED SINGLEPLAYER GRAPH>
 
-## Filtering of data
+### Filtering of data
 
 To address issues with our scraping's inherently unstable nature, as well as the big variety of Google Street View images, we had to do some automated filtering of unsuitable data. This consisted of both filtering our images, but also the corresponding data. After filtering we again saved this as a list of file names using our "data-loader", and commit it to our repository.
 
@@ -141,10 +143,6 @@ ___
 1. **Core Competency in Data Science:** Data processing is a fundamental step in any data science project. Demonstrating this process shows the student's ability to handle and prepare data for analysis, which is a critical skill in the field.
 2. **Transparency and Reproducibility:** Detailing the data processing steps ensures transparency and aids in the reproducibility of the results, which are key aspects of scientific research.
 ___
-
-# Methods
-
-Follows...
 
 To talk about:
 
@@ -163,11 +161,13 @@ ___
 1. **Understanding and Application:** This section allows students to demonstrate their understanding of various methodologies and their ability to apply appropriate techniques to their specific project.
 2. **Rationale and Justification:** Discussing the methods used provides insight into the student’s decision-making process and the rationale behind choosing specific approaches.
 ___
-# Model Validation
 
-## Common approaches for model evaluation
-Follows...
+___
+## Fine-tuning models
 
+### Model architectures 
+### Data augmentation
+### Hyperparameters 
 ## Human baseline performance
 
 ### Collection of baseline scores
@@ -177,21 +177,13 @@ To compare our model to the performance of a human classifier, we would first ha
 
 Follows...
 
-## Model performance on other datasets
-Follows...
+## Machine Learning Operations (MLOps)
 
-___
-**Requirements:**
-1. Ensuring Model Reliability: Model validation is crucial for assessing the accuracy and reliability of the model. This section shows how the student evaluates the performance and generalizability of their model.
-2. Critical Evaluation: It encourages students to critically evaluate their model’s performance, understand its limitations, and discuss potential improvements.
-___
-# Machine Learning Operations (MLOps)
-
-## Project structure
+### Project structure
 
 As we did for our last project ("DSPRO1"), we are using a "monorepo" setup with a pipeline-style setup consisting of numbered folder and subfolders, each representing different stages and sub-stages of our dataflow, from data collection to model training. Every stage consists of at least one Jupyter Notebook, with more helpers and reused python code dispersed throughout the project. Each notebook saves the generated data in its current folder, making the flow obvious. Within each sub-step, the notebooks can be run in arbitrary order because they are not inter-dependent.
 
-## Handling a lot of files
+### Handling a lot of files
 
 Differing from our last project, however, is the amount of data. With our scraping generating hundreds of thousands of images, we could not store them in our git repository. Instead, we opted for storing them in our server we had used for scraping, although in a scaled and already enriched format, making it quicker to get our training and repository up and running on a new machine. This server is public to allow for our results to be reproduced.
 
@@ -222,4 +214,39 @@ ___
 **Requirements:**
 1. Practical Application: This section emphasizes the practical aspect of machine learning. It’s not just about building models but also about deploying them effectively in real-world scenarios.
 2. Bridging Theory and Practice: It allows students to demonstrate their ability to translate theoretical knowledge into practical applications, showcasing their readiness for industry challenges.
+___
+
+
+## Model performance on other datasets
+Follows...
+
+___
+**Requirements:**
+1. Ensuring Model Reliability: Model validation is crucial for assessing the accuracy and reliability of the model. This section shows how the student evaluates the performance and generalizability of their model.
+2. Critical Evaluation: It encourages students to critically evaluate their model’s performance, understand its limitations, and discuss potential improvements.
+___
+
+# Results (and discussions)
+
+## Predicting coordinates?
+Follows...
+
+## Predicting countries 
+Follows...
+
+## Predicting regions
+
+Follows...
+___
+
+List here all results in plots, confusion matrix  and so on. The goal of these sections is to present our result and explain how they help in solving the problem we are working on, and to answer the research questions we are trying to answer.
+___
+
+# Conclusions
+
+Follows...
+
+
+___
+Here we should discuss the implications of our results, our limitations, and possible further research possibilities. We should be very honest especially about limitations.
 ___
