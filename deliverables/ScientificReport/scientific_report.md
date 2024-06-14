@@ -33,7 +33,7 @@ The main goal is to develop a robust Image Classification model that can serve a
 Follows...
 
 ___
-Here are written the common approaches and what makes them different and what we want to do better in our project. Als write why they used their approaches from the papers.
+Here are written the common approaches and what makes them different and what we want to do better in our project. Also write why they used their approaches from the papers and where we differ from them, what is new...
 
 #### Possible Sources
 [EfficientNet Rethinking Model Scaling for CNNs](https://arxiv.org/pdf/1905.11946)
@@ -245,6 +245,8 @@ Follows...
 ___
 
 List here all results in plots, confusion matrix  and so on. The goal of these sections is to present our result and explain how they help in solving the problem we are working on, and to answer the research questions we are trying to answer.
+
+Our Hypothesis: The main goal of this student project is to determine if an Image Classification Model can outperform humans in guessing the countries or regions of images based solely on the image itself, without additional information.
 ___
 
 # Conclusions
