@@ -280,6 +280,8 @@ class GeoModelTrainer:
             # write json file
             shutil.copy(self.test_data_path, wandb_test_data_path)
             wandb.save(wandb_test_data_path)
+            # Only save the test data once
+            self.test_data_path = None
               
           torch.save(best_model.state_dict(), wandb_model_path)
           wandb.save(wandb_model_path)
