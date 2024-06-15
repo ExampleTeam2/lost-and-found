@@ -161,6 +161,7 @@ Data augmentation
 ## Regions with custom loss
 
 For the region-prediction we use a custom loss function. Which, in short text, is a loss function  not only look if the correct region is predicted, it considers also the distance to the correct coordinates. Which means if the predicted region is only slightly off then the loss is not that big like if it is far off.
+There is the paper “PIGEON: Predicting Image Geolocations” from Stanford University, which comes in handy for this task. They're using the haversine smooth loss function.
 
 
 
