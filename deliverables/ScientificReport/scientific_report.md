@@ -17,7 +17,7 @@ includeLinks: true
 ## Problem description
 Nowadays, images are often automatically enriched with various data from different sensors within devices, including location metadata. However, this metadata often gets lost when images are sent through multiple applications or when devices are set not to track locations for privacy reasons. As a result, images may initially have metadata, but it is lost when shared with friends or published online. This raises the question: Is it possible to re-enrich these images with their location after the metadata is lost?
 
-The main goal of this student project is to determine if an Image Classification Model can outperform humans in guessing the countries or regions of images based solely on the image itself, without additional information.
+The main goal of this project is to determine if an Image Classification Model can outperform humans in guessing the countries or regions of images based solely on images with low resolution and no additional information.
 ### Project Overview
 This project explores the development of an Image Classification model, focusing on simple street-view images grouped by countries to predict the country where an image was taken. Given limited prior experience with Image Classification, this initiative aims to enhance understanding and skills in this domain. The first objective is to create a model capable of identifying the country from a given image. Building upon this, a second model will be developed to predict the exact region of the image, providing a more precise location than just the country.
 
@@ -29,29 +29,26 @@ The main goal is to develop a robust Image Classification model that can serve a
 - **Discovering new travel destinations:** Have you ever encountered stunning images of places on Instagram or other social media platforms and wondered where they were taken? Our image classifier can help you with that. By analyzing the image, our classifier can identify the location and provide you with the information you need to plan your next visit to this amazing place. This way, you can discover new and exciting travel destinations that you may have never known about before.
 - **Classification as a service**: With this service, we will help other companies or data science projects label their data. Sometimes companies want to block, permit, or deploy individual versions of their applications in different countries. Some countries have more restrictions for deploying applications, therefore the image predictor can help the companies have the right version on the right devices for these countries.
 
-## Literature review / State of the Art
-Follows...
+## State of the Art
 
-___
-Here are written the common approaches and what makes them different and what we want to do better in our project. Also write why they used their approaches from the papers and where we differ from them, what is new...
+Recent advancements in deep learning have significantly enhanced the ability to determine the geographical location of an image. DeepGeo, developed by Suresh et al., leverages visual cues such as vegetation and man-made structures like roads and signage to infer locations. This approach aims to replicate the human ability to use environmental indicators and prior knowledge for geolocation (Suresh et al., 2018). The DeepGeo model restricts its scope to the United States, utilizing panoramic viewpoints to classify images based on their state. Each input sample consists of four images taken at the same location, oriented in cardinal directions, which are then classified into one of 50 state labels (Suresh et al., 2018).
 
-#### Possible Sources
-[EfficientNet Rethinking Model Scaling for CNNs](https://arxiv.org/pdf/1905.11946)
-[MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/pdf/1801.04381)
-[Deep Residual Learning for Image Recognition / ResNet](https://arxiv.org/pdf/1512.03385)
-[Efficient ResNets: Residual Network Design](https://arxiv.org/pdf/2306.12100)
-[Pigeon for calculating loss](https://arxiv.org/pdf/2307.05845)
+In contrast, PlaNet, developed by Weyand et al., tackles global image geolocation. It employs a deep convolutional neural network based on the Inception architecture, trained on 126 million geotagged photos from Flickr. PlaNet's method involves partitioning the world map into multi-scale geographic cells and classifying test images into these cells. Despite its large dataset and extensive training, PlaNet achieves a country-level accuracy of only 30% on its test set (Weyand et al., 2016). M2GPS, developed by Hays and Efros, is another significant baseline in scalable image geolocation. This model performs data-driven localization by computing the closest match via scene matching with a large corpus of 6 million geotagged Flickr images, utilizing features such as color and geometric information. IM2GPS's approach demonstrates the importance of leveraging large datasets for effective geolocation (Hays and Efros, 2008)​​.
 
-[Data Augmentation and overfitting](https://arxiv.org/abs/2201.03299)
-[Data Augmentation in Training CNNs](https://arxiv.org/pdf/2307.06855)
+Banerjee’s work emphasizes the classification task of predicting image location solely based on pixel data. Their research highlights the use of CNNs and transfer learning to achieve high-accuracy models capable of superhuman performance. CNNs are particularly effective due to their ability to capture low-level and complex spatial patterns (Banerjee, 2023). Dayton et al. explored a similar task by using a ResNet-50 CNN pre-trained on ImageNet for classifying street view images from the game GeoGuessr. Their model utilized transfer learning to refine the pre-trained network on a dataset specifically curated for the task, resizing images to 224x224 pixels for input. By fine-tuning the last layers of ResNet-50, they achieved a test accuracy of over 70% for 20 different countries, highlighting the efficacy of leveraging pre-trained models for geolocation tasks (Dayton et al., 2024).
 
-___
-**Requirements (2-3 pages with a minimum of 7 sources):**
-1. **Foundation of Knowledge:** A literature review establishes the theoretical foundation and current state of research in the field. By requiring a minimum number of sources, students are encouraged to engage deeply with existing literature, ensuring a comprehensive understanding of the subject.  
-2. **Critical Thinking and Contextualization:** Analyzing and synthesizing various sources enhances critical thinking skills. It allows students to understand different perspectives and place their work within the broader context of the field.
-___
+Another notable model is PIGEON, which combines semantic geocell creation with multi-task contrastive pretraining and a novel loss function. PIGEON is trained on GeoGuessr data and demonstrates the capability to place over 40% of its guesses within 25 kilometers of the target location globally, which is remarkable. This model highlights the importance of using diverse datasets and innovative training techniques to enhance geolocation accuracy (Haas et al., 2024). While these models exhibit high accuracy in controlled conditions, they often rely on high-resolution images, multiple perspectives, and enriched datasets that do not reflect real-world scenarios. For instance, DeepGeo's use of panoramic images and PlaNet's extensive dataset of geotagged Flickr photos introduce biases towards urban areas and well-known landmarks, limiting their effectiveness in arbitrary or rural locations (Suresh et al., 2018). Additionally, these models struggle to generalize to lower-resolution images and more diverse datasets that include unseen locations, as highlighted by the performance discrepancies observed in models like PIGEON when applied to varied datasets (Haas et al., 2024).
+
+Furthermore, Banerjee’s research on digital image classification since the 1970s underscores the evolution from using textural and colour features to the current reliance on CNNs. This historical perspective reveals that early models had limited discriminative power and robustness, which were significantly improved with the advent of SIFT (Scale-invariant feature transform) and visual Bag-of-Words models. However, the transition to CNNs marked a pivotal shift due to their superior ability to capture both low-level and high-level features (Banerjee, 2023). Dayton et al. further illustrate the application of transfer learning in geolocation by refining a pre-trained ResNet-50 model on a specific geolocation task. Their work highlights the importance of data augmentation and hyperparameter tuning in improving model performance, as well as the need for balanced datasets to reduce bias and enhance generalizability (Dayton et al., 2024).
+
+To develop more robust and universally applicable geolocation models, it is essential to focus on creating systems that can operate effectively with lower-resolution images and without the need for panoramic views or extensive enriched datasets. This involves training models on diverse, real-world datasets that include a variety of image types, from urban streets to rural landscapes, captured under different conditions and perspectives. By doing so, the models can better mimic the conditions under which humans typically use images for geolocation, such as in social media posts, emergency situations, or historical photo analysis. For instance, PIGEOTTO, an evolution of PIGEON, takes a single image per location and is trained on a larger, highly diverse dataset of over 4 million photos from Flickr and Wikipedia, excluding Street View data. This approach demonstrates the model's ability to generalize to unseen places and perform well in realistic scenarios without the need for multiple images per location (Haas et al., 2024).
+
+While current state-of-the-art geolocation models have made significant strides, they often rely on enriched data and specific conditions that limit their generalizability. With our project we focus on developing models that can accurately geolocate images in more realistic scenarios, using low-resolution images. Additionally, expanding the dataset to include more countries, ensuring a balanced and distributed dataset, and addressing hardware limitations by utilizing lower image sizes are crucial steps for the problems of the state-of-the-art approaches. This will lead to more generalized models that enhance the practical utility of geolocation technologies across various real-world applications, from aiding in disaster response to rediscovering family histories and beyond.
 ## Contributions
-Follows...
+
+This paper has four main contributions. Firstly, we address the limitations of current geolocation models by developing a novel approach that leverages low-resolution images, enabling accurate geolocation in more realistic and diverse scenarios. Secondly, we enhance the dataset by expanding it to include more countries, ensuring a balanced and distributed representation, which is crucial for mitigating biases present in state-of-the-art models. Thirdly, we tackle hardware limitations by optimizing image sizes, making the model more accessible and efficient for deployment on various hardware platforms. Finally, we propose a new methodology for training and fine-tuning our model, incorporating the latest advancements in transfer learning and data augmentation techniques, which significantly improve the model's performance and generalizability across different real-world applications. 
+
+Our contributions aim to advance the field of image geolocation, making it more practical and effective for a wide range of applications, from aiding in disaster response to rediscovering family histories and beyond. By addressing these key challenges, we believe our work will pave the way for the development of more robust and universally applicable geolocation technologies.
 
 # Methods (REPRODUCIBILIY is the main goal)
 ## Data collection
@@ -172,11 +169,19 @@ ___
 ___
 
 ___
-## Fine-tuning models
+## Transfer Learning
 
 ### Model architectures 
+Follows... also take the literature from the sources! Without them, we just have 6 and need 7 in total.
+
+___
+Sources:
+[5]: [EfficientNet Rethinking Model Scaling for CNNs](https://arxiv.org/abs/1905.11946)
+[6]: [MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/abs/1801.04381)
+[7]: [Deep Residual Learning for Image Recognition / ResNet](https://arxiv.org/abs/1512.03385)
+___
 ### Data augmentation
-### Hyperparameters 
+### Hyperparameter tuning
 ## Human baseline performance
 
 ### Collection of baseline scores
@@ -235,7 +240,7 @@ ___
 2. Critical Evaluation: It encourages students to critically evaluate their model’s performance, understand its limitations, and discuss potential improvements.
 ___
 
-# Results (and discussions)
+# Experiments and Results (and also discussions)
 
 ## Predicting countries 
 Follows...
@@ -258,3 +263,11 @@ Follows...
 ___
 Here we should discuss the implications of our results, our limitations, and possible further research possibilities. We should be very honest especially about limitations.
 ___
+# References
+
+1. Suresh, Sudharshan, Nathaniel Chodosh, and Montiel Abello. “DeepGeo: Photo Localization with Deep Neural Network.” arXiv, February 16, 2016. https://arxiv.org/abs/1810.03077.
+2. Weyand, T., Kostrikov, I., & Philbin, J. “PlaNet - Photo Geolocation with Convolutional Neural Networks.” arXiv, October 6, 2018. https://arxiv.org/abs/1602.05314.
+3. James Hays, Alexei A. Efros. “IM2GPS: estimating geographic information from a single image. Proceedings of the IEEE Conf. on Computer Vision and Pattern Recognition (CVPR)”. graphics, n.d., 2008. http://graphics.cs.cmu.edu/projects/im2gps/.
+4. Banerjee, Arsh. “Image Geolocation with Computer Vision,” arshbanerjee, May 9, 2023.  http://www.arshbanerjee.com/uploads/paper/3bda9_20230723185809.pdf
+5. Haas, Lukas, Michal Skreta, Silas Alberti, and Chelsea Finn. “PIGEON: Predicting Image Geolocations.” arXiv, May 28, 2024. https://arxiv.org/abs/2307.05845.
+6. Dayton, Finn, Jeffrey Heo, and Eric Werner. “CNN Plays Geoguessr: Transfer Learning on ResNet50 for Classifying Street View Images,” cs229, n.d., 2023. https://www.finndayton.com/CS229_Final_Report.pdf
