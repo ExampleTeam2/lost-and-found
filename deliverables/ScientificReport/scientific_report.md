@@ -252,7 +252,7 @@ List here all results in plots, confusion matrix  and so on. The goal of these s
 Our Hypothesis: The main goal of this student project is to determine if an Image Classification Model can outperform humans in guessing the countries or regions of images based solely on the image itself, without additional information.
 ___
 
-# Conclusions
+# Conclusions and Future Work
 
 Follows...
 
