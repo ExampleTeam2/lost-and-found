@@ -12,7 +12,6 @@ title: # Table of content
 style: nestedList
 includeLinks: true
 ```
-
 # Introduction
 ## Problem description
 Nowadays, images are often automatically enriched with various data from different sensors within devices, including location metadata. However, this metadata often gets lost when images are sent through multiple applications or when devices are set not to track locations for privacy reasons. As a result, images may initially have metadata, but it is lost when shared with friends or published online. This raises the question: Is it possible to re-enrich these images with their location after the metadata is lost?
@@ -42,8 +41,6 @@ Another notable model is PIGEON, which combines semantic geocell creation with m
 Furthermore, Banerjee’s research on digital image classification since the 1970s underscores the evolution from using textural and colour features to the current reliance on CNNs. This historical perspective reveals that early models had limited discriminative power and robustness, which were significantly improved with the advent of SIFT (Scale-invariant feature transform) and visual Bag-of-Words models. However, the transition to CNNs marked a pivotal shift due to their superior ability to capture both low-level and high-level features (Banerjee, 2023). Dayton et al. further illustrate the application of transfer learning in geolocation by refining a pre-trained ResNet-50 model on a specific geolocation task. Their work highlights the importance of data augmentation and hyperparameter tuning in improving model performance, as well as the need for balanced datasets to reduce bias and enhance generalizability (Dayton et al., 2024).
 
 To develop more robust and universally applicable geolocation models, it is essential to focus on creating systems that can operate effectively with lower-resolution images and without the need for panoramic views or extensive enriched datasets. This involves training models on diverse, real-world datasets that include a variety of image types, from urban streets to rural landscapes, captured under different conditions and perspectives. By doing so, the models can better mimic the conditions under which humans typically use images for geolocation, such as in social media posts, emergency situations, or historical photo analysis. For instance, PIGEOTTO, an evolution of PIGEON, takes a single image per location and is trained on a larger, highly diverse dataset of over 4 million photos from Flickr and Wikipedia, excluding Street View data. This approach demonstrates the model's ability to generalize to unseen places and perform well in realistic scenarios without the need for multiple images per location (Haas et al., 2024).
-
-While current state-of-the-art geolocation models have made significant strides, they often rely on enriched data and specific conditions that limit their generalizability. With our project we focus on developing models that can accurately geolocate images in more realistic scenarios, using low-resolution images. Additionally, expanding the dataset to include more countries, ensuring a balanced and distributed dataset, and addressing hardware limitations by utilizing lower image sizes are crucial steps for the problems of the state-of-the-art approaches. This will lead to more generalized models that enhance the practical utility of geolocation technologies across various real-world applications, from aiding in disaster response to rediscovering family histories and beyond.
 ## Contributions
 
 This paper has four main contributions. Firstly, we address the limitations of current geolocation models by developing a novel approach that leverages low-resolution images, enabling accurate geolocation in more realistic and diverse scenarios. Secondly, we enhance the dataset by expanding it to include more countries, ensuring a balanced and distributed representation, which is crucial for mitigating biases present in state-of-the-art models. Thirdly, we tackle hardware limitations by optimizing image sizes, making the model more accessible and efficient for deployment on various hardware platforms. Finally, we propose a new methodology for training and fine-tuning our model, incorporating the latest advancements in transfer learning and data augmentation techniques, which significantly improve the model's performance and generalizability across different real-world applications. 
@@ -94,26 +91,18 @@ Initially we had a lot of issues with stability, especially with our parallelize
 To make sure our data is collected correctly, we manually inspected it periodically. Any faults we noticed in the images like black screens and blurring, we would address later in our filtering. However, we also had to inspect whether the coordinates and countries were accurate.
 
 (After an initial run of our singleplayer script, we noticed that the way we collected coordinates in multiplayer did no longer work and had been collecting incorrect coordinates for tens of thousands of images. To address this, we built an additional script looking up the correct coordinates using the "game id", this was a lot quicker than the collection of new data, allowing us to correct the mistake quite quickly. We also then used this new way of looking up coordinates for our collection script.)
-
-___
-No Requirements, it is good to show what we did to achieve our goal with data. Maybe also ask Umberto if we should include it.
-___
 ## Data processing
 
 ### Resizing of the images
 
 We can't train the classifier using images in a high resolution, because our resources are limited, and also often images (like from missing persons) are also very low quality. So we decided to reduce the resolution, at the beginning of the processing, about the 1/4 of the original resolution of 1280p x 720p. This also helps to move the images for learning to the server or also between us and also loading takes lot less time for future processing steps. 
 
-
-To talk about:
-
-Enriching (Singleplayer coordinates, Multiplayer names)
+### Enriching (Singleplayer coordinates, Multiplayer names) -> ls
+Follows...
 
 (Issues with reverse geocoding, country name matching)
 
-Regions Enriching (Source, Mapping)
-
-### Region Enriching
+### Region Enriching (Source, Mapping)
 
 So to predict the Region of the image, we first searched for a list of regions around the world. And decide to use the geojson file from Natural Earth.
 Since for each region we had a list of coordinates, which marks the border of the region, we had to get the middle point of each one. Where the python library "geopands" comes in handy.
@@ -149,11 +138,7 @@ To talk about:
 
 Basic method (Cross-entropy, ...)
 
-DIfferent pre-trained models
-
 (Coordinates attempt)
-
-Data augmentation
 
 ## Regions with custom loss
 
@@ -168,7 +153,7 @@ ___
 ___
 ## Transfer Learning
 
-### Model architectures 
+### Model architectures -> ls
 Follows... also take the literature from the sources! Without them, we just have 6 and need 7 in total. 
 
 ___
@@ -177,8 +162,8 @@ Sources:
 [6]: [MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/abs/1801.04381)
 [7]: [Deep Residual Learning for Image Recognition / ResNet](https://arxiv.org/abs/1512.03385)
 ___
-### Data augmentation
-### Hyperparameter tuning
+### Data augmentation -> ls
+### Hyperparameter tuning -> ls
 ## Human baseline performance
 
 ### Collection of baseline scores
