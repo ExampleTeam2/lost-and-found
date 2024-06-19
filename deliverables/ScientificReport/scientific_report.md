@@ -145,6 +145,46 @@ Basic method (Cross-entropy, ...)
 For the region-prediction we use a custom loss function. Which, in short text, is a loss function  not only look if the correct region is predicted, it considers also the distance to the correct coordinates. Which means if the predicted region is only slightly off then the loss is not that big like if it is far off.
 There is the paper “PIGEON: Predicting Image Geolocations” from Stanford University, which comes in handy for this task. They're using the haversine smooth loss function. (Haas et al., 2024).
 
+The haversine distance is a measure of the shortest distance between two points on the surface of a sphere, given their longitudes and latitudes. It is calculated using the following formula:
+
+The haversine distance is a measure of the shortest distance between two points on the surface of a sphere, given their longitudes and latitudes. It is calculated using the following formula:
+
+
+The haversine distance is a measure of the shortest distance between two points on the surface of a sphere, given their longitudes and latitudes. It is calculated using the following formula:
+
+$$
+\text{haversine\_distance} = 2r \arcsin \left( \sqrt{\sin^2 \left( \frac{\Delta \text{lat}}{2} \right) + \cos(\text{lat}_1) \cos(\text{lat}_2) \sin^2 \left( \frac{\Delta \text{lon}}{2} \right)} \right)
+$$
+
+where
+
+* \(r\) is the radius of the Earth (6371 km in this implementation),
+* \(\Delta \text{lat}\) and \(\Delta \text{lon}\) are the differences in latitude and longitude between the two points, respectively,
+* \(\text{lat}_1\) and \(\text{lat}_2\) are the latitudes of the two points.
+
+The smoothed labels are calculated using the following formula:
+
+
+$$
+\text{smoothed\_labels} = \exp \left( -\frac{\text{adj\_distances}}{T} \right)
+$$
+
+
+where
+
+* \(\text{adj\_distances}\) is the matrix of haversine distances adjusted so that the minimum distance in each row is 0,
+* \(T\) is the temperature hyperparameter.
+
+Finally, the cross-entropy loss is calculated between the model outputs and the smoothed labels:
+
+\
+$$
+\text{loss} = -\frac{1}{N} \sum_{i=1}^{N} \text{smoothed\_labels}_i \log(\text{outputs}_i)
+$$
+\
+
+where \(N\) is the number of geocells. The loss function encourages the model to predict higher probabilities for geocells that are closer to the true coordinates.
+
 
 ___
 **Requirements:**
