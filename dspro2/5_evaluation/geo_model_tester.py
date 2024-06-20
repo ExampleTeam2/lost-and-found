@@ -10,11 +10,11 @@ from geo_model_trainer import GeoModelTrainer
 from custom_haversine_loss import GeolocalizationLoss
 
 class GeoModelTester(GeoModelTrainer):
-    def __init__(self, datasize, train_dataloader, val_dataloader, test_dataloader, num_classes=2, predict_coordinates=False, country_to_index=None, regionHandler=None, test_data_path=None, predict_regions=False):
-        super().__init__(datasize, train_dataloader, val_dataloader, num_classes, predict_coordinates, country_to_index, regionHandler, test_data_path, predict_regions)
-        self.test_dataloader = test_dataloader
+  def __init__(self, datasize, train_dataloader, val_dataloader, test_dataloader, num_classes=2, predict_coordinates=False, country_to_index=None, region_to_index=None, region_index_to_middle_point=None, region_index_to_country_index=None, test_data_path=None, predict_regions=False):
+      super().__init__(datasize, train_dataloader, val_dataloader, num_classes, predict_coordinates, country_to_index, region_to_index, region_index_to_middle_point, region_index_to_country_index, test_data_path, predict_regions)
+      self.test_dataloader = test_dataloader
 
-    def test(self, model_type, model_path):
+  def test(self, model_type, model_path):
         # Load the model
         self.model = self.initialize_model(model_type=model_type).to(self.device)
         model_response = requests.get(model_path)
@@ -29,7 +29,7 @@ class GeoModelTester(GeoModelTrainer):
         top1_correct = 0
         top3_correct = 0
         top5_correct = 0
-        middle_points = self.regionHandler.region_middle_points.to(self.device) if self.use_regions else None
+        middle_points = torch.tensor(self.region_index_to_middle_point.values()).to(self.device) if self.use_regions else None
         
         with torch.no_grad():
             for images, coordinates, country_indices, region_indices in self.test_dataloader:

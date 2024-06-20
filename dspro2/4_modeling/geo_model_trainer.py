@@ -23,7 +23,7 @@ from custom_haversine_loss import GeolocalizationLoss
 
 
 class GeoModelTrainer:
-  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=False, country_to_index=None, regionHandler=None, test_data_path=None, predict_regions=True):
+  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=False, country_to_index=None, region_to_index=None, region_index_to_middle_point=None, region_index_to_country_index=None, test_data_path=None, predict_regions=True):
       self.num_classes = num_classes
       self.train_dataloader = train_dataloader
       self.val_dataloader = val_dataloader
@@ -35,8 +35,12 @@ class GeoModelTrainer:
       self.model_type = None
       self.model = None
       self.country_to_index = country_to_index
+      self.index_to_country = {v: k for k, v in country_to_index.items()} if country_to_index is not None else None
+      self.region_to_index = region_to_index
+      self.index_to_region = {v: k for k, v in region_to_index.items()} if region_to_index is not None else None
+      self.region_index_to_middle_point = region_index_to_middle_point
+      self.region_index_to_country_index = region_index_to_country_index
       self.test_data_path = test_data_path
-      self.regionHandler = regionHandler
       
   def set_seed(self, seed=42):
     np.random.seed(seed)
@@ -274,6 +278,33 @@ class GeoModelTrainer:
               # save to wandb
               wandb.save(wandb_country_to_index_file)
               
+          if self.region_to_index is not None:
+              # copy to run directory
+              wandb_region_to_index_file = os.path.join(wandb.run.dir, 'region_to_index.json')
+              # write json file
+              with open(wandb_region_to_index_file, 'w') as f:
+                  json.dump(self.region_to_index, f)
+              # save to wandb
+              wandb.save(wandb_region_to_index_file)
+              
+          if self.region_index_to_middle_point is not None:
+              # copy to run directory
+              wandb_region_index_to_middle_point_file = os.path.join(wandb.run.dir, 'region_index_to_middle_point.json')
+              # write json file
+              with open(wandb_region_index_to_middle_point_file, 'w') as f:
+                  json.dump(self.region_index_to_middle_point, f)
+              # save to wandb
+              wandb.save(wandb_region_index_to_middle_point_file)
+              
+          if self.region_index_to_country_index is not None:
+              # copy to run directory
+              wandb_region_index_to_country_index_file = os.path.join(wandb.run.dir, 'region_index_to_country_index.json')
+              # write json file
+              with open(wandb_region_index_to_country_index_file, 'w') as f:
+                  json.dump(self.region_index_to_country_index, f)
+              # save to wandb
+              wandb.save(wandb_region_index_to_country_index_file)
+              
           if self.test_data_path is not None:
             # Copy test data to run directory
             wandb_test_data_path = os.path.join(wandb.run.dir, 'test_data.pth')
@@ -309,7 +340,7 @@ class GeoModelTrainer:
     top5_correct = 0
     top5_correct_country = 0
     data_loader = self.train_dataloader if is_train else self.val_dataloader
-    middle_points = self.regionHandler.region_middle_points.to(self.device) if self.use_regions else None
+    middle_points = torch.tensor(self.region_index_to_middle_point.values()).to(self.device) if self.use_regions else None
 
     for images, coordinates, country_indices, region_indices in data_loader:
         with torch.set_grad_enabled(is_train):
@@ -342,12 +373,12 @@ class GeoModelTrainer:
                 top5_correct += correct[:, :5].sum().item()
                 if self.use_regions:
                     # Get the country for each region
-                    target_countries = self.regionHandler.get_country_from_index(targets)
-                    predicted_countries = self.regionHandler.get_country_from_index(outputs.argmax(dim=1))
+                    target_countries = country_indices.to(self.device)
+                    predicted_countries_top5 = torch.tensor([[self.region_index_to_country_index[region_index] for region_index in top5] for top5 in predicted_top5]).to(self.device)
                     # Calculate different accuracies
-                    top1_correct_country += sum([1 for i in range(len(target_countries)) if target_countries[i] == predicted_countries[i]])
-                    top3_correct_country += sum([1 for i in range(len(target_countries)) if target_countries[i] in predicted_countries[i:i+3]])
-                    top5_correct_country += sum([1 for i in range(len(target_countries)) if target_countries[i] in predicted_countries[i:i+5]])
+                    top1_correct_country += (predicted_countries_top5[:, 0] == target_countries).sum().item()
+                    top3_correct_country += (predicted_countries_top5[:, :3] == target_countries).sum().item()
+                    top5_correct_country += (predicted_countries_top5 == target_countries.view(-1, 1).expand_as(predicted_countries_top5)).sum().item()
 
     avg_loss = total_loss / len(data_loader.dataset)
     

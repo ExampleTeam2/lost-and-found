@@ -28,7 +28,7 @@ class ImageDataHandler:
           
         self.batch_size = batch_size
         self.random_seed = random_seed
-
+        
         self.region_handler = RegionHandler()
         
         json_paths, image_paths = split_json_and_image_files(list_files)
@@ -182,9 +182,14 @@ class ImageDataHandler:
         
         # Create a global country_to_index mapping
         self.country_to_index = self._get_country_to_index()
-
-  
         
+        # Get the global region_to_index mapping
+        self.region_to_index = self.region_handler.region_to_index
+        # Get the global region_index_to_middle_point mapping
+        self.region_index_to_middle_point = self.region_handler.region_index_to_middle_point
+        # Get the global region_index_to_country_index mapping
+        self.region_index_to_country_index = self.region_handler.region_index_to_country_index
+
         # Initialize datasets and loaders
         self.train_loader, self.val_loader, self.test_loader = self._create_loaders()
         
@@ -193,13 +198,12 @@ class ImageDataHandler:
         all_countries = set(self.countries)
         country_to_index = {country: idx for idx, country in enumerate(sorted(all_countries))}
         return country_to_index
-  
 
     def _create_loaders(self):
         # Create train, val, and test datasets with the same mapping
-        train_dataset = CustomImageDataset(self.train_images, self.train_coordinates, self.train_countries, self.train_regions, country_to_index=self.country_to_index, region_to_index=self.region_handler)
-        val_dataset = CustomImageDataset(self.val_images, self.val_coordinates, self.val_countries, self.val_regions, country_to_index=self.country_to_index, region_to_index=self.region_handler)
-        test_dataset = CustomImageDataset(self.test_images, self.test_coordinates, self.test_countries, self.test_regions,country_to_index=self.country_to_index, region_to_index=self.region_handler)
+        train_dataset = CustomImageDataset(self.train_images, self.train_coordinates, self.train_countries, self.train_regions, country_to_index=self.country_to_index, region_to_index=self.region_to_index)
+        val_dataset = CustomImageDataset(self.val_images, self.val_coordinates, self.val_countries, self.val_regions, country_to_index=self.country_to_index, region_to_index=self.region_to_index)
+        test_dataset = CustomImageDataset(self.test_images, self.test_coordinates, self.test_countries, self.test_regions,country_to_index=self.country_to_index, region_to_index=self.region_to_index)
 
         # Create train, val, and test dataloaders
         random.seed(self.random_seed)

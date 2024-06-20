@@ -8,16 +8,32 @@ import torch
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 class RegionHandler(Dataset):
-    def __init__(self):
+    def __init__(self, country_to_index=None):
         self.gdf = gpd.read_file('./../data/admin_1_states_provinces.geojson', driver='GeoJSON', crs='EPSG:4326')
-        # create a sorted list of region names and middle points for easy access and indexing both in one list
+        # sort by name in geopandas dataframe for consistency and creating indices
+        self.gdf = self.gdf.sort_values(by='region_name')
+        # create a list of region names and middle points for easy access and indexing both in one list
         self.region_names = self.gdf['region_name'].tolist()
         self.region_middle_points = self.gdf['middle_point'].tolist()
         # convert the middle points to shapely Points
         self.region_middle_points = [wkt.loads(point) for point in self.region_middle_points]
         self.region_middle_points = torch.tensor([(point.y, point.x) for point in self.region_middle_points], dtype=torch.float64)
-        # create a list of tuples with region name and middle point sorted by region name
-        self.regions = sorted(list(zip(self.region_names, self.region_middle_points)), key=lambda x: x[0])
+        self.regions = list(zip(self.region_names, self.region_middle_points))
+        # create a dictionary from region name to index
+        self.region_to_index = {region: idx for idx, region in enumerate(self.region_names)}
+        # create a dictionary from region index to middle point
+        self.region_index_to_middle_point = {idx: point for idx, point in enumerate(self.region_middle_points)}
+        
+        # create region index to country index if country_to_index is provided
+        self.country_to_index = country_to_index
+        self.region_index_to_country_index = None
+        if self.country_to_index is not None:
+            region_countries = self.gdf['country_name'].tolist()
+            self.region_index_to_country_index = {}
+            for region, country in zip(self.region_names, region_countries):
+                region_index = self.region_to_index[region]
+                country_index = self.country_to_index[country]
+                self.region_index_to_country_index[region_index] = country_index
 
     def get_item(self, idx):
         region = self.regions[idx]
@@ -26,12 +42,3 @@ class RegionHandler(Dataset):
     def __getitem__(self, index):
         return self.get_item(index)
     
-    def get_idx(self, region_name):
-        return self.region_names.index(region_name)
-    
-    def get_middle_point_by_list_of_idx(self, idx_list):
-        return [self.region_middle_points[idx] for idx in idx_list]
-      
-    def get_country_from_index(self, idx_list):
-        countries = [region.split("_")[0] for region in [self.region_names[idx] for idx in idx_list]]
-        return countries
