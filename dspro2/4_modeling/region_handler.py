@@ -34,9 +34,10 @@ class RegionHandler(Dataset):
             region_countries = self.gdf['country_name'].tolist()
             self.region_index_to_country_index = {}
             for region, country in zip(self.region_names, region_countries):
-                region_index = self.region_to_index[region]
-                country_index = self.country_to_index[country]
-                self.region_index_to_country_index[region_index] = country_index
+                if country in self.country_to_index:
+                  region_index = self.region_to_index[region]
+                  country_index = self.country_to_index[country]
+                  self.region_index_to_country_index[region_index] = country_index
 
     def get_item(self, idx):
         region = self.regions[idx]
