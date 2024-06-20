@@ -6,10 +6,12 @@ from shapely import wkt
 import torch
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+PARENT_DIR = os.path.dirname(CURRENT_DIR)
+BASE_PATH = PARENT_DIR + '/3_data_preparation/00_preparing/data/'
 
 class RegionHandler(Dataset):
     def __init__(self, country_to_index=None):
-        self.gdf = gpd.read_file('./../data/admin_1_states_provinces.geojson', driver='GeoJSON', crs='EPSG:4326')
+        self.gdf = gpd.read_file(BASE_PATH + 'admin_1_states_provinces.geojson', driver='GeoJSON', crs='EPSG:4326')
         # sort by name in geopandas dataframe for consistency and creating indices
         self.gdf = self.gdf.sort_values(by='region_name')
         # create a list of region names and middle points for easy access and indexing both in one list
