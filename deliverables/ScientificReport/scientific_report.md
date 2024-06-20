@@ -147,33 +147,29 @@ There is the paper “PIGEON: Predicting Image Geolocations” from Stanford Uni
 
 The haversine distance is a measure of the shortest distance between two points on the surface of a sphere, given their longitudes and latitudes. It is calculated using the following formula:
 
-The haversine distance is a measure of the shortest distance between two points on the surface of a sphere, given their longitudes and latitudes. It is calculated using the following formula:
-
-
-The haversine distance is a measure of the shortest distance between two points on the surface of a sphere, given their longitudes and latitudes. It is calculated using the following formula:
-
 $$
-\text{haversine\_distance} = 2r \arcsin \left( \sqrt{\sin^2 \left( \frac{\Delta \text{lat}}{2} \right) + \cos(\text{lat}_1) \cos(\text{lat}_2) \sin^2 \left( \frac{\Delta \text{lon}}{2} \right)} \right)
+\text{Hav}(\mathbf{p_1}, \mathbf{p_2}) = 2r \arcsin \left( \sqrt{\sin^2 \left( \frac{\phi_2 - \phi_1}{2} \right) + \cos(\phi_1) \cos(\phi_2) \sin^2 \left( \frac{\lambda_2 - \lambda_1}{2} \right)} \right) 
 $$
 
 where
 
-* \(r\) is the radius of the Earth (6371 km in this implementation),
-* \(\Delta \text{lat}\) and \(\Delta \text{lon}\) are the differences in latitude and longitude between the two points, respectively,
-* \(\text{lat}_1\) and \(\text{lat}_2\) are the latitudes of the two points.
+* $r$ is the radius of the Earth (6371 km in this implementation),
+* $\mathbf{p_1}, \mathbf{p_2}$ are the 2 points with longitude $\lambda$ and latitude $\phi$
 
 The smoothed labels are calculated using the following formula:
 
 
 $$
-\text{smoothed\_labels} = \exp \left( -\frac{\text{adj\_distances}}{T} \right)
+y_{n,i} = \exp \left( - \frac{\text{Hav}(\mathbf{g_i}, \mathbf{x_n}) - \text{Hav}(\mathbf{g_n}, \mathbf{x_n})}{\tau} \right)
 $$
 
 
 where
 
-* \(\text{adj\_distances}\) is the matrix of haversine distances adjusted so that the minimum distance in each row is 0,
-* \(T\) is the temperature hyperparameter.
+* $\mathbf{g_i}$​ are the centroid coordinates of the geocell polygon of cell $\mathbf{i}$
+* $\mathbf{g_n}$​ are the centroid coordinates of the true geocell.
+* $\mathbf{x_n}$​ are the true coordinates of the example.
+* $\tau$ is a temperature parameter.
 
 Finally, the cross-entropy loss is calculated between the model outputs and the smoothed labels:
 
