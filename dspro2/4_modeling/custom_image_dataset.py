@@ -28,7 +28,7 @@ class CustomImageDataset(Dataset):
         if country not in self.country_to_index:
             raise ValueError(f"Country '{country}' at index {idx} is not in the country_to_index mapping.")
         country_index = self.country_to_index[country]
-        region_index = self.region_to_index[region]
+        region_index = self.region_to_index[region[0]]
         coordinates = torch.tensor(self.coordinates[idx], dtype=torch.float32)
 
         return image, coordinates, country_index, region_index

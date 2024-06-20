@@ -340,7 +340,7 @@ class GeoModelTrainer:
     top5_correct = 0
     top5_correct_country = 0
     data_loader = self.train_dataloader if is_train else self.val_dataloader
-    middle_points = torch.tensor(self.region_index_to_middle_point.values()).to(self.device) if self.use_regions else None
+    middle_points = torch.tensor(list(self.region_index_to_middle_point.values())).to(self.device) if self.use_regions else None
 
     for images, coordinates, country_indices, region_indices in data_loader:
         with torch.set_grad_enabled(is_train):

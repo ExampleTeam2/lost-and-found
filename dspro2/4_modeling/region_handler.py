@@ -18,13 +18,14 @@ class RegionHandler(Dataset):
         self.region_names = self.gdf['region_name'].tolist()
         self.region_middle_points = self.gdf['middle_point'].tolist()
         # convert the middle points to shapely Points
-        self.region_middle_points = [wkt.loads(point) for point in self.region_middle_points]
-        self.region_middle_points = torch.tensor([(point.y, point.x) for point in self.region_middle_points], dtype=torch.float64)
+        self.region_middle_points_raw = [wkt.loads(point) for point in self.region_middle_points]
+        self.region_middle_points = torch.tensor([(point.y, point.x) for point in self.region_middle_points_raw], dtype=torch.float64)
+        self.region_middle_points_lists = [[point.y, point.x] for point in self.region_middle_points_raw]
         self.regions = list(zip(self.region_names, self.region_middle_points))
         # create a dictionary from region name to index
         self.region_to_index = {region: idx for idx, region in enumerate(self.region_names)}
         # create a dictionary from region index to middle point
-        self.region_index_to_middle_point = {idx: point for idx, point in enumerate(self.region_middle_points)}
+        self.region_index_to_middle_point = {idx: point for idx, point in enumerate(self.region_middle_points_lists)}
         
         # create region index to country index if country_to_index is provided
         self.country_to_index = country_to_index

@@ -29,7 +29,7 @@ class GeoModelTester(GeoModelTrainer):
         top1_correct = 0
         top3_correct = 0
         top5_correct = 0
-        middle_points = torch.tensor(self.region_index_to_middle_point.values()).to(self.device) if self.use_regions else None
+        middle_points = torch.tensor(list(self.region_index_to_middle_point.values())).to(self.device) if self.use_regions else None
         
         with torch.no_grad():
             for images, coordinates, country_indices, region_indices in self.test_dataloader:
