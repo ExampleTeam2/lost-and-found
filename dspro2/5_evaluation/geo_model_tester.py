@@ -29,47 +29,67 @@ class GeoModelTester(GeoModelTrainer):
         top1_correct = 0
         top3_correct = 0
         top5_correct = 0
+        data_loader = self.test_dataloader
         middle_points = torch.tensor(list(self.region_index_to_middle_point.values())).to(self.device) if self.use_regions else None
         
         with torch.no_grad():
+            if self.use_coordinates:
+              criterion = nn.MSELoss()
+            elif self.use_regions:
+              criterion = GeolocalizationLoss(temperature=75)
+            else:
+              criterion = nn.CrossEntropyLoss()
+            
             for images, coordinates, country_indices, region_indices in self.test_dataloader:
                 images = images.to(self.device)
                 targets = coordinates.to(self.device) if self.use_coordinates else (country_indices.to(self.device) if self.use_regions else region_indices.to(self.device))
                 outputs = self.model(images)
                 probabilities = F.softmax(outputs, dim=1)
 
-                if self.use_coordinates:
-                  criterion = nn.MSELoss()
-                elif self.use_regions:
-                  criterion = GeolocalizationLoss(temperature=75)
-                else:
-                  criterion = nn.CrossEntropyLoss()
-        
-                loss = criterion(outputs, targets) if not self.use_regions else criterion(outputs, 
-                targets, middle_points, coordinates)
-                print(f"Loss: {loss.item()}")
-
                 total_loss += loss.item() * images.size(0)
-                print(f"Total Loss: {total_loss}")
                 
+                loss = criterion(outputs, targets) if not self.use_regions else criterion(outputs, middle_points, coordinates)
+
                 if self.use_coordinates:
                     total_metric += self.mean_spherical_distance(outputs, targets).item() * images.size(0)
-                elif self.use_regions:
+                if self.use_regions:
                     total_metric += self.mean_spherical_distance(middle_points[outputs.argmax(dim=1)], middle_points[targets]).item() * images.size(0)
-                else:
+                if not self.use_coordinates:
+                    # Get the top 5 predictions for each image
                     _, predicted_top5 = probabilities.topk(5, 1, True, True)
+
+                    # Calculate different accuracies
                     correct = predicted_top5.eq(targets.view(-1, 1).expand_as(predicted_top5))
+
                     top1_correct += correct[:, 0].sum().item()
                     top3_correct += correct[:, :3].sum().item()
                     top5_correct += correct[:, :5].sum().item()
-        
-        avg_loss = total_loss / len(self.test_dataloader.dataset)
+                    if self.use_regions:
+                        # Get the country for each region
+                        target_countries = country_indices.to(self.device)
+                        predicted_countries_top5 = torch.tensor([[self.region_index_to_country_index[region_index] for region_index in top5] for top5 in predicted_top5]).to(self.device)
+                        # Calculate different accuracies
+                        top1_correct_country += (predicted_countries_top5[:, 0] == target_countries).sum().item()
+                        top3_correct_country += (predicted_countries_top5[:, :3] == target_countries).sum().item()
+                        top5_correct_country += (predicted_countries_top5 == target_countries.view(-1, 1).expand_as(predicted_countries_top5)).sum().item()
+
+        avg_loss = total_loss / len(data_loader.dataset)
         
         if self.use_coordinates or self.use_regions:
-            avg_metric = total_metric / len(self.test_dataloader.dataset)
+            avg_metric = total_metric / len(data_loader.dataset)
+
+        if not self.use_coordinates:
+            top1_accuracy = top1_correct / len(data_loader.dataset)
+            top3_accuracy = top3_correct / len(data_loader.dataset)
+            top5_accuracy = top5_correct / len(data_loader.dataset)
+
+        if self.use_coordinates:
             print(f"Test Loss: {avg_loss:.4f}, Test Distance: {avg_metric:.4f}")
+        elif self.use_regions:
+            top1_correct_country = top1_correct_country / len(data_loader.dataset)
+            top3_correct_country = top3_correct_country / len(data_loader.dataset)
+            top5_correct_country = top5_correct_country / len(data_loader.dataset)
+            print(f"Test Loss: {avg_loss:.4f}, Test Distance: {avg_metric:.4f}, Test Top 1 Accuracy: {top1_accuracy:.4f}, Test Top 3 Accuracy: {top3_accuracy:.4f}, Test Top 5 Accuracy: {top5_accuracy:.4f}")
+            print(f"Test Top 1 Accuracy (Country): {top1_correct_country:.4f}, Test Top 3 Accuracy (Country): {top3_correct_country:.4f}, Test Top 5 Accuracy (Country): {top5_correct_country:.4f}")
         else:
-            top1_accuracy = top1_correct / len(self.test_dataloader.dataset)
-            top3_accuracy = top3_correct / len(self.test_dataloader.dataset)
-            top5_accuracy = top5_correct / len(self.test_dataloader.dataset)
             print(f"Test Loss: {avg_loss:.4f}, Test Top 1 Accuracy: {top1_accuracy:.4f}, Test Top 3 Accuracy: {top3_accuracy:.4f}, Test Top 5 Accuracy: {top5_accuracy:.4f}")
