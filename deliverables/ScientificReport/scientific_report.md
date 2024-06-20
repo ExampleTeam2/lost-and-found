@@ -145,6 +145,8 @@ Basic method (Cross-entropy, ...)
 For the region-prediction we use a custom loss function. Which, in short text, is a loss function  not only look if the correct region is predicted, it considers also the distance to the correct coordinates. Which means if the predicted region is only slightly off then the loss is not that big like if it is far off.
 There is the paper “PIGEON: Predicting Image Geolocations” from Stanford University, which comes in handy for this task. They're using the haversine smooth loss function. (Haas et al., 2024).
 
+##### The steps of the custom loss function
+
 The haversine distance is a measure of the shortest distance between two points on the surface of a sphere, given their longitudes and latitudes. It is calculated using the following formula:
 
 $$
@@ -171,15 +173,7 @@ where
 * $\mathbf{x_n}$​ are the true coordinates of the example.
 * $\tau$ is a temperature parameter.
 
-Finally, the cross-entropy loss is calculated between the model outputs and the smoothed labels:
-
-\
-$$
-\text{loss} = -\frac{1}{N} \sum_{i=1}^{N} \text{smoothed\_labels}_i \log(\text{outputs}_i)
-$$
-\
-
-where \(N\) is the number of geocells. The loss function encourages the model to predict higher probabilities for geocells that are closer to the true coordinates.
+Finally, the cross-entropy loss is calculated between the model outputs and the smoothed labels.
 
 
 ___
