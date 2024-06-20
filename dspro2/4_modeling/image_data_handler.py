@@ -29,8 +29,6 @@ class ImageDataHandler:
         self.batch_size = batch_size
         self.random_seed = random_seed
         
-        self.region_handler = RegionHandler()
-        
         json_paths, image_paths = split_json_and_image_files(list_files)
         
         combined_names = list(zip(image_paths, json_paths))
@@ -182,6 +180,8 @@ class ImageDataHandler:
         
         # Create a global country_to_index mapping
         self.country_to_index = self._get_country_to_index()
+        
+        self.region_handler = RegionHandler(country_to_index = self.country_to_index)
         
         # Get the global region_to_index mapping
         self.region_to_index = self.region_handler.region_to_index
