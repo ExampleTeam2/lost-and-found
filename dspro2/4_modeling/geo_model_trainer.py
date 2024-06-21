@@ -43,6 +43,17 @@ class GeoModelTrainer:
       self.test_data_path = test_data_path
       self.run_start_callback = run_start_callback
       
+      # For training
+      
+      self.region_middle_points = (torch.tensor(list(self.region_index_to_middle_point.values())).to(self.device) if self.region_index_to_middle_point is not None else torch.tensor([], dtype=torch.float64)) if self.use_regions else None
+      
+      if self.use_coordinates:
+        self.criterion = nn.MSELoss()
+      elif self.use_regions:
+        self.criterion = GeolocalizationLoss(temperature=75)
+      else:
+        self.criterion = nn.CrossEntropyLoss()
+      
   def set_seed(self, seed=42):
     np.random.seed(seed)
     random.seed(seed)
@@ -177,13 +188,6 @@ class GeoModelTrainer:
           # Initialize model, optimizer and criterion
           self.model = self.initialize_model(model_type=config.model_name).to(self.device)
 
-          if self.use_coordinates:
-            criterion = nn.MSELoss()
-          elif self.use_regions:
-            criterion = GeolocalizationLoss(temperature=75)
-          else:
-            criterion = nn.CrossEntropyLoss()
-
           if "resnet" in self.model_type:
               optimizer_grouped_parameters = [
                   {"params": [p for n, p in self.model.named_parameters() if not n.startswith('fc')], "lr": config.learning_rate * 0.1},
@@ -197,17 +201,17 @@ class GeoModelTrainer:
 
           optimizer = optim.AdamW(optimizer_grouped_parameters, weight_decay=config.weight_decay)
           scheduler = StepLR(optimizer, step_size=10, gamma=0.1)
-
+          
           for epoch in range(config.epochs):
               if self.use_coordinates:
-                  train_loss, train_metric = self.run_epoch(criterion, optimizer, is_train=True)
-                  val_loss, val_metric = self.run_epoch(criterion, optimizer, is_train=False)
+                  train_loss, train_metric = self.run_epoch(optimizer, is_train=True)
+                  val_loss, val_metric = self.run_epoch(optimizer, is_train=False)
               elif self.use_regions:
-                  train_loss, train_metric, train_top1_accuracy, train_top3_accuracy, train_top5_accuracy, train_top1_correct_country, train_top3_correct_country, train_top5_correct_country = self.run_epoch(criterion, optimizer, is_train=True)
-                  val_loss, val_metric, val_top1_accuracy, val_top3_accuracy, val_top5_accuracy, val_top1_correct_country, val_top3_correct_country, val_top5_correct_country = self.run_epoch(criterion, optimizer, is_train=False)
+                  train_loss, train_metric, train_top1_accuracy, train_top3_accuracy, train_top5_accuracy, train_top1_correct_country, train_top3_correct_country, train_top5_correct_country = self.run_epoch(optimizer, is_train=True)
+                  val_loss, val_metric, val_top1_accuracy, val_top3_accuracy, val_top5_accuracy, val_top1_correct_country, val_top3_correct_country, val_top5_correct_country = self.run_epoch(optimizer, is_train=False)
               else:
-                  train_loss, train_top1_accuracy, train_top3_accuracy, train_top5_accuracy = self.run_epoch(criterion, optimizer, is_train=True)
-                  val_loss, val_top1_accuracy, val_top3_accuracy, val_top5_accuracy = self.run_epoch(criterion, optimizer, is_train=False)
+                  train_loss, train_top1_accuracy, train_top3_accuracy, train_top5_accuracy = self.run_epoch(optimizer, is_train=True)
+                  val_loss, val_top1_accuracy, val_top3_accuracy, val_top5_accuracy = self.run_epoch(optimizer, is_train=False)
 
               # Even for predicting regions, always use the best model based on validation distance
               if (self.use_coordinates or self.use_regions and val_metric < best_val_metric) or (not self.use_coordinates or self.use_regions and val_top1_accuracy > best_val_metric):
@@ -330,7 +334,7 @@ class GeoModelTrainer:
           torch.cuda.empty_cache()  
 
 
-  def run_epoch(self, criterion, optimizer, is_train=True):
+  def run_epoch(self, optimizer, is_train=True, is_test=False):
     if is_train:
         self.model.train()
     else:
@@ -344,17 +348,17 @@ class GeoModelTrainer:
     top3_correct_country = 0
     top5_correct = 0
     top5_correct_country = 0
-    data_loader = self.train_dataloader if is_train else self.val_dataloader
-    middle_points = (torch.tensor(list(self.region_index_to_middle_point.values())).to(self.device) if self.region_index_to_middle_point is not None else torch.full((len(data_loader), 2), 0, dtype=torch.float64)) if self.use_regions else None
+    data_loader = self.train_dataloader if is_train else (self.val_dataloader if not is_test else self.test_dataloader)
 
     for images, coordinates, country_indices, region_indices in data_loader:
         with torch.set_grad_enabled(is_train):
             images = images.to(self.device)
             targets = coordinates.to(self.device) if self.use_coordinates else (country_indices.to(self.device) if self.use_regions else region_indices.to(self.device))
-            optimizer.zero_grad()
+            if is_train:
+              optimizer.zero_grad()
             outputs = self.model(images)
             probabilities = F.softmax(outputs, dim=1)
-            loss = criterion(outputs, targets) if not self.use_regions else criterion(outputs, middle_points, coordinates)
+            loss = self.criterion(outputs, targets) if not self.use_regions else self.criterion(outputs, self.region_middle_points, coordinates)
       
             if is_train:
                 loss.backward()
@@ -365,7 +369,7 @@ class GeoModelTrainer:
             if self.use_coordinates:
                 total_metric += self.mean_spherical_distance(outputs, targets).item() * images.size(0)
             if self.use_regions:
-                total_metric += self.mean_spherical_distance(middle_points[outputs.argmax(dim=1)], middle_points[targets]).item() * images.size(0)
+                total_metric += self.mean_spherical_distance(self.region_middle_points[outputs.argmax(dim=1)], self.region_middle_points[targets]).item() * images.size(0)
             if not self.use_coordinates:
                 # Get the top 5 predictions for each image
                 _, predicted_top5 = probabilities.topk(5, 1, True, True)
