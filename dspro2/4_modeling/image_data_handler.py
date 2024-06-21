@@ -167,7 +167,8 @@ class ImageDataHandler:
             test_data = {
               'test_images': self.test_images,
               'test_countries': self.test_countries,
-              'test_coordinates': self.test_coordinates
+              'test_coordinates': self.test_coordinates,
+              'test_regions': self.test_regions
             }
             self.test_data_path = './test_data.pth'
             print(f"Saving test data to {os.path.basename(self.test_data_path)}")

@@ -23,7 +23,7 @@ from custom_haversine_loss import GeolocalizationLoss
 
 
 class GeoModelTrainer:
-  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=False, country_to_index=None, region_to_index=None, region_index_to_middle_point=None, region_index_to_country_index=None, test_data_path=None, predict_regions=True):
+  def __init__(self, datasize, train_dataloader, val_dataloader, num_classes=2, predict_coordinates=False, country_to_index=None, region_to_index=None, region_index_to_middle_point=None, region_index_to_country_index=None, test_data_path=None, predict_regions=False, run_start_callback=None):
       self.num_classes = num_classes
       self.train_dataloader = train_dataloader
       self.val_dataloader = val_dataloader
@@ -41,6 +41,7 @@ class GeoModelTrainer:
       self.region_index_to_middle_point = region_index_to_middle_point
       self.region_index_to_country_index = region_index_to_country_index
       self.test_data_path = test_data_path
+      self.run_start_callback = run_start_callback
       
   def set_seed(self, seed=42):
     np.random.seed(seed)
@@ -158,6 +159,10 @@ class GeoModelTrainer:
   def train(self):
       with wandb.init(reinit=True) as run:
           config = run.config
+          
+          if self.run_start_callback is not None:
+              self.run_start_callback(config, run)
+          
           self.set_seed(config.seed)
           
           # Set seeds, configure optimizers, losses, etc.
@@ -340,7 +345,7 @@ class GeoModelTrainer:
     top5_correct = 0
     top5_correct_country = 0
     data_loader = self.train_dataloader if is_train else self.val_dataloader
-    middle_points = torch.tensor(list(self.region_index_to_middle_point.values())).to(self.device) if self.use_regions else None
+    middle_points = (torch.tensor(list(self.region_index_to_middle_point.values())).to(self.device) if self.region_index_to_middle_point is not None else torch.full((len(data_loader), 2), 0, dtype=torch.float64)) if self.use_regions else None
 
     for images, coordinates, country_indices, region_indices in data_loader:
         with torch.set_grad_enabled(is_train):
@@ -375,10 +380,11 @@ class GeoModelTrainer:
                     # Get the country for each region
                     target_countries = country_indices.to(self.device)
                     predicted_countries_top5 = torch.tensor([[self.region_index_to_country_index.get(region_index, -1) for region_index in top5] for top5 in predicted_top5]).to(self.device)
+                    countries_correct = predicted_countries_top5.eq(target_countries.view(-1, 1).expand_as(predicted_countries_top5))
                     # Calculate different accuracies
-                    top1_correct_country += (predicted_countries_top5[:, 0] == target_countries).sum().item()
-                    top3_correct_country += (predicted_countries_top5[:, :3] == target_countries).sum().item()
-                    top5_correct_country += (predicted_countries_top5 == target_countries.view(-1, 1).expand_as(predicted_countries_top5)).sum().item()
+                    top1_correct_country += countries_correct[:, 0].sum().item()
+                    top3_correct_country += countries_correct[:, :3].sum().item()
+                    top5_correct_country += countries_correct[:, :5].sum().item()
 
     avg_loss = total_loss / len(data_loader.dataset)
     

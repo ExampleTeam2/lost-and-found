@@ -51,7 +51,15 @@ class WandbDownloader:
                     run_info["files"][key_name] = file.url
 
             # Check for test_data.pth
-            if "test_data" not in run_info["files"]:
+            if "test_data_run_id" in run.summary:
+                test_data_run_id = run.summary.get("test_data_run_id")
+                if test_data_run_id:
+                    test_data_run = self.api.run(f"{self.entity}/{self.project}/{test_data_run_id}")
+                    for file in test_data_run.files():
+                        if file.name == "test_data.pth":
+                            run_info["files"]["test_data"] = file.url
+                            break
+            elif "test_data" not in run_info["files"]:
                 test_data_run_id = run.summary.get("test_data_run_id")
                 if test_data_run_id:
                     test_data_run = self.api.run(f"{self.entity}/{self.project}/{test_data_run_id}")
