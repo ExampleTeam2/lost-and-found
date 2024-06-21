@@ -276,11 +276,15 @@ class GeoModelTrainer:
           # Load and log the best model to wandb
           best_model = self.initialize_model(model_type=config.model_name).to(self.device)
           best_model.load_state_dict(torch.load(model_path))
-          wandb_model_path = os.path.join(wandb.run.dir, raw_model_path)
+          run_dir = wandb.run.dir
+          # Get directory of the run (without /files)
+          run_dir = os.path.dirname(run_dir) if run_dir.endswith("files") else run_dir
+          print('Saving artifacts to:', run_dir)
+          wandb_model_path = os.path.join(run_dir, raw_model_path)
           
           if self.country_to_index is not None:
               # copy to run directory
-              wandb_country_to_index_file = os.path.join(wandb.run.dir, 'country_to_index.json')
+              wandb_country_to_index_file = os.path.join(run_dir, 'country_to_index.json')
               # write json file
               with open(wandb_country_to_index_file, 'w') as f:
                   json.dump(self.country_to_index, f)
@@ -289,7 +293,7 @@ class GeoModelTrainer:
               
           if self.region_to_index is not None:
               # copy to run directory
-              wandb_region_to_index_file = os.path.join(wandb.run.dir, 'region_to_index.json')
+              wandb_region_to_index_file = os.path.join(run_dir, 'region_to_index.json')
               # write json file
               with open(wandb_region_to_index_file, 'w') as f:
                   json.dump(self.region_to_index, f)
@@ -298,7 +302,7 @@ class GeoModelTrainer:
               
           if self.region_index_to_middle_point is not None:
               # copy to run directory
-              wandb_region_index_to_middle_point_file = os.path.join(wandb.run.dir, 'region_index_to_middle_point.json')
+              wandb_region_index_to_middle_point_file = os.path.join(run_dir, 'region_index_to_middle_point.json')
               # write json file
               with open(wandb_region_index_to_middle_point_file, 'w') as f:
                   json.dump(self.region_index_to_middle_point, f)
@@ -307,7 +311,7 @@ class GeoModelTrainer:
               
           if self.region_index_to_country_index is not None:
               # copy to run directory
-              wandb_region_index_to_country_index_file = os.path.join(wandb.run.dir, 'region_index_to_country_index.json')
+              wandb_region_index_to_country_index_file = os.path.join(run_dir, 'region_index_to_country_index.json')
               # write json file
               with open(wandb_region_index_to_country_index_file, 'w') as f:
                   json.dump(self.region_index_to_country_index, f)
@@ -316,7 +320,7 @@ class GeoModelTrainer:
               
           if self.test_data_path is not None:
             # Copy test data to run directory
-            wandb_test_data_path = os.path.join(wandb.run.dir, 'test_data.pth')
+            wandb_test_data_path = os.path.join(run_dir, 'test_data.pth')
             # write json file
             shutil.copy(self.test_data_path, wandb_test_data_path)
             wandb.save(wandb_test_data_path)
