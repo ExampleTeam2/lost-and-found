@@ -1,0 +1,23 @@
+{
+    "dspro2-predicting-country_base_augmentation_81505_[80, 130]": {
+        "Best Run 1": {
+            "id": "5mag34f1",
+            "parameters": {
+                "seed": 42,
+                "epochs": 50,
+                "optimizer": "adamW",
+                "model_name": "efficientnet_b1",
+                "mapped_data": true,
+                "dataset_size": 81505,
+                "weight_decay": 0.1,
+                "learning_rate": 0.01,
+                "input_image_size": [
+                    80,
+                    130
+                ],
+                "data_augmentation": "base_augmentation",
+                "dataset_identifier": "63289b51067a4c6ede4c44c23a329d82ab4964ed43942794430a9b71ec685b5c",
+                "different_countries": 75,
+                "predict_coordinates": false
+            },
+            "metrics": 

@@ -205,7 +205,6 @@ For our project, we use the following models from the selected architectures:
 
 These models are pre-trained on the ImageNet dataset and ....
 
-
 ## Data augmentation -> ls
 ## Hyperparameter tuning -> ls
 ## Human baseline performance
