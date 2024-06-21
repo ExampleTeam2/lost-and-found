@@ -59,15 +59,9 @@ class WandbDownloader:
                         if file.name == "test_data.pth":
                             run_info["files"]["test_data"] = file.url
                             break
-            elif "test_data" not in run_info["files"]:
-                test_data_run_id = run.summary.get("test_data_run_id")
-                if test_data_run_id:
-                    test_data_run = self.api.run(f"{self.entity}/{self.project}/{test_data_run_id}")
-                    for file in test_data_run.files():
-                        if file.name == "test_data.pth":
-                            run_info["files"]["test_data"] = file.url
-                            break
-            run_data[run_key] = run_info
+            elif "test_data.pth" in run_info["files"]:
+                run_info["files"]["test_data"] = run_info["files"]["test_data.pth"]
+                run_data[run_key] = run_info
         return run_data
 
     def get_and_collect_best_runs(self, metric_name, file_names):
