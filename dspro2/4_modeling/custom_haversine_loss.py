@@ -51,25 +51,15 @@ class GeolocalizationLoss(nn.Module):
         return smoothed_labels
 
     def forward(self, outputs, geocell_centroids, true_coords):
-      
-        print(f"geocell_centroids.shape: {geocell_centroids.shape}")
-       
         device = outputs.device
 
         true_coords = true_coords.to(device)
         
-        print(f"true_coords.shape: {true_coords.shape}")
-
         # Compute the haversine distance between the true coordinates and the transformed geocell centroids
         haversine_distances = self.haversine_matrix(true_coords, geocell_centroids.T)
-        
-        print(f"haversine_distances.shape: {haversine_distances.shape}")
 
         # Smooth the labels
         smoothed_labels = self.smooth_labels(haversine_distances)
-        
-        print(f"outputs.shape: {outputs.shape}")
-        print(f"smoothed_labels.shape: {smoothed_labels.shape}")
 
         # Compute the cross-entropy loss
         loss = self.loss_fc(outputs, smoothed_labels)
