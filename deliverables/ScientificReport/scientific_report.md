@@ -27,9 +27,8 @@ The main goal is to develop a robust Image Classification model that can serve a
 - **Supporting humanitarian action:** In disaster situations, it could help to quickly identify the most affected areas by analyzing current images from social media or aid organizations. This would improve the coordination of rescue and relief efforts and offer hope and support to those impacted.
 - **Discovering new travel destinations:** Have you ever encountered stunning images of places on Instagram or other social media platforms and wondered where they were taken? Our image classifier can help you with that. By analyzing the image, our classifier can identify the location and provide you with the information you need to plan your next visit to this amazing place. This way, you can discover new and exciting travel destinations that you may have never known about before.
 - **Classification as a service**: With this service, we will help other companies or data science projects label their data. Sometimes companies want to block, permit, or deploy individual versions of their applications in different countries. Some countries have more restrictions for deploying applications, therefore the image predictor can help the companies have the right version on the right devices for these countries.
-
-## State of the Art
-
+## Literature Review
+### State of the Art
 Recent advancements in deep learning have significantly enhanced the ability to determine the geographical location of an image. DeepGeo, developed by Suresh et al., leverages visual cues such as vegetation and man-made structures like roads and signage to infer locations. This approach aims to replicate the human ability to use environmental indicators and prior knowledge for geolocation (Suresh et al., 2018). The DeepGeo model restricts its scope to the United States, utilizing panoramic viewpoints to classify images based on their state. Each input sample consists of four images taken at the same location, oriented in cardinal directions, which are then classified into one of 50 state labels (Suresh et al., 2018).
 
 In contrast, PlaNet, developed by Weyand et al., tackles global image geolocation. It employs a deep convolutional neural network based on the Inception architecture, trained on 126 million geotagged photos from Flickr. PlaNet's method involves partitioning the world map into multi-scale geographic cells and classifying test images into these cells. Despite its large dataset and extensive training, PlaNet achieves a country-level accuracy of only 30% on its test set (Weyand et al., 2016). M2GPS, developed by Hays and Efros, is another significant baseline in scalable image geolocation. This model performs data-driven localization by computing the closest match via scene matching with a large corpus of 6 million geotagged Flickr images, utilizing features such as color and geometric information. IM2GPS's approach demonstrates the importance of leveraging large datasets for effective geolocation (Hays and Efros, 2008)​​.
@@ -41,8 +40,14 @@ Another notable model is PIGEON, which combines semantic geocell creation with m
 Furthermore, Banerjee’s research on digital image classification since the 1970s underscores the evolution from using textural and colour features to the current reliance on CNNs. This historical perspective reveals that early models had limited discriminative power and robustness, which were significantly improved with the advent of SIFT (Scale-invariant feature transform) and visual Bag-of-Words models. However, the transition to CNNs marked a pivotal shift due to their superior ability to capture both low-level and high-level features (Banerjee, 2023). Dayton et al. further illustrate the application of transfer learning in geolocation by refining a pre-trained ResNet-50 model on a specific geolocation task. Their work highlights the importance of data augmentation and hyperparameter tuning in improving model performance, as well as the need for balanced datasets to reduce bias and enhance generalizability (Dayton et al., 2024).
 
 To develop more robust and universally applicable geolocation models, it is essential to focus on creating systems that can operate effectively with lower-resolution images and without the need for panoramic views or extensive enriched datasets. This involves training models on diverse, real-world datasets that include a variety of image types, from urban streets to rural landscapes, captured under different conditions and perspectives. By doing so, the models can better mimic the conditions under which humans typically use images for geolocation, such as in social media posts, emergency situations, or historical photo analysis. For instance, PIGEOTTO, an evolution of PIGEON, takes a single image per location and is trained on a larger, highly diverse dataset of over 4 million photos from Flickr and Wikipedia, excluding Street View data. This approach demonstrates the model's ability to generalize to unseen places and perform well in realistic scenarios without the need for multiple images per location (Haas et al., 2024).
+### Recent Breakthroughs in CNN Architectures
+#### ResNet: Addressing the Degradation Problem in Deep Networks
+The introduction of deep residual learning by He et al. (2015) marked a significant milestone in the development of convolutional neural networks (CNNs). Their work addressed the degradation problem in deep neural networks by proposing a residual learning framework that allows layers to learn residual functions with reference to the layer inputs. This architecture, known as ResNet, employs shortcut connections that perform identity mapping, which are then added to the outputs of the stacked layers (He et al., 2015). This innovative approach not only mitigates the vanishing gradient problem but also enables the training of extremely deep networks with more than 100 layers, achieving superior performance in image classification tasks.
+#### MobileNetV2: Inverted Residuals and Linear Bottlenecks
+Designed specifically for mobile and resource-constrained environments, MobileNetV2 introduced by Sandler et al. (2019) represents a significant advancement in efficient CNN architectures. The core innovation of MobileNetV2 is the inverted residual with linear bottleneck layer module, which significantly reduces the memory footprint and computational cost during inference without sacrificing accuracy (Sandler et al., 2019). This is achieved through a low-dimensional compressed representation that is expanded and then filtered with a lightweight depthwise convolution before being projected back to a low-dimensional representation.
+#### EfficientNet: Rethinking Model Scaling for CNN's
+EfficientNet, proposed by Tan and Le (2020), introduces a new model scaling method that uniformly scales all dimensions of depth, width, and resolution using a simple yet highly effective compound scaling method. This balanced scaling approach enables EfficientNet to achieve superior performance while being much smaller and faster than previous models (Tan and Le, 2020). For instance, EfficientNet-B7 achieves state-of-the-art 84.3% top-1 accuracy on ImageNet, being 8.4x smaller and 6.1x faster on inference compared to traditional CNN architectures (Tan and Le, 2020).
 ## Contributions
-
 This paper has four main contributions. Firstly, we address the limitations of current geolocation models by developing a novel approach that leverages low-resolution images, enabling accurate geolocation in more realistic and diverse scenarios. Secondly, we enhance the dataset by expanding it to include more countries, ensuring a balanced and distributed representation, which is crucial for mitigating biases present in state-of-the-art models. Thirdly, we tackle hardware limitations by optimizing image sizes, making the model more accessible and efficient for deployment on various hardware platforms. Finally, we propose a new methodology for training and fine-tuning our model, incorporating the latest advancements in transfer learning and data augmentation techniques, which significantly improve the model's performance and generalizability across different real-world applications. 
 
 Our contributions aim to advance the field of image geolocation, making it more practical and effective for a wide range of applications, from aiding in disaster response to rediscovering family histories and beyond. By addressing these key challenges, we believe our work will pave the way for the development of more robust and universally applicable geolocation technologies.
@@ -181,19 +186,28 @@ ___
 1. **Understanding and Application:** This section allows students to demonstrate their understanding of various methodologies and their ability to apply appropriate techniques to their specific project.
 2. **Rationale and Justification:** Discussing the methods used provides insight into the student’s decision-making process and the rationale behind choosing specific approaches.
 ___
-## Transfer Learning
+## Model architectures
+To develop a robust and efficient image classification model for predicting the geographical origin of low-resolution images, we employ several state-of-the-art convolutional neural network (CNN) architectures. These architectures, known for their advanced design and high performance in image recognition tasks, are utilized in our research to ensure optimal results, as detailed in the Literature Review above. We specifically focus on ResNet, MobileNetV2, and EfficientNet architectures, each offering unique advantages for our project.
 
-### Model architectures -> ls
-Follows... also take the literature from the sources! Without them, we just have 6 and need 7 in total. 
+**Addressing the Degradation Problem in Deep Networks.** ResNet's deep residual learning framework effectively addresses the degradation problem in deep neural networks by allowing layers to learn residual functions. This approach mitigates the vanishing gradient problem and enables the training of extremely deep networks. ResNet's robustness and generalizability are evident in its performance on the ImageNet dataset, where the 152-layer ResNet achieved a top-5 error rate of 4.49% (He et al., 2015). These characteristics make ResNet an ideal baseline model for our research, aiming to predict the country of origin for low-resolution images.
 
-___
-Sources:
-[5]: [EfficientNet Rethinking Model Scaling for CNNs](https://arxiv.org/abs/1905.11946)
-[6]: [MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/abs/1801.04381)
-[7]: [Deep Residual Learning for Image Recognition / ResNet](https://arxiv.org/abs/1512.03385)
-___
-### Data augmentation -> ls
-### Hyperparameter tuning -> ls
+**Efficient Architectures for Mobile and Resource-Constrained Environments.** Designed for mobile and resource-constrained environments, MobileNetV2 represents a significant advancement in efficient CNN architectures. The core innovation of MobileNetV2 is the inverted residual with linear bottleneck layer module, which reduces memory footprint and computational cost during inference without sacrificing accuracy (Sandler et al., 2019). This efficiency makes MobileNetV2 particularly suited for our project, where we aim to develop a model that can run efficiently on various hardware platforms while maintaining high accuracy.
+
+**Balancing Performance and Efficiency in Model Scaling.** EfficientNet introduces a model scaling method that uniformly scales depth, width, and resolution using a simple yet effective compound scaling method. This balanced scaling approach enables EfficientNet to achieve superior performance while being much smaller and faster than previous models (Tan and Le, 2020). EfficientNet's combination of high accuracy and low computational requirements makes it an excellent choice for our project, where hardware efficiency is critical.
+
+By leveraging these advanced CNN architectures and fine-tuning them on our custom dataset, we aim to develop a high-performing, efficient model capable of accurately predicting the geographical origin of images with minimal hardware resources.
+## Training and Fine-Tuning
+
+For our project, we use the following models from the selected architectures:
+- **ResNet**: ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
+- **MobileNet**: MobileNetV2, MobileNetV3 Small, MobileNetV3 Large
+- **EfficientNet**: EfficientNet-B1, EfficientNet-B3, EfficientNet-B4, EfficientNet-B7
+
+These models are pre-trained on the ImageNet dataset and ....
+
+
+## Data augmentation -> ls
+## Hyperparameter tuning -> ls
 ## Human baseline performance
 
 ### Collection of baseline scores
@@ -283,3 +297,6 @@ ___
 4. Banerjee, Arsh. “Image Geolocation with Computer Vision,” arshbanerjee, May 9, 2023.  http://www.arshbanerjee.com/uploads/paper/3bda9_20230723185809.pdf
 5. Haas, Lukas, Michal Skreta, Silas Alberti, and Chelsea Finn. “PIGEON: Predicting Image Geolocations.” arXiv, May 28, 2024. https://arxiv.org/abs/2307.05845.
 6. Dayton, Finn, Jeffrey Heo, and Eric Werner. “CNN Plays Geoguessr: Transfer Learning on ResNet50 for Classifying Street View Images,” cs229, n.d., 2023. https://www.finndayton.com/CS229_Final_Report.pdf
+7. He, Kaiming, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. “Deep Residual Learning for Image Recognition.” arXiv, December 10, 2015. https://arxiv.org/abs/1512.03385.
+8. Sandler, Mark, Andrew Howard, Menglong Zhu, Andrey Zhmoginov, and Liang-Chieh Chen. “MobileNetV2: Inverted Residuals and Linear Bottlenecks.” arXiv, March 21, 2019. https://arxiv.org/abs/1801.04381.
+9. Tan, Mingxing, and Quoc V. Le. “EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks.” arXiv, September 11, 2020. https://arxiv.org/abs/1905.11946.
