@@ -387,7 +387,7 @@ class GeoModelTrainer:
                 if self.use_regions:
                     # Get the country for each region
                     target_countries = country_indices.to(self.device)
-                    predicted_countries_top5 = torch.tensor([[self.region_index_to_country_index.get(region_index, -1) for region_index in top5] for top5 in predicted_top5]).to(self.device)
+                    predicted_countries_top5 = torch.tensor([[self.region_index_to_country_index.get(region_index.item(), -1) for region_index in top5] for top5 in predicted_top5]).to(self.device)
                     countries_correct = predicted_countries_top5.eq(target_countries.view(-1, 1).expand_as(predicted_countries_top5))
                     # Calculate different accuracies
                     top1_correct_country += countries_correct[:, 0].sum().item()

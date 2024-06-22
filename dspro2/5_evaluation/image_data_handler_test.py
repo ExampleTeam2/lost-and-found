@@ -92,6 +92,8 @@ class TestImageDataHandler:
           
           # Load the file into a variable
           self.region_index_to_middle_point = json.loads(json_response.text)
+          # Convert the keys to integers
+          self.region_index_to_middle_point = {int(k): v for k, v in self.region_index_to_middle_point.items()}
           
         if region_index_to_country_index_path is not None:
           # Load the region_index_to_country_index mapping
@@ -102,5 +104,7 @@ class TestImageDataHandler:
           
           # Load the file into a variable
           self.region_index_to_country_index = json.loads(json_response.text)
+          # Convert the keys to integers
+          self.region_index_to_country_index = {int(k): v for k, v in self.region_index_to_country_index.items()}
         
         self.test_loader = DataLoader(CustomImageDataset(images, coordinates, countries, regions, country_to_index=self.country_to_index, region_to_index=self.region_to_index), batch_size=batch_size, shuffle=False)
