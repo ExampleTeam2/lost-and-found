@@ -102,10 +102,16 @@ To make sure our data is collected correctly, we manually inspected it periodica
 
 We can't train the classifier using images in a high resolution, because our resources are limited, and also often images (like from missing persons) are also very low quality. So we decided to reduce the resolution, at the beginning of the processing, about the 1/4 of the original resolution of 1280p x 720p. This also helps to move the images for learning to the server or also between us and also loading takes lot less time for future processing steps. 
 
-### Enriching (Singleplayer coordinates, Multiplayer names) -> ls
-Follows...
+### Country Enriching (Singleplayer coordinates, Multiplayer names)
+In our project, we focused on collecting images from Geoguessr in Singleplayer mode to ensure we obtained real images with precise coordinates. In contrast, images collected in Multiplayer mode only provide the actual country name without exact coordinates. Initially, we faced a ban from Multiplayer mode due to unauthorized webpage injections, which violated Geoguessr's policies. Additionally, we discovered that images from Multiplayer mode often had incorrect coordinates, leading us to concentrate our efforts on Singleplayer mode for accurate data collection.
 
-(Issues with reverse geocoding, country name matching)
+Our objective is to explore different approaches using low-resolution images to evaluate their effectiveness in predicting coordinates, regions, and countries. For this purpose, we require all three pieces of information for each image, enabling us to train models for accurate predictions. Throughout the process, we encountered various challenges. Reverse geocoding allowed us to derive country information from coordinates, but the `pycountry` module did not always provide comprehensive location data. For example, Kosovo is not officially recognized by `pycountry`, necessitating its manual addition to our country list. This adjustment was crucial since Geoguessr included information about Kosovo, which was not covered by the `reverse_geocoder` and `pycountry` modules.
+
+We also faced difficulties mapping the correct country to the provided data when names were derived from Multiplayer mode. To address this, we implemented fuzzy matching to find the best match for each image based on the given data from the JSON files, ensuring accurate country assignment.
+
+To enhance the efficiency of processing our large dataset, we employed multiple workers to handle the data concurrently. This approach significantly improved the processing speed by batching the dataset and utilizing parallel processing.
+
+<font color="red">(Issues with reverse geocoding, country name matching) - What exactly issues? Did I mention all of them?</font>
 
 ### Region Enriching (Source, Mapping)
 
