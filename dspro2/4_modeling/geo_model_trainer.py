@@ -337,7 +337,6 @@ class GeoModelTrainer:
           gc.collect()
           torch.cuda.empty_cache()  
 
-
   def run_epoch(self, optimizer, is_train=True, is_test=False):
     if is_train:
         self.model.train()
@@ -353,17 +352,23 @@ class GeoModelTrainer:
     top5_correct = 0
     top5_correct_country = 0
     data_loader = self.train_dataloader if is_train else (self.val_dataloader if not is_test else self.test_dataloader)
+    
+    # Because now the same country can be in the top 5 multiple times, we need to calculate the top k correct differently
+    # Only needed for the country accuracy when predicting regions
+    # Do not use for the normal country/region accuracy because the top 5 predictions are unique and this is less efficient
+    def calculate_topk_multiple(countries_correct, k):
+        return torch.min(countries_correct[:, :k].sum(dim=1), torch.ones(countries_correct.size(0), device=self.device)).sum().item()
 
     for images, coordinates, country_indices, region_indices in data_loader:
         with torch.set_grad_enabled(is_train):
             images = images.to(self.device)
-            targets = coordinates.to(self.device) if self.use_coordinates else (country_indices.to(self.device) if self.use_regions else region_indices.to(self.device))
+            targets = coordinates.to(self.device) if self.use_coordinates else (region_indices.to(self.device) if self.use_regions else country_indices.to(self.device))
             if is_train:
               optimizer.zero_grad()
             outputs = self.model(images)
             probabilities = F.softmax(outputs, dim=1)
             loss = self.criterion(outputs, targets) if not self.use_regions else self.criterion(outputs, self.region_middle_points, coordinates)
-      
+
             if is_train:
                 loss.backward()
                 optimizer.step()
@@ -389,10 +394,11 @@ class GeoModelTrainer:
                     target_countries = country_indices.to(self.device)
                     predicted_countries_top5 = torch.tensor([[self.region_index_to_country_index.get(region_index.item(), -1) for region_index in top5] for top5 in predicted_top5]).to(self.device)
                     countries_correct = predicted_countries_top5.eq(target_countries.view(-1, 1).expand_as(predicted_countries_top5))
+                    
                     # Calculate different accuracies
-                    top1_correct_country += countries_correct[:, 0].sum().item()
-                    top3_correct_country += countries_correct[:, :3].sum().item()
-                    top5_correct_country += countries_correct[:, :5].sum().item()
+                    top1_correct_country += calculate_topk_multiple(countries_correct, 1)
+                    top3_correct_country += calculate_topk_multiple(countries_correct, 3)
+                    top5_correct_country += calculate_topk_multiple(countries_correct, 5)
 
     avg_loss = total_loss / len(data_loader.dataset)
     
