@@ -566,7 +566,7 @@ def _get_list_from_remote(download_link, file_location, json_file_location = Non
   print('All remote files: ' + str(len(all_files)))
   return basenames, basenames_to_locations_map
 
-def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir='./tmp', always_load_zip=False):
+def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir='./tmp', always_load_zip=False, only_load_zip=False):
   # Create tmp_dir if it does not exist
   if not os.path.exists(tmp_dir):
     os.makedirs(tmp_dir)
@@ -574,20 +574,21 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir='./tmp', always_l
     os.makedirs(path)
   skip_zip = False
   loaded_zip = False
-  # Copy all .pth files to tmp_dir if they exist
-  # And copy all .wandb files to tmp_dir if they exist
-  for file in os.listdir(path):
-    if file.endswith('.pth'):
-      skip_zip = True
-      # Copy file to tmp_dir
-      print('Copying ' + file)
-      shutil.copyfile(os.path.join(path, file), os.path.join(tmp_dir, file))
-      print('Copied ' + file)
-    elif file.endswith('.wandb'):
-      # Copy file to tmp_dir
-      print('Copying ' + file)
-      shutil.copyfile(os.path.join(path, file), os.path.join(tmp_dir, file))
-      print('Copied ' + file)
+  if not only_load_zip:
+    # Copy all .pth files to tmp_dir if they exist
+    # And copy all .wandb files to tmp_dir if they exist
+    for file in os.listdir(path):
+      if file.endswith('.pth'):
+        skip_zip = True
+        # Copy file to tmp_dir
+        print('Copying ' + file)
+        shutil.copyfile(os.path.join(path, file), os.path.join(tmp_dir, file))
+        print('Copied ' + file)
+      elif file.endswith('.wandb'):
+        # Copy file to tmp_dir
+        print('Copying ' + file)
+        shutil.copyfile(os.path.join(path, file), os.path.join(tmp_dir, file))
+        print('Copied ' + file)
   if not skip_zip or always_load_zip:
     loaded_zip = True
     # Check if zip file exists at path, if yes, unzip it into tmp_dir (so all files are in the tmp_dir)
@@ -610,15 +611,15 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir='./tmp', always_l
     
   return loaded_zip
     
-def _load_from_zips_to_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp', always_load_zip=False):
+def _load_from_zips_to_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp', always_load_zip=False, only_load_zip=False):
   zip_name = 'files.zip'
   loaded_zip = False
   if file_location is not None:
-    loaded_zip = _copy_and_unzip_files(file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip)
+    loaded_zip = _copy_and_unzip_files(file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip, only_load_zip=only_load_zip)
   if json_file_location != file_location and json_file_location is not None and type != 'png':
-    loaded_zip = _copy_and_unzip_files(json_file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip)
+    loaded_zip = _copy_and_unzip_files(json_file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip, only_load_zip=only_load_zip)
   if image_file_location != file_location and image_file_location is not None and type != 'json':
-    loaded_zip = _copy_and_unzip_files(image_file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip)
+    loaded_zip = _copy_and_unzip_files(image_file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip, only_load_zip=only_load_zip)
     
   return loaded_zip
     
@@ -812,7 +813,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
     json_file_location = tmp_dir
     image_file_location = tmp_dir
     if return_zip_load_and_additional_save_callback and not loaded_zip:
-      zip_load_callback = lambda: _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=True)
+      zip_load_callback = lambda: _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=True, only_load_zip=True)
   
   basenames, basenames_to_locations_map, downloadable_files, pre_downloaded_new_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks, num_download_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
   downloaded_new_files = pre_downloaded_new_files
