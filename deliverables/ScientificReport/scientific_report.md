@@ -96,6 +96,8 @@ Initially we had a lot of issues with stability, especially with our parallelize
 To make sure our data is collected correctly, we manually inspected it periodically. Any faults we noticed in the images like black screens and blurring, we would address later in our filtering. However, we also had to inspect whether the coordinates and countries were accurate.
 
 (After an initial run of our singleplayer script, we noticed that the way we collected coordinates in multiplayer did no longer work and had been collecting incorrect coordinates for tens of thousands of images. To address this, we built an additional script looking up the correct coordinates using the "game id", this was a lot quicker than the collection of new data, allowing us to correct the mistake quite quickly. We also then used this new way of looking up coordinates for our collection script.)
+
+<font color="red"> Also write about the ToS we searched and that is not mentioned about web scrapping and therefore it is allowed if it is not exactly permitted from the ToS. </font>
 ## Data processing
 
 ### Resizing of the images
@@ -209,7 +211,7 @@ For our project, we use the following models from the selected architectures:
 - **MobileNet**: MobileNetV2, MobileNetV3 Small, MobileNetV3 Large
 - **EfficientNet**: EfficientNet-B1, EfficientNet-B3, EfficientNet-B4, EfficientNet-B7
 
-These models are pre-trained on the ImageNet dataset and ....
+These models are pre-trained on the ImageNet dataset and .... write more here...
 
 ## Data augmentation -> ls
 ## Hyperparameter tuning -> ls
