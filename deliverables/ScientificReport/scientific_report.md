@@ -142,7 +142,8 @@ To filter images we started by setting a minimum threshold of the biggest varian
 <-INSERT SAMPLE PICTURES WITH VARIANCE>
 
 Additionally, we realized that some rounds were in the exact same locations, so we decided to filter out duplicates by comparing the coordinates, only keeping the first image. This, as well as the image filtering, comes with the added benefit of filtering corrupted data, which would otherwise have to be handled in our training code.
-## Coordinate prediction attempt
+## Prediction approaches
+### Predicting Coordinates: Mean Squared Error 
 The initial approach we took was to predict the exact coordinates of a location. We initially believed this would be easier since coordinate prediction is a basic method. However, after a few training iterations, we realized this approach was more challenging than predicting countries or regions due to several issues.
 
 The first problem was the distribution of our dataset compared to the actual distribution of locations on Earth. From Geoguessr, we collected 81,505 mapped images, with a fairly even distribution after filtering, and a total of 332,786 images without checked distribution. Despite our efforts to ensure even distribution, the dataset was not uniformly spread across the globe. This imbalance meant that incorrect model predictions often resulted in large geographical errors, increasing the loss significantly.
@@ -150,11 +151,24 @@ The first problem was the distribution of our dataset compared to the actual dis
 We observed that while the network performed well on the training set for the first 10 epochs, the validation accuracy for distance was poor. The model struggled to predict the correct continent in the validation set, resulting in high mean loss. We used Mean Squared Error (MSE) and the Haversine distance to calculate the loss, as explained in the "Regions with Custom Loss" subsection. Although we had a mean loss error, it was unclear where the model was making incorrect predictions.
 
 To address this issue, we shifted our focus to the other two approaches: predicting countries and predicting regions. Predicting countries is a classification problem, making it more straightforward. By predicting regions, we can map countries to regions, allowing for a more detailed comparison of results. This fine-grained approach helps us understand which country and region the model believes the image was taken in, making it easier to identify where and why the model makes incorrect predictions and how far off these predictions are from the actual locations.
-## Countries with cross-entropy -> ls
+### Predicting Countries: Categorical Cross-Entropy
+For predicting the countries, we use torch.nn.CrossEntropyLoss to calculate the loss. This method is well-suited for our classification problem, as it measures how well a predicted probability distribution matches the actual distribution (or ground truth) of class labels.
 
-Basic method (Cross-entropy, ...)
+First, we create a unique mapping list for each dataset, identifying countries by their indices. This mapping allows us to convert country names to indices and vice versa. We then map the countries from the labels to their actual indices in all test splits. Additionally, we calculate the loss using the raw logits from the model without applying softmax, as CrossEntropyLoss internally handles the softmax operation.
 
-## Regions with custom loss
+We save this information to Weights and Biases (wandb) to ensure the mappings are correctly and centrally stored for each run. The loss for the predictions is calculated using the following formula:
+$$
+L = -\frac{1}{N} \sum_{i=1}^{N} \log \left( \frac{e^{x_{i, y_i}}}{\sum_{j} e^{x_{i,j}}} \right)
+$$
+where:
+
+- $L$ is the categorical cross-entropy loss.
+- $N$ is the number of samples.
+- $x_{i,j}$ is the predicted score/logit for class $j$ for sample $i$.
+- $y_i$ is the true class label for the sample $i$.
+
+By implementing this method, we ensure that our model's predictions are evaluated accurately, providing us with a reliable metric to improve our classification models.
+### Predicting Regions: Custom haversine smooth loss
 
 For the region-prediction we use a custom loss function. Which, in short text, is a loss function  not only look if the correct region is predicted, it considers also the distance to the correct coordinates. Which means if the predicted region is only slightly off then the loss is not that big like if it is far off.
 There is the paper “PIGEON: Predicting Image Geolocations” from Stanford University, which comes in handy for this task. They're using the haversine smooth loss function. (Haas et al., 2024).
@@ -167,7 +181,7 @@ $$
 \text{Hav}(\mathbf{p_1}, \mathbf{p_2}) = 2r \arcsin \left( \sqrt{\sin^2 \left( \frac{\phi_2 - \phi_1}{2} \right) + \cos(\phi_1) \cos(\phi_2) \sin^2 \left( \frac{\lambda_2 - \lambda_1}{2} \right)} \right) 
 $$
 
-where
+where:
 
 * $r$ is the radius of the Earth (6371 km in this implementation),
 * $\mathbf{p_1}, \mathbf{p_2}$ are the 2 points with longitude $\lambda$ and latitude $\phi$
