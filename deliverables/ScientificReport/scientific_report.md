@@ -220,14 +220,14 @@ To develop a robust and efficient image classification model for predicting the 
 
 By leveraging these advanced CNN architectures and fine-tuning them on our custom dataset, we aim to develop a high-performing, efficient model capable of accurately predicting the geographical origin of images with minimal hardware resources.
 ## Training and Fine-Tuning
-
-For our project, we use the following models from the selected architectures:
+For our project, we use the following models from selected architectures:
 - **ResNet**: ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
 - **MobileNet**: MobileNetV2, MobileNetV3 Small, MobileNetV3 Large
 - **EfficientNet**: EfficientNet-B1, EfficientNet-B3, EfficientNet-B4, EfficientNet-B7
 
-These models are pre-trained on the ImageNet dataset and .... write more here...
+To be resource-efficient and enable training the CNN architectures with affordable hardware, we decided to use pre-trained weights and replace the last classification layer with a custom classification layer that matches the classes for the countries or regions in our datasets. For the training, we reduce the learning rate for the layers with the pre-trained weights by a factor of 10, allowing the network to focus more on training the new classification layer with randomly initialized weights while fine-tuning the existing layers with pre-trained weights. The pre-trained weights we use are the default weights from the torch models, IMAGENET1K_V1 and IMAGENET1K_V2, which we loaded and used throughout our project. Our goal is to allow the new classification layer to learn more effectively while merely fine-tuning the existing layers.
 
+Additionally, we considered integrating all possible countries and regions into the models for the final classification layer to make the models more adaptable for multiple tasks and other datasets. This approach could facilitate further training with more data, including more countries and regions, at a later stage. However, we decided against this to help the network perform better with the existing classes in our dataset. Including too many classes would introduce additional complexity and potential issues due to class imbalance and insufficient representation in the training data.
 ## Data augmentation -> ls
 ## Hyperparameter tuning -> ls
 ## Human baseline performance
