@@ -98,6 +98,8 @@ To make sure our data is collected correctly, we manually inspected it periodica
 (After an initial run of our singleplayer script, we noticed that the way we collected coordinates in multiplayer did no longer work and had been collecting incorrect coordinates for tens of thousands of images. To address this, we built an additional script looking up the correct coordinates using the "game id", this was a lot quicker than the collection of new data, allowing us to correct the mistake quite quickly. We also then used this new way of looking up coordinates for our collection script.)
 
 <font color="red"> Also write about the ToS we searched and that is not mentioned about web scrapping and therefore it is allowed if it is not exactly permitted from the ToS. </font>
+
+## Data Analysis?? (We do not have this section now...)
 ## Data processing
 
 ### Resizing of the images
@@ -140,18 +142,17 @@ To filter images we started by setting a minimum threshold of the biggest varian
 <-INSERT SAMPLE PICTURES WITH VARIANCE>
 
 Additionally, we realized that some rounds were in the exact same locations, so we decided to filter out duplicates by comparing the coordinates, only keeping the first image. This, as well as the image filtering, comes with the added benefit of filtering corrupted data, which would otherwise have to be handled in our training code.
+## Coordinate prediction attempt
+The initial approach we took was to predict the exact coordinates of a location. We initially believed this would be easier since coordinate prediction is a basic method. However, after a few training iterations, we realized this approach was more challenging than predicting countries or regions due to several issues.
 
-___
-**Requirements:**
-1. **Core Competency in Data Science:** Data processing is a fundamental step in any data science project. Demonstrating this process shows the student's ability to handle and prepare data for analysis, which is a critical skill in the field.
-2. **Transparency and Reproducibility:** Detailing the data processing steps ensures transparency and aids in the reproducibility of the results, which are key aspects of scientific research.
-___
+The first problem was the distribution of our dataset compared to the actual distribution of locations on Earth. From Geoguessr, we collected 81,505 mapped images, with a fairly even distribution after filtering, and a total of 332,786 images without checked distribution. Despite our efforts to ensure even distribution, the dataset was not uniformly spread across the globe. This imbalance meant that incorrect model predictions often resulted in large geographical errors, increasing the loss significantly.
 
-To talk about:
+We observed that while the network performed well on the training set for the first 10 epochs, the validation accuracy for distance was poor. The model struggled to predict the correct continent in the validation set, resulting in high mean loss. We used Mean Squared Error (MSE) and the Haversine distance to calculate the loss, as explained in the "Regions with Custom Loss" subsection. Although we had a mean loss error, it was unclear where the model was making incorrect predictions.
+
+To address this issue, we shifted our focus to the other two approaches: predicting countries and predicting regions. Predicting countries is a classification problem, making it more straightforward. By predicting regions, we can map countries to regions, allowing for a more detailed comparison of results. This fine-grained approach helps us understand which country and region the model believes the image was taken in, making it easier to identify where and why the model makes incorrect predictions and how far off these predictions are from the actual locations.
+## Countries with cross-entropy -> ls
 
 Basic method (Cross-entropy, ...)
-
-(Coordinates attempt)
 
 ## Regions with custom loss
 
@@ -256,6 +257,13 @@ For monitoring and deploying we log and push all of our run data to "Weights and
 To talk about:
 
 Creating the demo for the geoguessr wizard and how we are deploying the model in this real-world scenario
+
+
+___
+**Requirements:**
+1. **Core Competency in Data Science:** Data processing is a fundamental step in any data science project. Demonstrating this process shows the student's ability to handle and prepare data for analysis, which is a critical skill in the field.
+2. **Transparency and Reproducibility:** Detailing the data processing steps ensures transparency and aids in the reproducibility of the results, which are key aspects of scientific research.
+___
 
 ___
 **Requirements:**
