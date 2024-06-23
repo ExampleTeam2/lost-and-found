@@ -280,7 +280,7 @@ class GeoModelTrainer:
           # Get directory of the run (without /files)
           run_dir = os.path.dirname(run_dir) if run_dir.endswith("files") else run_dir
           print('Saving artifacts to:', run_dir)
-          wandb_model_path = os.path.join(run_dir, raw_model_path)
+          wandb_model_path = os.path.join(wandb.run.dir, raw_model_path)
           
           if self.country_to_index is not None:
               # copy to run directory
