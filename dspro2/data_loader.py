@@ -885,8 +885,10 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
       additional_save_callback = lambda: _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, only_additional=True, skip_additional=False)
     if downloaded_new_files:
       _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, only_additional=False, skip_additional=True)
-    # delete zip file
-    os.remove(os.path.join(current_dir, 'files.zip'))
+    # delete zip file if it was loaded
+    zip_path = os.path.join(current_dir, 'files.zip')
+    if os.path.exists(zip_path):
+      os.remove(zip_path)
       
   # if no loading file, use the just discovered files
   files_to_load = basenames
