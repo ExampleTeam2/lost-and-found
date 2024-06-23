@@ -14,10 +14,10 @@ from torchvision.models import mobilenet_v2, mobilenet_v3_small, mobilenet_v3_la
 from torchvision.models import ResNet18_Weights, ResNet34_Weights, ResNet50_Weights, ResNet101_Weights, ResNet152_Weights
 from torchvision.models.efficientnet import EfficientNet_B1_Weights, EfficientNet_B3_Weights, EfficientNet_B4_Weights, EfficientNet_B7_Weights
 import numpy as np
-
 import wandb
 import uuid
 from shapely.geometry import Point
+from sklearn.metrics import balanced_accuracy_score
 
 from custom_haversine_loss import GeolocalizationLoss
 
@@ -337,7 +337,7 @@ class GeoModelTrainer:
           gc.collect()
           torch.cuda.empty_cache()  
 
-  def run_epoch(self, optimizer, is_train=True, is_test=False):
+  def run_epoch(self, optimizer, is_train=True, is_test=False, use_balanced_accuracy=False):
     if is_train:
         self.model.train()
     else:
@@ -351,6 +351,13 @@ class GeoModelTrainer:
     top3_correct_country = 0
     top5_correct = 0
     top5_correct_country = 0
+    # for balanced accuracy calculation
+    all_targets = []
+    all_predictions = []
+    # for country accuracy when predicting regions
+    all_country_targets = []
+    all_country_predictions = []
+
     data_loader = self.train_dataloader if is_train else (self.val_dataloader if not is_test else self.test_dataloader)
     
     # Because now the same country can be in the top 5 multiple times, we need to calculate the top k correct differently
@@ -364,7 +371,7 @@ class GeoModelTrainer:
             images = images.to(self.device)
             targets = coordinates.to(self.device) if self.use_coordinates else (region_indices.to(self.device) if self.use_regions else country_indices.to(self.device))
             if is_train:
-              optimizer.zero_grad()
+                optimizer.zero_grad()
             outputs = self.model(images)
             probabilities = F.softmax(outputs, dim=1)
             loss = self.criterion(outputs, targets) if not self.use_regions else self.criterion(outputs, self.region_middle_points, coordinates)
@@ -389,6 +396,11 @@ class GeoModelTrainer:
                 top1_correct += correct[:, 0].sum().item()
                 top3_correct += correct[:, :3].sum().item()
                 top5_correct += correct[:, :5].sum().item()
+                
+                # Store all targets and predictions for balanced accuracy calculation
+                all_targets.extend(targets.cpu().numpy())
+                all_predictions.extend(predicted_top5[:, 0].cpu().numpy())
+
                 if self.use_regions:
                     # Get the country for each region
                     target_countries = country_indices.to(self.device)
@@ -399,6 +411,10 @@ class GeoModelTrainer:
                     top1_correct_country += calculate_topk_multiple(countries_correct, 1)
                     top3_correct_country += calculate_topk_multiple(countries_correct, 3)
                     top5_correct_country += calculate_topk_multiple(countries_correct, 5)
+                    
+                    # Store all country targets and predictions for balanced accuracy calculation
+                    all_country_targets.extend(target_countries.cpu().numpy())
+                    all_country_predictions.extend(predicted_countries_top5[:, 0].cpu().numpy())
 
     avg_loss = total_loss / len(data_loader.dataset)
     
@@ -410,12 +426,27 @@ class GeoModelTrainer:
         top3_accuracy = top3_correct / len(data_loader.dataset)
         top5_accuracy = top5_correct / len(data_loader.dataset)
 
+        if use_balanced_accuracy:
+            balanced_acc = balanced_accuracy_score(all_targets, all_predictions)
+        else:
+            balanced_acc = None
+
     if self.use_coordinates:
         return avg_loss, avg_metric
     elif self.use_regions:
         top1_correct_country = top1_correct_country / len(data_loader.dataset)
         top3_correct_country = top3_correct_country / len(data_loader.dataset)
         top5_correct_country = top5_correct_country / len(data_loader.dataset)
+        
+        if use_balanced_accuracy:
+            balanced_country_acc = balanced_accuracy_score(all_country_targets, all_country_predictions)
+        else:
+            balanced_country_acc = None
+            
+        if balanced_acc is not None and balanced_country_acc is not None:
+            return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, balanced_acc, balanced_country_acc
         return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country
     else:
+        if balanced_acc is not None:
+            return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy, balanced_acc
         return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy
