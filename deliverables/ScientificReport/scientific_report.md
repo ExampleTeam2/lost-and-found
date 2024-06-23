@@ -231,21 +231,26 @@ For our project, we use the following models from selected architectures:
 To be resource-efficient and enable training the CNN architectures with affordable hardware, we decided to use pre-trained weights and replace the last classification layer with a custom classification layer that matches the classes for the countries or regions in our datasets. For the training, we reduce the learning rate for the layers with the pre-trained weights by a factor of 10, allowing the network to focus more on training the new classification layer with randomly initialized weights while fine-tuning the existing layers with pre-trained weights. The pre-trained weights we use are the default weights from the torch models, IMAGENET1K_V1 and IMAGENET1K_V2, which we loaded and used throughout our project. Our goal is to allow the new classification layer to learn more effectively while merely fine-tuning the existing layers.
 
 Additionally, we considered integrating all possible countries and regions into the models for the final classification layer to make the models more adaptable for multiple tasks and other datasets. This approach could facilitate further training with more data, including more countries and regions, at a later stage. However, we decided against this to help the network perform better with the existing classes in our dataset. Including too many classes would introduce additional complexity and potential issues due to class imbalance and insufficient representation in the training data.
-## Data augmentation -> ls
-Data augmentation is a very important task for computer vision tasks, especially when CNN networks are used. CNN networks are very powerful in computer vision tasks but they also have some issues, which are needed to be addressed. One big issue is how they recognize objects and different patterns. They can very goo identify different objects and patterns, but if the pattern or the objects have a different rotation or different perspective or view, CNNs cannot identify those objects or patterns anymore. Therefore it is crucial to also augment the training data with some settings to make the model more robust for different images and prepare the model for the case, that identical objects can also be the same with different angles or if they are squetches or squeezed. Especially for our case with the guogeussr images, this part is crucial. The images are every time taken by a Google car with the same height and the same settings for the cameras. This has a big benefit for learning the network with these same images in their setting, it is easier part for learn it from the very same perspective. This leads to better accuracy of the model, but it generalized poorly on other datasets that are not taken from Google. 
-To see the difference in the performance we will train our model with and without data augmentation to measure the different performance and we will also test in the end the best models with other data sets to measure how good the models are generalizing, this will also be very interesting to compare the best models with and without data augmentation.
+## Data augmentation
+Data augmentation is crucial for computer vision tasks, especially when using CNN networks. While CNNs are very powerful in identifying objects and patterns, they struggle with variations in rotation, perspective, or view. To address this, it is essential to augment the training data to make the model more robust to different image transformations. This prepares the model to recognize identical objects from different angles or if they are stretched or squeezed.
 
-For our specific case with google street view images, we did the following augmentation to the training data.
+For our Geoguessr images, data augmentation is particularly important. The images are consistently taken by a Google car with the same height and camera settings. This consistency helps the model learn from a uniform perspective, improving accuracy. However, it also means the model might generalize poorly to other datasets not taken from Google Street View. 
 
+To evaluate the impact of data augmentation, we will train our model with and without augmentation, comparing performance on different datasets to see how well the models generalize. This comparison will be insightful in understanding the effectiveness of data augmentation. For our specific case with Google Street View images, we applied the following augmentations to the training data:
 
+- **Random Resized Crop**: This augmentation randomly crops the image and resizes it to the original size. This helps the model learn to recognize objects in different parts of the image and at different scales, addressing the issue of objects appearing in varied locations within the frame.
+- **Random Rotation**: This augmentation randomly rotates the image by up to 10 degrees. It helps the model become invariant to slight rotations, which is important since objects in Google Street View images can appear slightly rotated due to changes in the car's movement or camera alignment.
+- **Color Jitter**: This augmentation randomly changes the brightness, contrast, saturation, and hue of the image. For example, varying the brightness can simulate different times of day (e.g., night vs. bright daylight), while adjusting the hue and saturation can account for different weather conditions or camera sensor variations. This makes the model more robust to lighting and color changes that are common in real-world scenarios.
 
+<font color="lightgreen"> >>> Add here a picture of the training augmentation to see what it visually >>> </font>
 
+These augmentation techniques are essential for making our model robust and capable of generalizing to different images beyond the specific conditions of Google Street View. By simulating various real-world conditions, we aim to improve the model's ability to handle diverse and unseen environments.
 ## Hyperparameter tuning -> ls
 
-Write about the static parameters, we do not change.
+Write about the static parameters, we do not change...
 
 
-Write about the dynamic parameter we change due to different hyperparameters.
+Write about the dynamic parameter we change due to different hyperparameters...
 
 ## Human baseline performance
 
