@@ -99,7 +99,10 @@ To make sure our data is collected correctly, we manually inspected it periodica
 
 <font color="red"> Also write about the ToS we searched and that is not mentioned about web scrapping and therefore it is allowed if it is not exactly permitted from the ToS. </font>
 
-## Data Analysis?? (We do not have this section now...)
+## Data analysis?? (We do not have this section now...)
+
+<font color="red">Introduce the part Visualize where we see the distribution? </font>
+
 ## Data processing
 
 ### Resizing of the images
@@ -229,7 +232,21 @@ To be resource-efficient and enable training the CNN architectures with affordab
 
 Additionally, we considered integrating all possible countries and regions into the models for the final classification layer to make the models more adaptable for multiple tasks and other datasets. This approach could facilitate further training with more data, including more countries and regions, at a later stage. However, we decided against this to help the network perform better with the existing classes in our dataset. Including too many classes would introduce additional complexity and potential issues due to class imbalance and insufficient representation in the training data.
 ## Data augmentation -> ls
+Data augmentation is a very important task for computer vision tasks, especially when CNN networks are used. CNN networks are very powerful in computer vision tasks but they also have some issues, which are needed to be addressed. One big issue is how they recognize objects and different patterns. They can very goo identify different objects and patterns, but if the pattern or the objects have a different rotation or different perspective or view, CNNs cannot identify those objects or patterns anymore. Therefore it is crucial to also augment the training data with some settings to make the model more robust for different images and prepare the model for the case, that identical objects can also be the same with different angles or if they are squetches or squeezed. Especially for our case with the guogeussr images, this part is crucial. The images are every time taken by a Google car with the same height and the same settings for the cameras. This has a big benefit for learning the network with these same images in their setting, it is easier part for learn it from the very same perspective. This leads to better accuracy of the model, but it generalized poorly on other datasets that are not taken from Google. 
+To see the difference in the performance we will train our model with and without data augmentation to measure the different performance and we will also test in the end the best models with other data sets to measure how good the models are generalizing, this will also be very interesting to compare the best models with and without data augmentation.
+
+For our specific case with google street view images, we did the following augmentation to the training data.
+
+
+
+
 ## Hyperparameter tuning -> ls
+
+Write about the static parameters, we do not change.
+
+
+Write about the dynamic parameter we change due to different hyperparameters.
+
 ## Human baseline performance
 
 ### Collection of baseline scores
