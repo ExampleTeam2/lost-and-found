@@ -196,7 +196,6 @@ $$
 y_{n,i} = \exp \left( - \frac{\text{Hav}(\mathbf{g_i}, \mathbf{x_n}) - \text{Hav}(\mathbf{g_n}, \mathbf{x_n})}{\tau} \right)
 $$
 
-
 where
 
 * $\mathbf{g_i}$​ are the centroid coordinates of the geocell polygon of cell $\mathbf{i}$
@@ -232,9 +231,7 @@ To be resource-efficient and enable training the CNN architectures with affordab
 
 Additionally, we considered integrating all possible countries and regions into the models for the final classification layer to make the models more adaptable for multiple tasks and other datasets. This approach could facilitate further training with more data, including more countries and regions, at a later stage. However, we decided against this to help the network perform better with the existing classes in our dataset. Including too many classes would introduce additional complexity and potential issues due to class imbalance and insufficient representation in the training data.
 ## Data augmentation
-Data augmentation is crucial for computer vision tasks, especially when using CNN networks. While CNNs are very powerful in identifying objects and patterns, they struggle with variations in rotation, perspective, or view. To address this, it is essential to augment the training data to make the model more robust to different image transformations. This prepares the model to recognize identical objects from different angles or if they are stretched or squeezed.
-
-For our Geoguessr images, data augmentation is particularly important. The images are consistently taken by a Google car with the same height and camera settings. This consistency helps the model learn from a uniform perspective, improving accuracy. However, it also means the model might generalize poorly to other datasets not taken from Google Street View. 
+Data augmentation is crucial for computer vision tasks, especially when using CNN networks. While CNNs are very powerful in identifying objects and patterns, they struggle with variations in rotation, perspective, or view. To address this, it is essential to augment the training data to make the model more robust to different image transformations. This prepares the model to recognize identical objects from different angles or if they are stretched or squeezed. For our Geoguessr images, data augmentation is particularly important. The images are consistently taken by a Google car with the same height and camera settings. This consistency helps the model learn from a uniform perspective, improving accuracy. However, it also means the model might generalize poorly to other datasets not taken from Google Street View. 
 
 To evaluate the impact of data augmentation, we will train our model with and without augmentation, comparing performance on different datasets to see how well the models generalize. This comparison will be insightful in understanding the effectiveness of data augmentation. For our specific case with Google Street View images, we applied the following augmentations to the training data:
 
@@ -245,17 +242,15 @@ To evaluate the impact of data augmentation, we will train our model with and wi
 <font color="lightgreen"> >>> Add here a picture of the training augmentation to see what it visually >>> </font>
 
 These augmentation techniques are essential for making our model robust and capable of generalizing to different images beyond the specific conditions of Google Street View. By simulating various real-world conditions, we aim to improve the model's ability to handle diverse and unseen environments.
-## Hyperparameter tuning -> ls
+## Hyperparameter tuning
+Another method we used in this student project is hyperparameter tuning. It is a crucial part of machine learning and helps to find the optimal settings for the model to learn and perform at its best. During hyperparameter tuning, all parameters were saved to Weights and Biases (wandb), which also tracked and saved all the metrics. This platform allowed us to organize training schedules, manage the entire training process, and keep everything centralized. Wandb's filtering capabilities made it easy to retrieve specific runs and compare different accuracies for each country and region. Initially, we set some static parameters that we did not change during hyperparameter tuning. For the optimizer, we used the AdamW optimizer for all runs, which handles weight decay internally. We also used a scheduler to decrease the learning rate after a certain number of epochs to prevent overshooting the learned parameters, with the learning rate being decreased every 10 steps. Although these parameters could be adjusted during hyperparameter tuning, we chose not to tune them due to time constraints and their minimal impact on performance.
 
-Write about the static parameters, we do not change...
+For our hyperparameter tuning, we focused on two different parameters: learning rate and weight decay. We trained the models on five different learning rates: 1e-1, 1e-2, 1e-3, 1e-4, and 1e-5. The learning rate significantly impacts how well the model can learn. After initial experiments with a broader range of learning rates, these five were the most promising during training.
 
-
-Write about the dynamic parameter we change due to different hyperparameters...
-
+Additionally, we applied three different weight decay values: 1e-1, 1e-2, and 1e-3. Weight decay helps penalize large weights in the network, leading to several benefits: reducing overfitting, improving model stability, promoting feature sharing, and enhancing generalization in over-parameterized models. These three weight decay values helped achieve higher performance compared to not using weight decay. We did not need L2 regularization because the AdamW optimizer handles it internally.
 ## Human baseline performance
 
 ### Collection of baseline scores
-
 To compare our model to the performance of a human classifier, we would first have to measure the performance of a similar human. To calculate this, we built a small interactive application using "Gradio" <-LINK>. It loads a random image in our downscaled resolution, though not quite as low as most of our models are trained on, and asks the user to type in the 5 most likely countries. This then allows us to calculate a reasonable Top-1, Top-3 and Top-5 accuracy for comparison with our model.
 
 
@@ -264,11 +259,9 @@ Follows...
 ## Machine Learning Operations (MLOps)
 
 ### Project structure
-
 As we did for our last project ("DSPRO1"), we are using a "monorepo" setup with a pipeline-style setup consisting of numbered folder and subfolders, each representing different stages and sub-stages of our dataflow, from data collection to model training. Every stage consists of at least one Jupyter Notebook, with more helpers and reused python code dispersed throughout the project. Each notebook saves the generated data in its current folder, making the flow obvious. Within each sub-step, the notebooks can be run in arbitrary order because they are not inter-dependent.
 
 ### Handling a lot of files
-
 Differing from our last project, however, is the amount of data. With our scraping generating hundreds of thousands of images, we could not store them in our git repository. Instead, we opted for storing them in our server we had used for scraping, although in a scaled and already enriched format, making it quicker to get our training and repository up and running on a new machine. This server is public to allow for our results to be reproduced.
 
 Using a server for storage made storing the files easy, but it came with the added challenge of reproducibility. Ideally, we would want to store all of our data on the server but only pull the required ones for a particular training, ensuring that they were always the same ones.
