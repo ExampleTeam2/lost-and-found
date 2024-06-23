@@ -9,7 +9,7 @@ sys.path.insert(0, '../4_modeling')
 from geo_model_trainer import GeoModelTrainer
 
 class GeoModelTester(GeoModelTrainer):
-  def __init__(self, datasize, train_dataloader, val_dataloader, test_dataloader, num_classes=2, predict_coordinates=False, country_to_index=None, region_to_index=None, region_index_to_middle_point=None, region_index_to_country_index=None, test_data_path=None, predict_regions=False):
+  def __init__(self, datasize, test_dataloader, train_dataloader=None, val_dataloader=None, num_classes=2, predict_coordinates=False, country_to_index=None, region_to_index=None, region_index_to_middle_point=None, region_index_to_country_index=None, test_data_path=None, predict_regions=False):
       super().__init__(datasize, train_dataloader, val_dataloader, num_classes, predict_coordinates, country_to_index, region_to_index, region_index_to_middle_point, region_index_to_country_index, test_data_path, predict_regions)
       self.test_dataloader = test_dataloader
 

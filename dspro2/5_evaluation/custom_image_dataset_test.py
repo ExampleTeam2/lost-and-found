@@ -23,14 +23,18 @@ class CustomImageDatasetTest(Dataset):
 
     def _remove_images_with_countries_not_in_index(self):
         # Remove images with countries not in the index
+        index_to_remove = []
         for i, country in enumerate(self.countries):
             if country not in self.country_to_index:
                 print(f"Removing image at index {i} with country '{country}' not in the country_to_index mapping.")
-                self.images.pop(i)
-                self.coordinates.pop(i)
-                self.countries.pop(i)
-                self.regions.pop(i)
+                index_to_remove.append(i)
 
+        self.images = [image for i, image in enumerate(self.images) if i not in index_to_remove]
+        self.coordinates = [coordinate for i, coordinate in enumerate(self.coordinates) if i not in index_to_remove]
+        self.countries = [country for i, country in enumerate(self.countries) if i not in index_to_remove]
+        self.regions = [region for i, region in enumerate(self.regions) if i not in index_to_remove]
+            
+                
     def __len__(self):
         return len(self.images)
 
