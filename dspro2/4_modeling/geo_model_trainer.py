@@ -214,7 +214,7 @@ class GeoModelTrainer:
                   val_loss, val_top1_accuracy, val_top3_accuracy, val_top5_accuracy = self.run_epoch(optimizer, is_train=False)
 
               # Even for predicting regions, always use the best model based on validation distance
-              if (self.use_coordinates or self.use_regions and val_metric < best_val_metric) or (not (self.use_coordinates or self.use_regions) and val_top1_accuracy > best_val_metric):
+              if ((self.use_coordinates or self.use_regions) and val_metric < best_val_metric) or ((not (self.use_coordinates or self.use_regions)) and val_top1_accuracy > best_val_metric):
                   if self.use_coordinates or self.use_regions:
                       best_val_metric = val_metric
                   else:
