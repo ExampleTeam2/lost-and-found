@@ -47,25 +47,30 @@ class WandbDownloader:
             }
             for file in run.files():
                 if any(file.name.endswith(extension) for extension in file_names):
-                    key_name = "best_model" if file.name.endswith(".pth") and "best_model" not in run_info["files"] else file.name
+                    key_name = "best_model" if file.name.endswith(".pth") and (not file.name.endswith('test_data.pth')) and "best_model" not in run_info["files"] else file.name.split('/')[-1]
                     run_info["files"][key_name] = file.url
-
+                    
             # Check for test_data.pth
             if "test_data_run_id" in run.summary:
                 test_data_run_id = run.summary.get("test_data_run_id")
                 if test_data_run_id:
+                  try:
                     test_data_run = self.api.run(f"{self.entity}/{self.project}/{test_data_run_id}")
                     for file in test_data_run.files():
                         if file.name == "test_data.pth":
                             run_info["files"]["test_data"] = file.url
                             break
+                  except:
+                    print(f"Could not find test_data.pth for run {run.id}, looks like run {test_data_run_id} was deleted or is part of a different project.")
+            # find file that ends with test_data.pth
             elif "test_data.pth" in run_info["files"]:
                 run_info["files"]["test_data"] = run_info["files"]["test_data.pth"]
-                run_data[run_key] = run_info
+            run_data[run_key] = run_info
         return run_data
 
     def get_and_collect_best_runs(self, metric_name, file_names):
         best_runs = self.get_best_runs(metric_name)
+        print(f"Found {len(best_runs)} matching runs.")
         if not best_runs:
             print("No matching runs found.")
         run_data = self.collect_run_data(best_runs, file_names)
