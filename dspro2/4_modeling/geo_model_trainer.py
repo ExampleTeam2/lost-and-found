@@ -177,7 +177,7 @@ class GeoModelTrainer:
           self.set_seed(config.seed)
           
           # Set seeds, configure optimizers, losses, etc.
-          best_val_metric = float('inf') if self.use_coordinates else 0
+          best_val_metric = float('inf') if self.use_coordinates or self.use_regions else 0
           patience_counter = 0
 
           # Rename run name and initialize parameters in model name
