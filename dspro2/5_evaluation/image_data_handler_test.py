@@ -22,6 +22,9 @@ class TestImageDataHandler:
             parts = parts[3:]
             if 'files' in parts and len(parts) > 1:
               file_name = parts[-1]
+              if parts[-2] == 'files':
+                # remove 'files' from the path
+                parts = parts[:-1]
               run_name = parts[-2]
               test_file_identifier = f"{run_name}/{file_name}"
               
