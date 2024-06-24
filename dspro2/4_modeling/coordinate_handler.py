@@ -1,6 +1,6 @@
 import numpy as np
 
-def coordinates_to_cartesian(lon, lat, R=6371):
+def coordinates_to_cartesian(lat, lon, R=6371):
   # Convert degrees to radians
   lon_rad = np.radians(lon)
   lat_rad = np.radians(lat)
@@ -28,4 +28,4 @@ def cartesian_to_coordinates(x, y, z):
   lon_rad = np.arctan2(y_norm, x_norm)
   lon = np.degrees(lon_rad)
 
-  return (lon, lat)
+  return (lat, lon)

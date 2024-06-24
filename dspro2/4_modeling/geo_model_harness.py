@@ -127,7 +127,6 @@ class GeoModelHarness:
       self.model = model.to(self.device)
   
   def spherical_distance(self, cartesian1, cartesian2, R=6371.0):
-      cartesian1 = cartesian1.to(cartesian2.device)
       dot_product = (cartesian1 * cartesian2).sum(dim=1)
       
       norms1 = cartesian1.norm(p=2, dim=1)

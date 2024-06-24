@@ -16,10 +16,10 @@ class DeployImageDataHandler(InferenceImageDataHandler):
         self.base_transform = base_transform
         self.final_transform = final_transform
       
-    def load_single_image(self, unscaled_image_path, base_transform, final_transform):
-      images = load_image_files(os.path.join(CURRENT_DIR, unscaled_image_path))
+    def load_single_image(self, unscaled_image_path):
+      images = load_image_files([os.path.join(CURRENT_DIR, unscaled_image_path)])
       if self.base_transform is not None and self.final_transform is not None:
-        transform=transforms.Compose([base_transform, final_transform])
+        transform=transforms.Compose([self.base_transform, self.final_transform])
         transformed_images = []
         for image in images:
             transformed_images.append(transform(image))
