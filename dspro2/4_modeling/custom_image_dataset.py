@@ -3,6 +3,8 @@ import json
 import os
 from torch.utils.data import Dataset
 
+from coordinate_handler import coordinates_to_cartesian
+
 class CustomImageDataset(Dataset):
     def __init__(self, images, coordinates, countries, regions, country_to_index, region_to_index):
         self.images = images
@@ -11,6 +13,9 @@ class CustomImageDataset(Dataset):
         self.regions = regions
         self.country_to_index = country_to_index
         self.region_to_index = region_to_index
+        
+        # Convert coordinates to cartesian
+        self.coordinates_cartesian = list([coordinates_to_cartesian(*coordinate) for coordinate in self.coordinates])
 
         # Debugging: print the mapping and check for missing countries
         missing_countries = set(self.countries) - set(self.country_to_index.keys())
@@ -29,6 +34,6 @@ class CustomImageDataset(Dataset):
             raise ValueError(f"Country '{country}' at index {idx} is not in the country_to_index mapping.")
         country_index = self.country_to_index[country] if self.country_to_index is not None else 0
         region_index = self.region_to_index[region[0]] if self.region_to_index is not None else 0
-        coordinates = torch.tensor(self.coordinates[idx], dtype=torch.float32)
+        coordinates = torch.tensor(self.coordinates_cartesian[idx], dtype=torch.float32)
 
         return image, coordinates, country_index, region_index

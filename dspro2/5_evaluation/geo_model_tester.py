@@ -1,42 +1,28 @@
 import torch
-import sys
-import requests
-import io
-import torch.nn as nn
-import torch.nn.functional as F
 
-sys.path.insert(0, '../4_modeling')
-from geo_model_trainer import GeoModelTrainer
-
-class GeoModelTester(GeoModelTrainer):
-  def __init__(self, datasize, test_dataloader, train_dataloader=None, val_dataloader=None, num_classes=2, predict_coordinates=False, country_to_index=None, region_to_index=None, region_index_to_middle_point=None, region_index_to_country_index=None, test_data_path=None, predict_regions=False):
-      super().__init__(datasize, train_dataloader, val_dataloader, num_classes, predict_coordinates, country_to_index, region_to_index, region_index_to_middle_point, region_index_to_country_index, test_data_path, predict_regions)
+from geo_model_inference import GeoModelInference
+class GeoModelTester(GeoModelInference):
+  def __init__(self, test_dataloader, num_classes=3, predict_coordinates=False, country_to_index=None, region_to_index=None, region_index_to_middle_point=None, region_index_to_country_index=None, predict_regions=False):
+      super().__init__(num_classes=num_classes, predict_coordinates=predict_coordinates, country_to_index=country_to_index, region_to_index=region_to_index, region_index_to_middle_point=region_index_to_middle_point, region_index_to_country_index=region_index_to_country_index, predict_regions=predict_regions)
       self.test_dataloader = test_dataloader
 
   def test(self, model_type, model_path, balanced_on_countries_only=None, accuracy_per_country=False):
-        # Load the model
-        self.model = self.initialize_model(model_type=model_type).to(self.device)
-        model_response = requests.get(model_path)
-        model_response.raise_for_status()
-        pretrained_weights = io.BytesIO(model_response.content)
-        self.model.load_state_dict(torch.load(pretrained_weights, map_location=self.device))
-
-        self.model.eval()
+        self.prepare(model_type=model_type, model_path=model_path)
         
         with torch.no_grad():
-        
+          
           if self.use_coordinates:
-              test_loss, test_metric = self.run_epoch(optimizer=None, is_train=False, is_test=True)
+              test_loss, test_metric = self.run_epoch(data_loader=self.test_dataloader, is_train=False)
           elif self.use_regions:
             if accuracy_per_country:
-              test_loss, test_metric, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_correct_country, test_top3_correct_country, test_top5_correct_country, test_top1_balanced_accuracy, test_top1_balanced_correct_country, accuracy_per_country = self.run_epoch(optimizer=None, is_train=False, is_test=True, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=True)
+              test_loss, test_metric, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_correct_country, test_top3_correct_country, test_top5_correct_country, test_top1_balanced_accuracy, test_top1_balanced_correct_country, accuracy_per_country = self.run_epoch(data_loader=self.test_dataloader, is_train=False, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=True)
             else:
-              test_loss, test_metric, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_correct_country, test_top3_correct_country, test_top5_correct_country, test_top1_balanced_accuracy, test_top1_balanced_correct_country = self.run_epoch(optimizer=None, is_train=False, is_test=True, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=False)
+              test_loss, test_metric, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_correct_country, test_top3_correct_country, test_top5_correct_country, test_top1_balanced_accuracy, test_top1_balanced_correct_country = self.run_epoch(data_loader=self.test_dataloader, is_train=False, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=False)
           else:
             if accuracy_per_country:
-              test_loss, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_balanced_accuracy, accuracy_per_country = self.run_epoch(optimizer=None, is_train=False, is_test=True, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=True)
+              test_loss, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_balanced_accuracy, accuracy_per_country = self.run_epoch(data_loader=self.test_dataloader, is_train=False, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=True)
             else:
-              test_loss, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_balanced_accuracy = self.run_epoch(optimizer=None, is_train=False, is_test=True, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=False)
+              test_loss, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_balanced_accuracy = self.run_epoch(data_loader=self.test_dataloader, is_train=False, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=False)
 
         if self.use_coordinates:
             print(f"Test Loss: {test_loss:.4f}, Test Distance: {test_metric:.4f}")
