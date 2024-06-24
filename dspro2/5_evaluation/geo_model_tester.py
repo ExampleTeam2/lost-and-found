@@ -48,7 +48,7 @@ class GeoModelTester(GeoModelTrainer):
                 print("Accuracy per country:")
                 # Print sorted by country, sort by accuracy descending, value is key[1]
                 for country, accuracy in sorted(accuracy_per_country.items(), key=lambda item: item[1], reverse=True):
-                    print(f"Country {country}: {accuracy:.2f}")
+                    print(f"Country {country}: {accuracy:.5f}")
         else:
             print(f"Test Loss: {test_loss:.4f}, Test Top 1 Accuracy: {test_top1_accuracy:.4f}, Test Top 3 Accuracy: {test_top3_accuracy:.4f}, Test Top 5 Accuracy: {test_top5_accuracy:.4f}")
             print(f"Test Top 1 Balanced Accuracy: {test_top1_balanced_accuracy:.4f}")
@@ -56,4 +56,4 @@ class GeoModelTester(GeoModelTrainer):
                 print("Accuracy per country:")
                 # Print sorted by country, sort by accuracy descending, value is key[1]
                 for country, accuracy in sorted(accuracy_per_country.items(), key=lambda item: item[1], reverse=True):
-                    print(f"Country {country}: {accuracy:.2f}")
+                    print(f"Country {country}: {accuracy:.5f}")
