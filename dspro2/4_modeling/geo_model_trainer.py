@@ -30,7 +30,7 @@ class GeoModelTrainer:
       self.datasize = datasize
       self.use_coordinates = predict_coordinates
       self.use_regions = predict_regions
-      self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+      self.device = 'cuda' if torch.cuda.is_available() else ('mps' if torch.backends.mps.is_available() else 'cpu')
       self.patience = 5
       self.model_type = None
       self.model = None
@@ -337,7 +337,7 @@ class GeoModelTrainer:
           gc.collect()
           torch.cuda.empty_cache()  
 
-  def run_epoch(self, optimizer, is_train=True, is_test=False, use_balanced_accuracy=False):
+  def run_epoch(self, optimizer, is_train=True, is_test=False, use_balanced_accuracy=False, balanced_on_countries_only=None, accuracy_per_country=False):
     if is_train:
         self.model.train()
     else:
@@ -360,11 +360,46 @@ class GeoModelTrainer:
 
     data_loader = self.train_dataloader if is_train else (self.val_dataloader if not is_test else self.test_dataloader)
     
+    # If balanced_on_countries_only is not None, convert the strings to indices
+    if balanced_on_countries_only is not None:
+        balanced_on_countries_only = [self.country_to_index[country] for country in balanced_on_countries_only]
+        balanced_on_countries_only = set(balanced_on_countries_only)
+    
     # Because now the same country can be in the top 5 multiple times, we need to calculate the top k correct differently
     # Only needed for the country accuracy when predicting regions
     # Do not use for the normal country/region accuracy because the top 5 predictions are unique and this is less efficient
     def calculate_topk_multiple(countries_correct, k):
         return torch.min(countries_correct[:, :k].sum(dim=1), torch.ones(countries_correct.size(0), device=self.device)).sum().item()
+      
+    # Do not use for the normal country/region accuracy because this is not very efficient
+    def calculate_accuracy_per_country(all_targets, all_predictions):
+      # Convert all_targets and all_predictions to tensors if they aren't already
+      all_targets = torch.tensor(all_targets)
+      all_predictions = torch.tensor(all_predictions)
+      
+      # Get the unique countries in the targets
+      unique_countries = all_targets.unique()
+
+      accuracy_per_country = {}
+
+      for country in unique_countries:
+        if country != -1:
+          # Get the indices where the targets are equal to the current country
+          indices = (all_targets == country)
+          
+          # Calculate the number of correct predictions for this country
+          correct_predictions = (all_predictions[indices] == country).sum().item()
+          
+          # Calculate the total number of instances for this country
+          total_instances = indices.sum().item()
+          
+          # Calculate the accuracy for this country
+          accuracy = correct_predictions / total_instances
+          
+          # Store the accuracy in the dictionary
+          accuracy_per_country[self.index_to_country[country.item()]] = accuracy
+      
+      return accuracy_per_country
 
     for images, coordinates, country_indices, region_indices in data_loader:
         with torch.set_grad_enabled(is_train):
@@ -392,10 +427,14 @@ class GeoModelTrainer:
 
                 # Calculate different accuracies
                 correct = predicted_top5.eq(targets.view(-1, 1).expand_as(predicted_top5))
-
+                
                 top1_correct += correct[:, 0].sum().item()
                 top3_correct += correct[:, :3].sum().item()
                 top5_correct += correct[:, :5].sum().item()
+                
+                # If balanced_on_countries_only is not None and we are not predicting regions, set all other countries to -1 in the targets
+                if balanced_on_countries_only is not None and not self.use_regions:
+                    targets = torch.tensor([target if target in balanced_on_countries_only else -1 for target in targets.tolist()], device=targets.device)
                 
                 # Store all targets and predictions for balanced accuracy calculation
                 all_targets.extend(targets.cpu().numpy())
@@ -404,6 +443,7 @@ class GeoModelTrainer:
                 if self.use_regions:
                     # Get the country for each region
                     target_countries = country_indices.to(self.device)
+                    
                     predicted_countries_top5 = torch.tensor([[self.region_index_to_country_index.get(region_index.item(), -1) for region_index in top5] for top5 in predicted_top5]).to(self.device)
                     countries_correct = predicted_countries_top5.eq(target_countries.view(-1, 1).expand_as(predicted_countries_top5))
                     
@@ -411,6 +451,10 @@ class GeoModelTrainer:
                     top1_correct_country += calculate_topk_multiple(countries_correct, 1)
                     top3_correct_country += calculate_topk_multiple(countries_correct, 3)
                     top5_correct_country += calculate_topk_multiple(countries_correct, 5)
+                    
+                    # If balanced_on_countries_only is not None, set all other countries to -1 in the targets
+                    if balanced_on_countries_only is not None:
+                        target_countries = torch.tensor([target if target in balanced_on_countries_only else -1 for target in target_countries.tolist()], device=target_countries.device)
                     
                     # Store all country targets and predictions for balanced accuracy calculation
                     all_country_targets.extend(target_countries.cpu().numpy())
@@ -425,6 +469,10 @@ class GeoModelTrainer:
         top1_accuracy = top1_correct / len(data_loader.dataset)
         top3_accuracy = top3_correct / len(data_loader.dataset)
         top5_accuracy = top5_correct / len(data_loader.dataset)
+        
+        if accuracy_per_country and not self.use_regions:
+            # Calculate the accuracy per country
+            accuracy_per_country = calculate_accuracy_per_country(all_targets, all_predictions)
 
         if use_balanced_accuracy:
             balanced_acc = balanced_accuracy_score(all_targets, all_predictions)
@@ -438,15 +486,27 @@ class GeoModelTrainer:
         top3_correct_country = top3_correct_country / len(data_loader.dataset)
         top5_correct_country = top5_correct_country / len(data_loader.dataset)
         
+        if accuracy_per_country:
+            # Calculate the accuracy per country
+            accuracy_per_country = calculate_accuracy_per_country(all_country_targets, all_country_predictions)
+        
         if use_balanced_accuracy:
             balanced_country_acc = balanced_accuracy_score(all_country_targets, all_country_predictions)
         else:
             balanced_country_acc = None
             
         if balanced_acc is not None and balanced_country_acc is not None:
+            if accuracy_per_country:
+                return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, balanced_acc, balanced_country_acc, accuracy_per_country
             return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, balanced_acc, balanced_country_acc
+        if accuracy_per_country:
+            return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, accuracy_per_country
         return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country
     else:
         if balanced_acc is not None:
+            if accuracy_per_country:
+                return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy, balanced_acc, accuracy_per_country
             return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy, balanced_acc
+        if accuracy_per_country:
+            return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy, accuracy_per_country
         return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy

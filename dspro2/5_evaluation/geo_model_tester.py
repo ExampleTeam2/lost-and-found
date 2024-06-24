@@ -13,7 +13,7 @@ class GeoModelTester(GeoModelTrainer):
       super().__init__(datasize, train_dataloader, val_dataloader, num_classes, predict_coordinates, country_to_index, region_to_index, region_index_to_middle_point, region_index_to_country_index, test_data_path, predict_regions)
       self.test_dataloader = test_dataloader
 
-  def test(self, model_type, model_path):
+  def test(self, model_type, model_path, balanced_on_countries_only=None, accuracy_per_country=False):
         # Load the model
         self.model = self.initialize_model(model_type=model_type).to(self.device)
         model_response = requests.get(model_path)
@@ -28,9 +28,15 @@ class GeoModelTester(GeoModelTrainer):
           if self.use_coordinates:
               test_loss, test_metric = self.run_epoch(optimizer=None, is_train=False, is_test=True)
           elif self.use_regions:
-              test_loss, test_metric, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_correct_country, test_top3_correct_country, test_top5_correct_country, test_top1_balanced_accuracy, test_top1_balanced_correct_country = self.run_epoch(optimizer=None, is_train=False, is_test=True, use_balanced_accuracy=True)
+            if accuracy_per_country:
+              test_loss, test_metric, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_correct_country, test_top3_correct_country, test_top5_correct_country, test_top1_balanced_accuracy, test_top1_balanced_correct_country, accuracy_per_country = self.run_epoch(optimizer=None, is_train=False, is_test=True, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=True)
+            else:
+              test_loss, test_metric, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_correct_country, test_top3_correct_country, test_top5_correct_country, test_top1_balanced_accuracy, test_top1_balanced_correct_country = self.run_epoch(optimizer=None, is_train=False, is_test=True, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=False)
           else:
-              test_loss, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_balanced_accuracy = self.run_epoch(optimizer=None, is_train=False, is_test=True, use_balanced_accuracy=True)
+            if accuracy_per_country:
+              test_loss, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_balanced_accuracy, accuracy_per_country = self.run_epoch(optimizer=None, is_train=False, is_test=True, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=True)
+            else:
+              test_loss, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_balanced_accuracy = self.run_epoch(optimizer=None, is_train=False, is_test=True, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=False)
 
         if self.use_coordinates:
             print(f"Test Loss: {test_loss:.4f}, Test Distance: {test_metric:.4f}")
@@ -38,6 +44,16 @@ class GeoModelTester(GeoModelTrainer):
             print(f"Test Loss: {test_loss:.4f}, Test Distance: {test_metric:.4f}, Test Top 1 Accuracy: {test_top1_accuracy:.4f}, Test Top 3 Accuracy: {test_top3_accuracy:.4f}, Test Top 5 Accuracy: {test_top5_accuracy:.4f}")
             print(f"Test Top 1 Accuracy (Country): {test_top1_correct_country:.4f}, Test Top 3 Accuracy (Country): {test_top3_correct_country:.4f}, Test Top 5 Accuracy (Country): {test_top5_correct_country:.4f}")
             print(f"Test Top 1 Balanced Accuracy: {test_top1_balanced_accuracy:.4f}, Test Top 1 Balanced Accuracy (Country): {test_top1_balanced_correct_country:.4f}")
+            if accuracy_per_country:
+                print("Accuracy per country:")
+                # Print sorted by country, sort by accuracy descending, value is key[1]
+                for country, accuracy in sorted(accuracy_per_country.items(), key=lambda item: item[1], reverse=True):
+                    print(f"Country {country}: {accuracy:.2f}")
         else:
             print(f"Test Loss: {test_loss:.4f}, Test Top 1 Accuracy: {test_top1_accuracy:.4f}, Test Top 3 Accuracy: {test_top3_accuracy:.4f}, Test Top 5 Accuracy: {test_top5_accuracy:.4f}")
             print(f"Test Top 1 Balanced Accuracy: {test_top1_balanced_accuracy:.4f}")
+            if accuracy_per_country:
+                print("Accuracy per country:")
+                # Print sorted by country, sort by accuracy descending, value is key[1]
+                for country, accuracy in sorted(accuracy_per_country.items(), key=lambda item: item[1], reverse=True):
+                    print(f"Country {country}: {accuracy:.2f}")
