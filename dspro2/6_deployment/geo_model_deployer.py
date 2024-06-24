@@ -31,20 +31,25 @@ class GeoModelDeployer(GeoModelInference):
     
     else:
       probabilities_sorted, indices_sorted = probabilities.topk(probabilities.size()[-1], 1, True, True)
+      original_probabilities_sorted = probabilities_sorted.clone()
+      original_indices_sorted = indices_sorted.clone()
+      actual_top_n = min(top_n, indices_sorted.size()[-1]) if top_n > 0 else indices_sorted.size()[-1]
+      probabilities_sorted = probabilities_sorted[:, :actual_top_n]
+      indices_sorted = indices_sorted[:, :actual_top_n]
       index_to_name = self.index_to_country if not self.use_regions else self.index_to_region
       names = list([[index_to_name.get(item.cpu().item(), None) for item in indices] for indices in indices_sorted])
-      actual_top_n = min(top_n, len(indices_sorted)) if top_n > 0 else len(indices_sorted)
+      
       if not self.use_regions:
-        return names[:actual_top_n], indices_sorted.cpu().numpy()[:actual_top_n], probabilities_sorted.cpu().numpy()[:actual_top_n]
+        return names, indices_sorted.cpu().numpy(), probabilities_sorted.cpu().numpy()
       else:
         corresponding_countries = []
+        corresponding_country_indices = []
         countries = []
         country_indices = []
         country_probabilities = []
         
-        for indices, probabilities in zip(indices_sorted, probabilities_sorted):
-          current_corresponding_countries = []
-          current_countries = []
+        for indices, probabilities in zip(original_indices_sorted, original_probabilities_sorted):
+          current_corresponding_country_indices = []
           current_country_indices_set = set()
           current_country_indices = []
           current_country_probabilities = []
@@ -54,23 +59,31 @@ class GeoModelDeployer(GeoModelInference):
             
             country_index = self.region_index_to_country_index.get(region_index.cpu().item(), -1)
             
-            if (country_index >= 0 and country_index not in current_country_indices_set):
-              country_name = self.index_to_country.get(country_index, None)
-              current_corresponding_countries.append(country_name)
-              current_countries.append(country_name)
-              current_country_indices.append(country_index)
-              current_country_indices_set.add(country_index)
-              current_country_probabilities.append(probability)
-            else:
-              current_corresponding_countries.append(current_corresponding_countries[-1])
-              current_country_probabilities[-1] += probability
-            
-          corresponding_countries.append(current_corresponding_countries)
+            if country_index >= 0:
+              if country_index not in current_country_indices_set:
+                current_corresponding_country_indices.append(country_index)
+                current_country_indices.append(country_index)
+                current_country_indices_set.add(country_index)
+                current_country_probabilities.append(probability)
+              else:
+                current_corresponding_country_indices.append(current_corresponding_country_indices[-1])
+                current_country_probabilities[-1] += probability
+                
           # Sort countries by summed probability
-          current_countries, current_country_indices, current_country_probabilities = zip(*sorted(zip(current_countries, current_country_indices, current_country_probabilities), key=lambda x: x[2], reverse=True))
+          current_country_indices, current_country_probabilities = zip(*list(sorted(zip(current_country_indices, current_country_probabilities), key=lambda x: x[1], reverse=True)))
+              
+          actual_top_n_countries = min(top_n, len(current_country_indices)) if top_n > 0 else len(current_country_indices)
+          current_country_indices = current_country_indices[:actual_top_n_countries]
+          current_country_probabilities = current_country_probabilities[:actual_top_n_countries]
+          current_countries = [self.index_to_country.get(country_index, None) for country_index in current_country_indices]
+          
+          current_corresponding_country_indices = current_corresponding_country_indices[:actual_top_n]
+          current_corresponding_countries = [self.index_to_country.get(country_index, None) for country_index in current_corresponding_country_indices]
+          
+          corresponding_countries.append(current_corresponding_countries)
+          corresponding_country_indices.append(current_corresponding_country_indices)
           countries.append(current_countries)
           country_indices.append(current_country_indices)
           country_probabilities.append(current_country_probabilities)
           
-        actual_top_n_countries = min(top_n, len(country_indices)) if top_n > 0 else len(country_indices)
-        return names[:actual_top_n], indices_sorted.cpu().numpy()[:actual_top_n], probabilities_sorted.cpu().numpy()[:actual_top_n], countries[:actual_top_n_countries], country_indices[:actual_top_n_countries], country_probabilities[:actual_top_n_countries], corresponding_countries[:actual_top_n]
+        return names, indices_sorted.cpu().numpy(), probabilities_sorted.cpu().numpy(), countries, country_indices, country_probabilities, corresponding_countries, corresponding_country_indices
