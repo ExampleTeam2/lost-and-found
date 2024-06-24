@@ -57,7 +57,7 @@ class WandbDownloader:
                   try:
                     test_data_run = self.api.run(f"{self.entity}/{self.project}/{test_data_run_id}")
                     for file in test_data_run.files():
-                        if file.name == "test_data.pth":
+                        if file.name.endswith("test_data.pth"):
                             run_info["files"]["test_data"] = file.url
                             break
                   except:
