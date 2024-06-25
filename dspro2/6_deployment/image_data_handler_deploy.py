@@ -18,6 +18,11 @@ class DeployImageDataHandler(InferenceImageDataHandler):
       
     def load_single_image(self, unscaled_image_path):
       images = load_image_files([os.path.join(CURRENT_DIR, unscaled_image_path)])
+      # if aspect ratio is not 16:9, crop the image
+      for i, image in enumerate(images):
+        if image.size[0] / image.size[1] != 16 / 9:
+          print("Cropping image to 16:9 aspect ratio.")
+          images[i] = image.crop((0, 0, image.size[0], int(image.size[0] * 9 / 16)))
       if self.base_transform is not None and self.final_transform is not None:
         transform=transforms.Compose([self.base_transform, self.final_transform])
         transformed_images = []
