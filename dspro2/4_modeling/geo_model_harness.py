@@ -11,7 +11,7 @@ from torchvision.models.efficientnet import EfficientNet_B1_Weights, EfficientNe
 import numpy as np
 from sklearn.metrics import balanced_accuracy_score
 
-from coordinate_handler import coordinates_to_cartesian
+from coordinate_handler import coordinates_to_cartesian, default_radius
 from custom_haversine_loss import GeolocalizationLoss
 
 class GeoModelHarness:
@@ -125,6 +125,12 @@ class GeoModelHarness:
           nn.init.kaiming_normal_(model.classifier[3].weight, mode='fan_out', nonlinearity='relu')
           nn.init.constant_(model.classifier[3].bias, 0)
       self.model = model.to(self.device)
+      
+  def project_cartesian(self, cartesian, R=default_radius):
+      # Round the cartesian coordinates to the sphere (x^2 + y^2 + z^2 = R^2)
+      # This is done by normalizing the vector and multiplying it by the radius
+      norms = cartesian.norm(p=2, dim=-1, keepdim=True) + 1e-9  # Adding epsilon to avoid division by zero
+      return (cartesian / norms) * R
   
   def spherical_distance(self, cartesian1, cartesian2, R=6371.0):
       dot_product = (cartesian1 * cartesian2).sum(dim=1)
@@ -150,7 +156,8 @@ class GeoModelHarness:
       if not self.use_coordinates:
         probabilities = F.softmax(outputs, dim=1)
         return probabilities, outputs
-      return outputs
+      projected = self.project_cartesian(outputs)
+      return projected, outputs
     
   # Because with regions the same country can be in the top 5 multiple times, we need to calculate the top k correct differently
   # Only needed for the country accuracy when predicting regions
@@ -222,7 +229,7 @@ class GeoModelHarness:
             if not self.use_coordinates:
               probabilities, outputs = self.forward(images)
             else:
-              outputs = self.forward(images)
+              projected, outputs = self.forward(images)
             loss = self.criterion(outputs, targets) if not self.use_regions else self.criterion(outputs, self.region_middle_points, coordinates)
 
             if is_train:
@@ -232,7 +239,7 @@ class GeoModelHarness:
             total_loss += loss.item() * images.size(0)
 
             if self.use_coordinates:
-                total_metric += self.mean_spherical_distance(outputs, targets).item() * images.size(0)
+                total_metric += self.mean_spherical_distance(projected, targets).item() * images.size(0)
             if self.use_regions:
                 total_metric += self.mean_spherical_distance(self.region_middle_points[outputs.argmax(dim=1)], self.region_middle_points[targets]).item() * images.size(0)
             if not self.use_coordinates:

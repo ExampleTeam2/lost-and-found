@@ -22,10 +22,11 @@ class GeoModelDeployer(GeoModelInference):
         if not self.use_coordinates:
           probabilities, outputs = self.forward(images)
         else:
-          outputs = self.forward(images)
+          projected, outputs = self.forward(images)
           
     if self.use_coordinates:
-      all_coordinates = [cartesian_to_coordinates(*(coordinate.cpu().numpy())) for coordinate in outputs]
+      # Use projected cartesian coordinates for more accuracy
+      all_coordinates = [cartesian_to_coordinates(*(coordinate.cpu().numpy())) for coordinate in projected]
       # Reverse the order of the coordinates
       all_coordinates = [[(coordinate[1], coordinate[0]) for coordinate in coordinates] for coordinates in all_coordinates]
       return np.array(all_coordinates), outputs.cpu().numpy()

@@ -1,6 +1,8 @@
 import numpy as np
 
-def coordinates_to_cartesian(lat, lon, R=6371):
+default_radius = 6371  # Earth's radius in kilometers
+
+def coordinates_to_cartesian(lat, lon, R=default_radius):
   # Convert degrees to radians
   lon_rad = np.radians(lon)
   lat_rad = np.radians(lat)
