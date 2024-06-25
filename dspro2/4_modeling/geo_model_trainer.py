@@ -129,8 +129,8 @@ class GeoModelTrainer(GeoModelHarness):
               })
                 
           # Load and log the best model to wandb
-          best_model = self.initialize_model(model_type=config.model_name).to(self.device)
-          best_model.load_state_dict(torch.load(model_path))
+          self.initialize_model(model_type=config.model_name)
+          self.model.load_state_dict(torch.load(model_path))
           run_dir = wandb.run.dir
           # Get directory of the run (without /files)
           run_dir = os.path.dirname(run_dir) if run_dir.endswith("files") else run_dir
@@ -182,12 +182,11 @@ class GeoModelTrainer(GeoModelHarness):
             # Only save the test data once
             self.test_data_path = None
               
-          torch.save(best_model.state_dict(), wandb_model_path)
+          torch.save(self.model.state_dict(), wandb_model_path)
           wandb.save(wandb_model_path)
           
           # Clean up
           del self.model
-          del best_model
 
           gc.collect()
           torch.cuda.empty_cache()  
