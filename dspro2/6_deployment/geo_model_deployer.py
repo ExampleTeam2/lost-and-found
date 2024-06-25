@@ -13,7 +13,7 @@ class GeoModelDeployer(GeoModelInference):
       
   # When predicting regions, countries are in order of summed probability and not in order of the probabilities of the corresponding regions.
   # This means that the top region can not be within the top country. For the countries corresponding to the regions, use corresponding_countries.
-  # For coordinate prediction they will be returned reversed from the training data: Lon, Lat instead of Lat, Lon.
+  # For coordinate prediction they will be returned as Lat, Lon tuples.
   # Set top_n to 0 to get all countries and regions.
   def predict(self, data_loader, top_n=0):
     self.model.eval()
@@ -26,10 +26,8 @@ class GeoModelDeployer(GeoModelInference):
           
     if self.use_coordinates:
       # Use projected cartesian coordinates for more accuracy
-      all_coordinates = [cartesian_to_coordinates(*(coordinate.cpu().numpy())) for coordinate in projected]
-      # Reverse the order of the coordinates
-      all_coordinates = [[(coordinate[1], coordinate[0]) for coordinate in coordinates] for coordinates in all_coordinates]
-      return np.array(all_coordinates), outputs.cpu().numpy()
+      coordinates = np.array([cartesian_to_coordinates(*(coordinate.cpu().numpy())) for coordinate in projected])
+      return coordinates, outputs.cpu().numpy()
     
     else:
       probabilities_sorted, indices_sorted = probabilities.topk(probabilities.size()[-1], 1, True, True)
