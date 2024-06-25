@@ -1,5 +1,6 @@
 import torch
 import sys
+import numpy as np
 
 sys.path.insert(0, '../4_modeling')
 from coordinate_handler import cartesian_to_coordinates
@@ -27,7 +28,7 @@ class GeoModelDeployer(GeoModelInference):
       all_coordinates = [cartesian_to_coordinates(*(coordinate.cpu().numpy())) for coordinate in outputs]
       # Reverse the order of the coordinates
       all_coordinates = [[(coordinate[1], coordinate[0]) for coordinate in coordinates] for coordinates in all_coordinates]
-      return all_coordinates, outputs.cpu().numpy()
+      return np.array(all_coordinates), outputs.cpu().numpy()
     
     else:
       probabilities_sorted, indices_sorted = probabilities.topk(probabilities.size()[-1], 1, True, True)
@@ -86,4 +87,15 @@ class GeoModelDeployer(GeoModelInference):
           country_indices.append(current_country_indices)
           country_probabilities.append(current_country_probabilities)
           
-        return names, indices_sorted.cpu().numpy(), probabilities_sorted.cpu().numpy(), countries, country_indices, country_probabilities, corresponding_countries, corresponding_country_indices
+        return names, indices_sorted.cpu().numpy(), probabilities_sorted.cpu().numpy(), countries, np.array(country_indices), np.array(country_probabilities), corresponding_countries, np.array(corresponding_country_indices)
+      
+  def predict_single(self, data_loader, top_n=0):
+        if self.use_coordinates:
+          coordinates, outputs = self.predict(data_loader, top_n)
+          return coordinates[0], outputs[0]
+        elif not self.use_regions:
+          names, indices, probabilities = self.predict(data_loader, top_n)
+          return names[0], indices[0], probabilities[0]
+        else:
+          names, indices, probabilities, countries, country_indices, country_probabilities, corresponding_countries, corresponding_country_indices = self.predict(data_loader, top_n)
+          return names[0], indices[0], probabilities[0], countries[0], country_indices[0], country_probabilities[0], corresponding_countries[0], corresponding_country_indices[0]

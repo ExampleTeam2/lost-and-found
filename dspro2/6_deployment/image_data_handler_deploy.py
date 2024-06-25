@@ -15,9 +15,10 @@ class DeployImageDataHandler(InferenceImageDataHandler):
         super().__init__(country_to_index_path, region_to_index_path, region_index_to_middle_point_path, region_index_to_country_index_path)
         self.base_transform = base_transform
         self.final_transform = final_transform
-      
-    def load_single_image(self, unscaled_image_path):
-      images = load_image_files([os.path.join(CURRENT_DIR, unscaled_image_path)])
+        
+    def load_images(self, unscaled_image_paths):
+      paths = [os.path.join(CURRENT_DIR, path) for path in unscaled_image_paths]
+      images = load_image_files(paths)
       # if aspect ratio is not 16:9, crop the image
       for i, image in enumerate(images):
         if image.size[0] / image.size[1] != 16 / 9:
@@ -31,3 +32,6 @@ class DeployImageDataHandler(InferenceImageDataHandler):
         return DataLoader(transformed_images, batch_size=1, shuffle=False)
       else:
         raise ValueError("base_transform and final_transform must be provided.")
+      
+    def load_single_image(self, unscaled_image_path):
+      return self.load_images([unscaled_image_path])
