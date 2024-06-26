@@ -18,7 +18,7 @@ class GeoModelTrainer(GeoModelHarness):
       self.train_dataloader = train_dataloader
       self.val_dataloader = val_dataloader
       self.datasize = datasize
-      self.patience = 5
+      self.patience = 8
       self.test_data_path = test_data_path
       self.run_start_callback = run_start_callback
       
