@@ -58,15 +58,17 @@ class GeoModelTrainer(GeoModelHarness):
           scheduler = StepLR(self.optimizer, step_size=10, gamma=0.1)
           
           for epoch in range(config.epochs):
-              if self.use_coordinates:
-                  train_loss, train_metric = self.run_epoch(self.train_dataloader, is_train=True, optimizer=self.optimizer)
-                  val_loss, val_metric = self.run_epoch(self.val_dataloader, is_train=False)
-              elif self.use_regions:
-                  train_loss, train_metric, train_top1_accuracy, train_top3_accuracy, train_top5_accuracy, train_top1_correct_country, train_top3_correct_country, train_top5_correct_country = self.run_epoch(self.train_dataloader, is_train=True, optimizer=self.optimizer)
-                  val_loss, val_metric, val_top1_accuracy, val_top3_accuracy, val_top5_accuracy, val_top1_correct_country, val_top3_correct_country, val_top5_correct_country = self.run_epoch(self.val_dataloader, is_train=False)
-              else:
-                  train_loss, train_top1_accuracy, train_top3_accuracy, train_top5_accuracy = self.run_epoch(self.train_dataloader, is_train=True, optimizer=self.optimizer)
-                  val_loss, val_top1_accuracy, val_top3_accuracy, val_top5_accuracy = self.run_epoch(self.val_dataloader, is_train=False)
+              train_epoch = self.run_epoch(self.train_dataloader, is_train=True, optimizer=self.optimizer)
+              val_epoch = self.run_epoch(self.val_dataloader, is_train=False)
+              train_loss, val_loss = train_epoch['avg_loss'], val_epoch['avg_loss']
+              if self.use_coordinates or self.use_regions:
+                  train_metric, val_metric = train_epoch['avg_metric'], val_epoch['avg_metric']
+              if self.use_regions or (not self.use_coordinates):
+                  train_top1_accuracy, train_top3_accuracy, train_top5_accuracy = train_epoch['top1_accuracy'], train_epoch['top3_accuracy'], train_epoch['top5_accuracy']
+                  val_top1_accuracy, val_top3_accuracy, val_top5_accuracy = val_epoch['top1_accuracy'], val_epoch['top3_accuracy'], val_epoch['top5_accuracy']
+              if self.use_regions:
+                  train_top1_correct_country, train_top3_correct_country, train_top5_correct_country = train_epoch['top1_correct_country'], train_epoch['top3_correct_country'], train_epoch['top5_correct_country']
+                  val_top1_correct_country, val_top3_correct_country, val_top5_correct_country = val_epoch['top1_correct_country'], val_epoch['top3_correct_country'], val_epoch['top5_correct_country']
 
               # Even for predicting regions, always use the best model based on validation distance
               if ((self.use_coordinates or self.use_regions) and val_metric < best_val_metric) or ((not (self.use_coordinates or self.use_regions)) and val_top1_accuracy > best_val_metric):

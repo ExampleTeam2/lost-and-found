@@ -286,66 +286,51 @@ class GeoModelHarness:
                     # Store all country targets and predictions for balanced accuracy calculation
                     all_country_targets.extend(target_countries.cpu().numpy())
                     all_country_predictions.extend(predicted_countries_top5[:, 0].cpu().numpy())
+                    
+    return_dict = {}
 
     avg_loss = total_loss / len(data_loader.dataset)
+    return_dict['avg_loss'] = avg_loss
     
     if self.use_coordinates or self.use_regions:
         avg_metric = total_metric / len(data_loader.dataset)
+        return_dict['avg_metric'] = avg_metric
         if median_metric:
             median_metric = np.median(np.array(all_metrics))
+            return_dict['median_metric'] = median_metric
 
     if not self.use_coordinates:
         top1_accuracy = top1_correct / len(data_loader.dataset)
         top3_accuracy = top3_correct / len(data_loader.dataset)
         top5_accuracy = top5_correct / len(data_loader.dataset)
+        return_dict['top1_accuracy'] = top1_accuracy
+        return_dict['top3_accuracy'] = top3_accuracy
+        return_dict['top5_accuracy'] = top5_accuracy
         
+        if use_balanced_accuracy:
+            top1_balanced_accuracy = balanced_accuracy_score(all_targets, all_predictions)
+            return_dict['top1_balanced_accuracy'] = top1_balanced_accuracy
+            
         if accuracy_per_country and not self.use_regions:
             # Calculate the accuracy per country
             accuracy_per_country = self.calculate_accuracy_per_country(all_targets, all_predictions)
-
-        if use_balanced_accuracy:
-            top1_balanced_accuracy = balanced_accuracy_score(all_targets, all_predictions)
-        else:
-            top1_balanced_accuracy = None
-
-    if self.use_coordinates:
-        if median_metric:
-            return avg_loss, avg_metric, median_metric
-        return avg_loss, avg_metric
-    elif self.use_regions:
+            return_dict['accuracy_per_country'] = accuracy_per_country
+            
+    if self.use_regions:
         top1_correct_country = top1_correct_country / len(data_loader.dataset)
         top3_correct_country = top3_correct_country / len(data_loader.dataset)
         top5_correct_country = top5_correct_country / len(data_loader.dataset)
-        
-        if accuracy_per_country:
-            # Calculate the accuracy per country
-            accuracy_per_country = self.calculate_accuracy_per_country(all_country_targets, all_country_predictions)
+        return_dict['top1_correct_country'] = top1_correct_country
+        return_dict['top3_correct_country'] = top3_correct_country
+        return_dict['top5_correct_country'] = top5_correct_country
         
         if use_balanced_accuracy:
             top1_balanced_accuracy_country = balanced_accuracy_score(all_country_targets, all_country_predictions)
-        else:
-            top1_balanced_accuracy_country = None
+            return_dict['top1_balanced_accuracy_country'] = top1_balanced_accuracy_country
             
-        if top1_balanced_accuracy is not None and top1_balanced_accuracy_country is not None:
-            if accuracy_per_country:
-                if median_metric:
-                    return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, top1_balanced_accuracy, top1_balanced_accuracy_country, accuracy_per_country, median_metric
-                return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, top1_balanced_accuracy, top1_balanced_accuracy_country, accuracy_per_country
-            if median_metric:
-                return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, top1_balanced_accuracy, top1_balanced_accuracy_country, median_metric
-            return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, top1_balanced_accuracy, top1_balanced_accuracy_country
         if accuracy_per_country:
-            if median_metric:
-                return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, accuracy_per_country, median_metric
-            return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, accuracy_per_country
-        if median_metric:
-            return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, median_metric
-        return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country
-    else:
-        if top1_balanced_accuracy is not None:
-            if accuracy_per_country:
-                return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy, top1_balanced_accuracy, accuracy_per_country
-            return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy, top1_balanced_accuracy
-        if accuracy_per_country:
-            return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy, accuracy_per_country
-        return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy
+            # Calculate the accuracy per country
+            accuracy_per_country = self.calculate_accuracy_per_country(all_country_targets, all_country_predictions)
+            return_dict['accuracy_per_country'] = accuracy_per_country
+        
+    return return_dict
