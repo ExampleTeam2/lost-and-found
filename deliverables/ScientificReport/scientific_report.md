@@ -374,7 +374,7 @@ Follows...
 
 Follows...
 
-## General 
+## General
 
 Write also that we found out that a bigger data size matters more than bigger images for all of the prediction models, which is a really nice catch and learning.
 
