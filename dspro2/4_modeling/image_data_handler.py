@@ -23,7 +23,7 @@ def inspect_transformed_images(transformed_images, num_images=5):
         img.show()
 
 class ImageDataHandler:
-    def __init__(self, list_files, base_transform, augmented_transform, final_transform, preprocessing_config={}, prediction_type=None, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_additional_save_callback=None, save_test_data=True, random_seed=42, inspect_transformed=False):
+    def __init__(self, list_files, base_transform, augmented_transform, final_transform, preprocessing_config={}, prediction_type=None, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_additional_save_callback=None, save_test_data=True, random_seed=42, inspect_transformed=False, move_files=False):
         assert train_ratio + val_ratio + test_ratio - 1 <= 0.001, "Ratios should sum to 1"
           
         self.batch_size = batch_size
@@ -144,7 +144,7 @@ class ImageDataHandler:
             print("Data cached.")
             del data
             if cache_additional_save_callback is not None:
-              cache_additional_save_callback()
+              cache_additional_save_callback(move=move_files)
               
         self.test_data_path = None
         self.run_link = None

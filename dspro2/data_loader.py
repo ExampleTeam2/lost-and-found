@@ -623,7 +623,7 @@ def _load_from_zips_to_tmp(file_location, json_file_location = None, image_file_
     
   return loaded_zip
     
-def _copy_other_files(path, files_list_path, additional_files_paths):
+def _copy_other_files(path, files_list_path, additional_files_paths, move=False):
   if files_list_path is not None:
     # Copy files_list to path if it exists
     shutil.copyfile(files_list_path, os.path.join(path, 'files_list'))
@@ -633,16 +633,22 @@ def _copy_other_files(path, files_list_path, additional_files_paths):
       # Copy file to path
       pth_basename = os.path.basename(file)
       print('Copying ' + pth_basename)
-      shutil.copyfile(file, os.path.join(path, pth_basename))
+      if not move:
+        shutil.copyfile(file, os.path.join(path, pth_basename))
+      else:
+        print('Moving ' + pth_basename + ' instead of copying')
+        shutil.move(file, os.path.join(path, pth_basename))
       print('Copied ' + pth_basename)
     elif file.endswith('.wandb'):
       # Copy file to path
       wandb_basename = os.path.basename(file)
       print('Copying ' + wandb_basename)
+      if move:
+        print('Copying ' + wandb_basename + ' anyway because it is very small, and it could be used later')
       shutil.copyfile(file, os.path.join(path, wandb_basename))
       print('Copied ' + wandb_basename)
     
-def _zip_and_copy_files(path, zip_name, current_dir, tmp_dir='./tmp'):
+def _zip_and_copy_files(path, zip_name, current_dir, tmp_dir='./tmp', move=False):
   print('Zipping and copying ' + zip_name)
   # Check if there are any files in tmp_dir
   # Zip tmp_dir into current_dir
@@ -650,10 +656,14 @@ def _zip_and_copy_files(path, zip_name, current_dir, tmp_dir='./tmp'):
   shutil.make_archive(os.path.join(current_dir, zip_name.split('.')[0]), 'zip', tmp_dir)
   # Copy zip to path
   print('Copying ' + zip_name)
-  shutil.copyfile(os.path.join(current_dir, zip_name), os.path.join(path, zip_name))
+  if not move:
+    shutil.copyfile(os.path.join(current_dir, zip_name), os.path.join(path, zip_name))
+  else:
+    print('Moving ' + zip_name + ' instead of copying')
+    shutil.move(os.path.join(current_dir, zip_name), os.path.join(path, zip_name))
   print('Copied ' + zip_name)
   
-def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp', only_additional=False, skip_additional=True):
+def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_location = None, current_dir='./', tmp_dir='./tmp', only_additional=False, skip_additional=True, move=False):
   zip_name = 'files.zip'
   current_dir = os.getcwd()
   files_list_path = os.path.join(tmp_dir, 'files_list') if not only_additional else None
@@ -663,11 +673,11 @@ def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_
   additional_files_paths = [os.path.join(tmp_dir, file) for file in os.listdir(tmp_dir) if file.endswith('.pth') or file.endswith('.wandb')] if not skip_additional else []
   if files_list_path is not None or len(additional_files_paths):
     if file_location is not None:
-      _copy_other_files(file_location, files_list_path, additional_files_paths)
+      _copy_other_files(file_location, files_list_path, additional_files_paths, move=move)
     if json_file_location != file_location and json_file_location is not None and type != 'png':
-      _copy_other_files(json_file_location, files_list_path, additional_files_paths)
+      _copy_other_files(json_file_location, files_list_path, additional_files_paths, move=move)
     if image_file_location != file_location and image_file_location is not None and type != 'json':
-      _copy_other_files(image_file_location, files_list_path, additional_files_paths)
+      _copy_other_files(image_file_location, files_list_path, additional_files_paths, move=move)
     if files_list_path is not None:
       # Remove files_list
       os.remove(files_list_path)
@@ -682,11 +692,11 @@ def _save_to_zips_from_tmp(file_location, json_file_location = None, image_file_
       
   if not skip_zip:
     if file_location is not None:
-      _zip_and_copy_files(file_location, zip_name, current_dir, tmp_dir)
+      _zip_and_copy_files(file_location, zip_name, current_dir, tmp_dir, move=move)
     if json_file_location != file_location and json_file_location is not None and type != 'png':
-      _zip_and_copy_files(json_file_location, zip_name, current_dir, tmp_dir)
+      _zip_and_copy_files(json_file_location, zip_name, current_dir, tmp_dir, move=move)
     if image_file_location != file_location and image_file_location is not None and type != 'json':
-      _zip_and_copy_files(image_file_location, zip_name, current_dir, tmp_dir)
+      _zip_and_copy_files(image_file_location, zip_name, current_dir, tmp_dir, move=move)
   else:
     print('Skipped zipping and copying ' + zip_name)
     
@@ -882,7 +892,7 @@ def get_data_to_load(loading_file = './data_list', file_location = os.path.join(
     json_file_location = original_json_file_location
     image_file_location = original_image_file_location
     if return_zip_load_and_additional_save_callback:
-      additional_save_callback = lambda: _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, only_additional=True, skip_additional=False)
+      additional_save_callback = lambda move=False: _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, only_additional=True, skip_additional=False, move=move)
     if downloaded_new_files:
       _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, only_additional=False, skip_additional=True)
     # delete zip file if it was loaded
