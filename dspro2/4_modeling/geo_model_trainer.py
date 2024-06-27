@@ -32,7 +32,7 @@ class GeoModelTrainer(GeoModelHarness):
             self.set_seed(config.seed)
 
             # Set seeds, configure optimizers, losses, etc.
-            best_val_metric = float("inf") if self.use_coordinates or self.use_regions else 0
+            best_val_metric = float("inf") if self.use_coordinates else 0
             best_logs = {}
             patience_counter = 0
 
@@ -78,11 +78,13 @@ class GeoModelTrainer(GeoModelHarness):
                 wandb.log(log)
 
                 # Even for predicting regions, always use the best model based on validation distance
-                if ((self.use_coordinates or self.use_regions) and val_metric < best_val_metric) or ((not (self.use_coordinates or self.use_regions)) and val_top1_accuracy > best_val_metric):
+                if (self.use_coordinates and val_metric < best_val_metric) or ((not self.use_coordinates) and (not self.use_regions) and val_top1_accuracy > best_val_metric) or (self.use_regions and val_top1_correct_country > best_val_metric):
                     best_logs = log
 
-                    if self.use_coordinates or self.use_regions:
+                    if self.use_coordinates:
                         best_val_metric = val_metric
+                    elif self.use_regions:
+                        best_val_metric = val_top1_correct_country
                     else:
                         best_val_metric = val_top1_accuracy
 
