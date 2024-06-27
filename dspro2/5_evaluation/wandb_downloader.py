@@ -12,6 +12,12 @@ class WandbDownloader:
         self.api = wandb.Api()
         wandb.login()
 
+    def _throw_on_none(self, value, additional_message=""):
+        if value is None:
+            raise ValueError("Value cannot be None" + additional_message)
+        else:
+            return value
+
     def get_best_runs(self, metric_name, metric_ascending=False):
         runs = self.api.runs(f"{self.entity}/{self.project}")
 
@@ -33,7 +39,7 @@ class WandbDownloader:
                 filtered_runs.append(run)
 
         # Sort in descending order and take the top_n elements
-        best_runs = sorted(filtered_runs, key=lambda run: run.summary.get(metric_name, float("-inf") if not metric_ascending else float("inf")), reverse=(not metric_ascending))[: self.top_n_runs]
+        best_runs = sorted(filtered_runs, key=lambda run: self._throw_on_none(run.summary.get(metric_name, float("-inf") if not metric_ascending else float("inf")), f", metric {metric_name} of run {run.id}"), reverse=(not metric_ascending))[: self.top_n_runs]
         return best_runs
 
     def collect_run_data(self, runs, file_names):
