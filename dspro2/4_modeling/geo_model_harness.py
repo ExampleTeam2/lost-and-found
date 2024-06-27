@@ -240,7 +240,7 @@ class GeoModelHarness:
                 new_metrics = self.spherical_distance(projected, targets)
                 new_metric = new_metrics.mean().item()
                 if median_metric:
-                    all_metrics.extend(new_metric.cpu().numpy())
+                    all_metrics.extend(new_metrics.cpu().numpy())
                 total_metric += new_metric * images.size(0)
             if self.use_regions:
                 new_metrics = self.spherical_distance(self.region_middle_points[outputs.argmax(dim=1)], self.region_middle_points[targets])
