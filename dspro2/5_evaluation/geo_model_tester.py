@@ -12,12 +12,12 @@ class GeoModelTester(GeoModelInference):
         with torch.no_grad():
           
           if self.use_coordinates:
-              test_loss, test_metric = self.run_epoch(data_loader=self.test_dataloader, is_train=False)
+              test_loss, test_metric, test_metric_median = self.run_epoch(data_loader=self.test_dataloader, is_train=False, median_metric=True)
           elif self.use_regions:
             if accuracy_per_country:
-              test_loss, test_metric, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_correct_country, test_top3_correct_country, test_top5_correct_country, test_top1_balanced_accuracy, test_top1_balanced_correct_country, accuracy_per_country = self.run_epoch(data_loader=self.test_dataloader, is_train=False, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=True)
+              test_loss, test_metric, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_correct_country, test_top3_correct_country, test_top5_correct_country, test_top1_balanced_accuracy, test_top1_balanced_correct_country, accuracy_per_country, test_metric_median = self.run_epoch(data_loader=self.test_dataloader, is_train=False, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=True, median_metric=True)
             else:
-              test_loss, test_metric, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_correct_country, test_top3_correct_country, test_top5_correct_country, test_top1_balanced_accuracy, test_top1_balanced_correct_country = self.run_epoch(data_loader=self.test_dataloader, is_train=False, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=False)
+              test_loss, test_metric, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_correct_country, test_top3_correct_country, test_top5_correct_country, test_top1_balanced_accuracy, test_top1_balanced_correct_country, test_metric_median = self.run_epoch(data_loader=self.test_dataloader, is_train=False, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=False, median_metric=True)
           else:
             if accuracy_per_country:
               test_loss, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_balanced_accuracy, accuracy_per_country = self.run_epoch(data_loader=self.test_dataloader, is_train=False, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=True)
@@ -25,9 +25,10 @@ class GeoModelTester(GeoModelInference):
               test_loss, test_top1_accuracy, test_top3_accuracy, test_top5_accuracy, test_top1_balanced_accuracy = self.run_epoch(data_loader=self.test_dataloader, is_train=False, use_balanced_accuracy=True, balanced_on_countries_only=balanced_on_countries_only, accuracy_per_country=False)
 
         if self.use_coordinates:
-            print(f"Test Loss: {test_loss:.4f}, Test Distance: {test_metric:.4f}")
+            print(f"Test Loss: {test_loss:.4f}, Test Distance: {test_metric:.4f}, Test Distance Median: {test_metric_median:.4f}")
         elif self.use_regions:
-            print(f"Test Loss: {test_loss:.4f}, Test Distance: {test_metric:.4f}, Test Top 1 Accuracy: {test_top1_accuracy:.4f}, Test Top 3 Accuracy: {test_top3_accuracy:.4f}, Test Top 5 Accuracy: {test_top5_accuracy:.4f}")
+            print(f"Test Loss: {test_loss:.4f}, Test Distance: {test_metric:.4f}, Test Distance Median: {test_metric_median:.4f}")
+            print(f"Test Top 1 Accuracy: {test_top1_accuracy:.4f}, Test Top 3 Accuracy: {test_top3_accuracy:.4f}, Test Top 5 Accuracy: {test_top5_accuracy:.4f}")
             print(f"Test Top 1 Accuracy (Country): {test_top1_correct_country:.4f}, Test Top 3 Accuracy (Country): {test_top3_correct_country:.4f}, Test Top 5 Accuracy (Country): {test_top5_correct_country:.4f}")
             print(f"Test Top 1 Balanced Accuracy: {test_top1_balanced_accuracy:.4f}, Test Top 1 Balanced Accuracy (Country): {test_top1_balanced_correct_country:.4f}")
             if accuracy_per_country:

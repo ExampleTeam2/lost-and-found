@@ -146,10 +146,6 @@ class GeoModelHarness:
       distance = R * theta
       return distance
   
-  def mean_spherical_distance(self, preds, targets):
-      distances = self.spherical_distance(preds, targets)
-      return distances.mean()
-    
   def forward(self, images):
       images = images.to(self.device)
       outputs = self.model(images)
@@ -195,7 +191,7 @@ class GeoModelHarness:
       
       return accuracy_per_country
 
-  def run_epoch(self, data_loader, is_train=False, use_balanced_accuracy=False, balanced_on_countries_only=None, accuracy_per_country=False, optimizer=None):
+  def run_epoch(self, data_loader, is_train=False, use_balanced_accuracy=False, balanced_on_countries_only=None, accuracy_per_country=False, median_metric=False, optimizer=None):
     if is_train:
         self.model.train()
     else:
@@ -215,6 +211,8 @@ class GeoModelHarness:
     # for country accuracy when predicting regions
     all_country_targets = []
     all_country_predictions = []
+    # for distance median calculation
+    all_metrics = []
     
     # If balanced_on_countries_only is not None, convert the strings to indices
     if balanced_on_countries_only is not None:
@@ -239,9 +237,17 @@ class GeoModelHarness:
             total_loss += loss.item() * images.size(0)
 
             if self.use_coordinates:
-                total_metric += self.mean_spherical_distance(projected, targets).item() * images.size(0)
+                new_metrics = self.spherical_distance(projected, targets)
+                new_metric = new_metrics.mean().item()
+                if median_metric:
+                    all_metrics.extend(new_metric.cpu().numpy())
+                total_metric += new_metric * images.size(0)
             if self.use_regions:
-                total_metric += self.mean_spherical_distance(self.region_middle_points[outputs.argmax(dim=1)], self.region_middle_points[targets]).item() * images.size(0)
+                new_metrics = self.spherical_distance(self.region_middle_points[outputs.argmax(dim=1)], self.region_middle_points[targets])
+                new_metric = new_metrics.mean().item()
+                if median_metric:
+                    all_metrics.extend(new_metrics.cpu().numpy())
+                total_metric += new_metric * images.size(0)
             if not self.use_coordinates:
                 # Get the top 5 predictions for each image
                 _, predicted_top5 = probabilities.topk(5, 1, True, True)
@@ -285,6 +291,8 @@ class GeoModelHarness:
     
     if self.use_coordinates or self.use_regions:
         avg_metric = total_metric / len(data_loader.dataset)
+        if median_metric:
+            median_metric = np.median(np.array(all_metrics))
 
     if not self.use_coordinates:
         top1_accuracy = top1_correct / len(data_loader.dataset)
@@ -296,11 +304,13 @@ class GeoModelHarness:
             accuracy_per_country = self.calculate_accuracy_per_country(all_targets, all_predictions)
 
         if use_balanced_accuracy:
-            balanced_acc = balanced_accuracy_score(all_targets, all_predictions)
+            top1_balanced_accuracy = balanced_accuracy_score(all_targets, all_predictions)
         else:
-            balanced_acc = None
+            top1_balanced_accuracy = None
 
     if self.use_coordinates:
+        if median_metric:
+            return avg_loss, avg_metric, median_metric
         return avg_loss, avg_metric
     elif self.use_regions:
         top1_correct_country = top1_correct_country / len(data_loader.dataset)
@@ -312,22 +322,30 @@ class GeoModelHarness:
             accuracy_per_country = self.calculate_accuracy_per_country(all_country_targets, all_country_predictions)
         
         if use_balanced_accuracy:
-            balanced_country_acc = balanced_accuracy_score(all_country_targets, all_country_predictions)
+            top1_balanced_accuracy_country = balanced_accuracy_score(all_country_targets, all_country_predictions)
         else:
-            balanced_country_acc = None
+            top1_balanced_accuracy_country = None
             
-        if balanced_acc is not None and balanced_country_acc is not None:
+        if top1_balanced_accuracy is not None and top1_balanced_accuracy_country is not None:
             if accuracy_per_country:
-                return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, balanced_acc, balanced_country_acc, accuracy_per_country
-            return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, balanced_acc, balanced_country_acc
+                if median_metric:
+                    return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, top1_balanced_accuracy, top1_balanced_accuracy_country, accuracy_per_country, median_metric
+                return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, top1_balanced_accuracy, top1_balanced_accuracy_country, accuracy_per_country
+            if median_metric:
+                return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, top1_balanced_accuracy, top1_balanced_accuracy_country, median_metric
+            return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, top1_balanced_accuracy, top1_balanced_accuracy_country
         if accuracy_per_country:
+            if median_metric:
+                return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, accuracy_per_country, median_metric
             return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, accuracy_per_country
+        if median_metric:
+            return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country, median_metric
         return avg_loss, avg_metric, top1_accuracy, top3_accuracy, top5_accuracy, top1_correct_country, top3_correct_country, top5_correct_country
     else:
-        if balanced_acc is not None:
+        if top1_balanced_accuracy is not None:
             if accuracy_per_country:
-                return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy, balanced_acc, accuracy_per_country
-            return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy, balanced_acc
+                return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy, top1_balanced_accuracy, accuracy_per_country
+            return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy, top1_balanced_accuracy
         if accuracy_per_country:
             return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy, accuracy_per_country
         return avg_loss, top1_accuracy, top3_accuracy, top5_accuracy
