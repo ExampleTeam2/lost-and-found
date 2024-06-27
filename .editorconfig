@@ -9,7 +9,7 @@ end_of_line = lf
 
 [*.{ini,py,py.tpl,rst,ipynb}]
 indent_style = space
-indent_size = 2
+indent_size = 4
 
 [*.{ini,js,ts,mjs,mts}]
 indent_style = space

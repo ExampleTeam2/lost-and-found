@@ -33,6 +33,7 @@ class GeoModelTrainer(GeoModelHarness):
 
             # Set seeds, configure optimizers, losses, etc.
             best_val_metric = float("inf") if self.use_coordinates or self.use_regions else 0
+            best_logs = {}
             patience_counter = 0
 
             # Rename run name and initialize parameters in model name
@@ -64,8 +65,22 @@ class GeoModelTrainer(GeoModelHarness):
                     train_top1_correct_country, train_top3_correct_country, train_top5_correct_country = train_epoch["top1_correct_country"], train_epoch["top3_correct_country"], train_epoch["top5_correct_country"]
                     val_top1_correct_country, val_top3_correct_country, val_top5_correct_country = val_epoch["top1_correct_country"], val_epoch["top3_correct_country"], val_epoch["top5_correct_country"]
 
+                log = {}
+
+                # Log metrics to wandb
+                if self.use_coordinates:
+                    log = {"Train Loss": train_loss, "Train Distance (km)": train_metric, "Validation Loss": val_loss, "Validation Distance (km)": val_metric}
+                elif self.use_regions:
+                    log = {"Train Loss": train_loss, "Train Distance (km)": train_metric, "Train Accuracy Top 1": train_top1_accuracy, "Train Accuracy Top 3": train_top3_accuracy, "Train Accuracy Top 5": train_top5_accuracy, "Train Accuracy Top 1 Country": train_top1_correct_country, "Train Accuracy Top 3 Country": train_top3_correct_country, "Train Accuracy Top 5 Country": train_top5_correct_country, "Validation Loss": val_loss, "Validation Distance (km)": val_metric, "Validation Accuracy Top 1": val_top1_accuracy, "Validation Accuracy Top 3": val_top3_accuracy, "Validation Accuracy Top 5": val_top5_accuracy, "Validation Accuracy Top 1 Country": val_top1_correct_country, "Validation Accuracy Top 3 Country": val_top3_correct_country, "Validation Accuracy Top 5 Country": val_top5_correct_country}
+                else:
+                    log = {"Train Loss": train_loss, "Train Accuracy Top 1": train_top1_accuracy, "Train Accuracy Top 3": train_top3_accuracy, "Train Accuracy Top 5": train_top5_accuracy, "Validation Loss": val_loss, "Validation Accuracy Top 1": val_top1_accuracy, "Validation Accuracy Top 3": val_top3_accuracy, "Validation Accuracy Top 5": val_top5_accuracy}
+
+                wandb.log(log)
+
                 # Even for predicting regions, always use the best model based on validation distance
                 if ((self.use_coordinates or self.use_regions) and val_metric < best_val_metric) or ((not (self.use_coordinates or self.use_regions)) and val_top1_accuracy > best_val_metric):
+                    best_logs = log
+
                     if self.use_coordinates or self.use_regions:
                         best_val_metric = val_metric
                     else:
@@ -85,13 +100,12 @@ class GeoModelTrainer(GeoModelHarness):
                 # Step the scheduler at the end of the epoch
                 scheduler.step()
 
-                # Log metrics to wandb
-                if self.use_coordinates:
-                    wandb.log({"Train Loss": train_loss, "Train Distance (km)": train_metric, "Validation Loss": val_loss, "Validation Distance (km)": val_metric})
-                elif self.use_regions:
-                    wandb.log({"Train Loss": train_loss, "Train Distance (km)": train_metric, "Train Accuracy Top 1": train_top1_accuracy, "Train Accuracy Top 3": train_top3_accuracy, "Train Accuracy Top 5": train_top5_accuracy, "Train Accuracy Top 1 Country": train_top1_correct_country, "Train Accuracy Top 3 Country": train_top3_correct_country, "Train Accuracy Top 5 Country": train_top5_correct_country, "Validation Loss": val_loss, "Validation Distance (km)": val_metric, "Validation Accuracy Top 1": val_top1_accuracy, "Validation Accuracy Top 3": val_top3_accuracy, "Validation Accuracy Top 5": val_top5_accuracy, "Validation Accuracy Top 1 Country": val_top1_correct_country, "Validation Accuracy Top 3 Country": val_top3_correct_country, "Validation Accuracy Top 5 Country": val_top5_correct_country})
-                else:
-                    wandb.log({"Train Loss": train_loss, "Train Accuracy Top 1": train_top1_accuracy, "Train Accuracy Top 3": train_top3_accuracy, "Train Accuracy Top 5": train_top5_accuracy, "Validation Loss": val_loss, "Validation Accuracy Top 1": val_top1_accuracy, "Validation Accuracy Top 3": val_top3_accuracy, "Validation Accuracy Top 5": val_top5_accuracy})
+            # Filter all keys with "Train" from best_logs and prepend "Best" to all others
+            best_logs = {("Best " + k): v for k, v in best_logs.items() if not k.lower().startswith("train")}
+            # Push best logs to wandb summary only
+            for k, v in best_logs.items():
+                wandb.run.summary[k] = v
+            wandb.run.summary.update()
 
             # Load and log the best model to wandb
             self.initialize_model(model_type=config.model_name)
