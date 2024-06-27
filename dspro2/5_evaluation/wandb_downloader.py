@@ -11,7 +11,7 @@ class WandbDownloader:
         self.api = wandb.Api()
         wandb.login()
 
-    def get_best_runs(self, metric_name):
+    def get_best_runs(self, metric_name, metric_ascending=False):
         runs = self.api.runs(f"{self.entity}/{self.project}")
         
         filtered_runs = []
@@ -32,7 +32,7 @@ class WandbDownloader:
                 filtered_runs.append(run)
         
         # Sort in descending order and take the top_n elements
-        best_runs = sorted(filtered_runs, key=lambda run: run.summary.get(metric_name, float("-inf")), reverse=True)[:self.top_n_runs]
+        best_runs = sorted(filtered_runs, key=lambda run: run.summary.get(metric_name, float("-inf") if not metric_ascending else float("inf")), reverse=(not metric_ascending))[:self.top_n_runs]
         return best_runs
 
     def collect_run_data(self, runs, file_names):
@@ -68,8 +68,8 @@ class WandbDownloader:
             run_data[run_key] = run_info
         return run_data
 
-    def get_and_collect_best_runs(self, metric_name, file_names):
-        best_runs = self.get_best_runs(metric_name)
+    def get_and_collect_best_runs(self, metric_name, file_names, metric_ascending=False):
+        best_runs = self.get_best_runs(metric_name, metric_ascending=metric_ascending)
         print(f"Found {len(best_runs)} matching runs.")
         if not best_runs:
             print("No matching runs found.")
