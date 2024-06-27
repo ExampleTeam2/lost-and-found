@@ -1,7 +1,5 @@
 ---
-
 kanban-plugin: basic
-
 ---
 
 ## Backlog
@@ -9,11 +7,10 @@ kanban-plugin: basic
 - [ ] Create Literature review for Sceintific Report #BusinessUnderstanding #DataPreparation #Modeling
 - [ ] Plan Cloud-Service task and compare it with all services, also with costs #BusinessUnderstanding
 - [ ] Create Data Processing Part for Sceintific Report #DataPreparation
-- [ ] Create Methods we used for decision makings and include them into the Scientific Report #DataCollecting  #DataPreparation #Modeling
+- [ ] Create Methods we used for decision makings and include them into the Scientific Report #DataCollecting #DataPreparation #Modeling
 - [ ] Create Model Validation Part for Sceintific Report #Evaluation
 - [ ] Create MLOps Part for Sceintific Report #Deployment
 - [ ] Create final presentation
-
 
 ## Current
 
@@ -27,7 +24,6 @@ kanban-plugin: basic
 - [ ] Try Transformer also to Resnet #Modeling
 - [ ] Deploy training on VastAI #Modeling
 
-
 ## Doing
 
 - [ ] Focus on the task "Country Prediction" #WorkingPermanently
@@ -38,7 +34,6 @@ kanban-plugin: basic
 - [ ] Setup wand.db Experiment tracking for Model Validation #Evaluation
 - [ ] Change accuray for best, 3 best and 5 best predictions, and logg it, when it is under the predictions it's correct #Modeling
 - [ ] Try other models like MobileNetV2 and a CNN too? #Modeling
-
 
 ## Done
 
@@ -60,15 +55,12 @@ kanban-plugin: basic
 - [x] collecting data from geoguessr #DataCollecting
 - [x] create web scrapper for geoguessr #DataCollecting
 
-
 ## Archive
 
-
-
-
-
 %% kanban:settings
+
 ```
 {"kanban-plugin":"basic","date-colors":[{"isToday":false,"distance":1,"unit":"days","direction":"after"}],"tag-colors":[{"tagKey":"#BusinessUnderstanding","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(255, 247, 0, 0.75)"},{"tagKey":"#DataCollecting","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(72, 105, 34, 1)"},{"tagKey":"#DataUnderstanding","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(12, 60, 22, 1)"},{"tagKey":"#DataPreparation","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(25, 148, 139, 1)"},{"tagKey":"#Modeling","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(50, 94, 171, 1)"},{"tagKey":"#Evaluation","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(51, 39, 130, 1)"},{"tagKey":"#Deployment","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(115, 55, 133, 1)"},{"tagKey":"#BugDetected","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(255, 0, 0, 0.66)"},{"tagKey":"#WorkingPermanently","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(196, 113, 22, 0.79)"}]}
 ```
+
 %%

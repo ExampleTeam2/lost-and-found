@@ -4,10 +4,10 @@ import fs from 'fs';
 const timestamp = getTimestampString();
 
 console.log('Setting up environment...');
-if (!fs.existsSync(DATA_PATH)){
+if (!fs.existsSync(DATA_PATH)) {
   fs.mkdirSync(DATA_PATH);
 }
-if (!fs.existsSync(TEMP_PATH)){
+if (!fs.existsSync(TEMP_PATH)) {
   fs.mkdirSync(TEMP_PATH);
 }
 if (MODE === 'results') {

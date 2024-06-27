@@ -19,12 +19,16 @@
     "scrape:cleanup:incomplete": "chmod +x 'dspro2/1_data_collection/delete_non_complete.sh' && './dspro2/1_data_collection/delete_non_complete.sh'",
     "scrape:cleanup:all": "rm -rf 'dspro2/1_data_collection/.data/'",
     "scrape:count": "find 'dspro2/1_data_collection/.data/' -name 'geoguessr_result_singleplayer*' | wc -l && find 'dspro2/1_data_collection/.data/' -name 'geoguessr_result_multiplayer*' | wc -l",
-    "scrape:count:images": "find 'dspro2/1_data_collection/.data/' -name 'geoguessr_location_singleplayer*' | wc -l && find 'dspro2/1_data_collection/.data/' -name 'geoguessr_location_multiplayer*' | wc -l"
+    "scrape:count:images": "find 'dspro2/1_data_collection/.data/' -name 'geoguessr_location_singleplayer*' | wc -l && find 'dspro2/1_data_collection/.data/' -name 'geoguessr_location_multiplayer*' | wc -l",
+    "format": "prettier --write . --print-width 2000 --prose-wrap preserve --single-quote",
+    "python:prepare": "pip3 install \"poetry black[jupyter]\"",
+    "python:format": "poetry run black . -l 2000"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.2",
     "@types/node": "^20.11.20",
     "playwright-extra": "^4.3.6",
+    "prettier": "^3.3.2",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "typescript": "^5.3.3"
   },
