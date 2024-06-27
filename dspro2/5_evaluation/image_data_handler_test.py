@@ -4,6 +4,7 @@ import io
 import os
 import torch
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from image_data_handler_inference import InferenceImageDataHandler
 
@@ -12,7 +13,7 @@ from custom_image_dataset import CustomImageDataset
 
 
 class TestImageDataHandler(InferenceImageDataHandler):
-    def __init__(self, test_path="./test_data.pth", country_to_index_path="./country_to_index.json", region_to_index_path="./region_to_index.json", region_index_to_middle_point_path="./region_index_to_middle_point.json", region_index_to_country_index_path="./region_index_to_country_index.json", batch_size=100, cache=True):
+    def __init__(self, test_path="./test_data.pth", country_to_index_path="./country_to_index.json", region_to_index_path="./region_to_index.json", region_index_to_middle_point_path="./region_index_to_middle_point.json", region_index_to_country_index_path="./region_index_to_country_index.json", batch_size=100, cache=True, download_chunk_size=1024):
         super().__init__(country_to_index_path, region_to_index_path, region_index_to_middle_point_path, region_index_to_country_index_path)
 
         # Load the test data
@@ -31,15 +32,25 @@ class TestImageDataHandler(InferenceImageDataHandler):
                         parts = parts[:-1]
                     run_name = parts[-2]
                     test_file_identifier = f"{run_name}/{file_name}"
-
+                    
         # create test file identifier path if it is not None and does not exist
         if test_file_identifier is not None:
             os.makedirs(os.path.dirname(test_file_identifier), exist_ok=True)
 
         if test_file_identifier is None or not os.path.exists(test_file_identifier):
-            dataset_response = requests.get(test_path)
+            dataset_response = requests.get(test_path, stream=True)
             dataset_response.raise_for_status()
-            dataset_file = io.BytesIO(dataset_response.content)
+            # Get the total size from the 'Content-Length' header
+            total_size = int(dataset_response.headers.get("content-length", 0))
+
+            dataset_file = io.BytesIO()
+
+            with tqdm(total=total_size, unit="B", unit_scale=True, desc="Downloading...") as pbar:
+                for chunk in dataset_response.iter_content(chunk_size=download_chunk_size):
+                    dataset_file.write(chunk)
+                    pbar.update(len(chunk))
+
+            dataset_file.seek(0)
             test_data = torch.load(dataset_file)
             print("Test data loaded.")
             # Cache the test data
