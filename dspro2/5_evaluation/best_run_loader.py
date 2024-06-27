@@ -25,8 +25,11 @@ class BestRunLoader:
         return configurations
 
     def load_best_runs(self, project, data_augmentation, datasize, image_size):
+        metric_ascending = False
+        if project.endswith("coordinates"):
+          metric_ascending = True
         downloader = WandbDownloader(self.entity, project, data_augmentation, datasize, image_size)
-        return downloader.get_and_collect_best_runs(self.metric_name, self.file_names_to_download)
+        return downloader.get_and_collect_best_runs(self.metric_name, self.file_names_to_download, metric_ascending=metric_ascending)
 
     def load_results(self):
         results = {}
