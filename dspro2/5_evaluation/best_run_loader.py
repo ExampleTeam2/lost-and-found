@@ -2,6 +2,7 @@ import pandas as pd
 
 from wandb_downloader import WandbDownloader
 
+
 class BestRunLoader:
     def __init__(self, entity, metric_name, project_names, file_names_to_download):
         self.entity = entity
@@ -27,7 +28,7 @@ class BestRunLoader:
     def load_best_runs(self, project, data_augmentation, datasize, image_size):
         metric_ascending = False
         if project.endswith("coordinates"):
-          metric_ascending = True
+            metric_ascending = True
         downloader = WandbDownloader(self.entity, project, data_augmentation, datasize, image_size)
         return downloader.get_and_collect_best_runs(self.metric_name, self.file_names_to_download, metric_ascending=metric_ascending)
 
@@ -36,25 +37,14 @@ class BestRunLoader:
         for configs in self.configurations.values():
             for config in configs:
                 key = f"{config['project']}_{config['data_augmentation']}_{config['datasize']}_{tuple(config['image_size'])}"
-                results[key] = self.load_best_runs(
-                    config['project'],
-                    config['data_augmentation'],
-                    config['datasize'],
-                    config['image_size']
-                )
+                results[key] = self.load_best_runs(config["project"], config["data_augmentation"], config["datasize"], config["image_size"])
         return results
 
     def get_summary_table(self):
         summary = []
         for key, value in self.results.items():
-            project, augmentation, size, *image_size = key.split('_')
-            summary.append({
-                'Project': project,
-                'Data Augmentation': augmentation,
-                'Data Size': int(size),
-                'Image Size': tuple(map(int, image_size)),
-                'Number of Runs': len(value)
-            })
+            project, augmentation, size, *image_size = key.split("_")
+            summary.append({"Project": project, "Data Augmentation": augmentation, "Data Size": int(size), "Image Size": tuple(map(int, image_size)), "Number of Runs": len(value)})
         df = pd.DataFrame(summary)
         return df
 
@@ -65,7 +55,7 @@ class BestRunLoader:
     def count_runs_per_project(self):
         project_counts = {}
         for key in self.results:
-            project = key.split('_')[0]
+            project = key.split("_")[0]
             if project not in project_counts:
                 project_counts[project] = 0
             project_counts[project] += len(self.results[key])

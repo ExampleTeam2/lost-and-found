@@ -3,6 +3,7 @@ import json
 import os
 from torch.utils.data import Dataset
 
+
 class CustomImageDatasetTest(Dataset):
     def __init__(self, images, coordinates, countries, regions, country_to_index, region_to_index):
         self.images = images
@@ -19,7 +20,6 @@ class CustomImageDatasetTest(Dataset):
 
         # Remove images with countries not in the index
         self._remove_images_with_countries_not_in_index()
-        
 
     def _remove_images_with_countries_not_in_index(self):
         # Remove images with countries not in the index
@@ -33,8 +33,7 @@ class CustomImageDatasetTest(Dataset):
         self.coordinates = [coordinate for i, coordinate in enumerate(self.coordinates) if i not in index_to_remove]
         self.countries = [country for i, country in enumerate(self.countries) if i not in index_to_remove]
         self.regions = [region for i, region in enumerate(self.regions) if i not in index_to_remove]
-            
-                
+
     def __len__(self):
         return len(self.images)
 

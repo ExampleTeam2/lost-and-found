@@ -5,6 +5,7 @@ from torch.utils.data import Dataset
 
 from coordinate_handler import coordinates_to_cartesian
 
+
 class CustomImageDataset(Dataset):
     def __init__(self, images, coordinates, countries, regions, country_to_index, region_to_index):
         self.images = images
@@ -13,7 +14,7 @@ class CustomImageDataset(Dataset):
         self.regions = regions
         self.country_to_index = country_to_index
         self.region_to_index = region_to_index
-        
+
         # Convert coordinates to cartesian
         self.coordinates_cartesian = list([coordinates_to_cartesian(*coordinate) for coordinate in self.coordinates])
 
@@ -21,7 +22,6 @@ class CustomImageDataset(Dataset):
         missing_countries = set(self.countries) - set(self.country_to_index.keys())
         if missing_countries:
             print(f"Warning: The following countries are missing in the mapping: {missing_countries}")
-
 
     def __len__(self):
         return len(self.images)

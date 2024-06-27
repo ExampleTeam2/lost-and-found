@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class GeolocalizationLoss(nn.Module):
     def __init__(self, temperature=75):
         super(GeolocalizationLoss, self).__init__()
@@ -31,7 +32,7 @@ class GeolocalizationLoss(nn.Module):
         x_rad, y_rad = torch.deg2rad(x), torch.deg2rad(y)
         delta = x_rad.unsqueeze(2) - y_rad
         p = torch.cos(x_rad[:, 1]).unsqueeze(1) * torch.cos(y_rad[1, :]).unsqueeze(0)
-        a = torch.sin(delta[:, 1, :] / 2)**2 + p * torch.sin(delta[:, 0, :] / 2)**2
+        a = torch.sin(delta[:, 1, :] / 2) ** 2 + p * torch.sin(delta[:, 0, :] / 2) ** 2
         c = 2 * torch.arcsin(torch.sqrt(a))
         km = (self.rad_torch * c) / 1000
         return km
@@ -54,7 +55,7 @@ class GeolocalizationLoss(nn.Module):
         device = outputs.device
 
         true_coords = true_coords.to(device)
-        
+
         # Compute the haversine distance between the true coordinates and the transformed geocell centroids
         haversine_distances = self.haversine_matrix(true_coords, geocell_centroids.T)
 
@@ -63,5 +64,5 @@ class GeolocalizationLoss(nn.Module):
 
         # Compute the cross-entropy loss
         loss = self.loss_fc(outputs, smoothed_labels)
-        
+
         return loss

@@ -1,5 +1,6 @@
 from torch.utils.data import Dataset
 
+
 class CustomImageNameDataset(Dataset):
     def __init__(self, image_paths, json_paths):
         self.image_paths = image_paths
