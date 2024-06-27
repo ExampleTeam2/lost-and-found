@@ -23,7 +23,7 @@ def inspect_transformed_images(transformed_images, num_images=5):
         img.show()
 
 class ImageDataHandler:
-    def __init__(self, list_files, base_transform, augmented_transform, final_transform, preprocessing_config={}, prediction_type=None, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_additional_save_callback=None, save_test_data=True, random_seed=42, inspect_transformed=False, move_files=False):
+    def __init__(self, list_files, augmented_transform, base_transform, preprocessing_config={}, prediction_type=None, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_zip_load_callback=None, cache_additional_save_callback=None, save_test_data=True, random_seed=42, inspect_transformed=False, move_files=False):
         assert train_ratio + val_ratio + test_ratio - 1 <= 0.001, "Ratios should sum to 1"
           
         self.batch_size = batch_size
@@ -84,9 +84,9 @@ class ImageDataHandler:
           val_file_name_loader = DataLoader(val_file_name_dataset, batch_size=batch_size, shuffle=False)
           test_file_name_loader = DataLoader(test_file_name_dataset, batch_size=batch_size, shuffle=False)
           
-          train_transform=transforms.Compose([base_transform, augmented_transform, final_transform] if augmented_transform is not None else [base_transform, final_transform])
-          val_transform=transforms.Compose([base_transform, final_transform])
-          test_transform=transforms.Compose([base_transform, final_transform])
+          train_transform=transforms.Compose([augmented_transform, base_transform]) if augmented_transform is not None else base_transform
+          val_transform=base_transform
+          test_transform=base_transform
           
           random.seed(random_seed)
           torch.manual_seed(random_seed)
