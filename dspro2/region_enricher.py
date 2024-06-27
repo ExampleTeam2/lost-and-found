@@ -1,12 +1,11 @@
+import os
+
 import geopandas as gpd
 from shapely.geometry import Point
 import numpy as np
-import reverse_geocoder as rg
-from fuzzywuzzy import process
 from countryconverter import convert_coordinates_to_country_names, convert_country_from_names
 import warnings
 from scipy.spatial import cKDTree
-import os
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 

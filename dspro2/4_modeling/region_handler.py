@@ -1,7 +1,6 @@
 from torch.utils.data import Dataset
 import geopandas as gpd
 import os
-import fiona
 from shapely import wkt
 import torch
 

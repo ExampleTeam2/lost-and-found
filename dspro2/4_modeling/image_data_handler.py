@@ -1,6 +1,5 @@
 import sys
 import random
-import json
 import os
 import torch
 from tqdm import tqdm

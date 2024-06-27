@@ -1,7 +1,6 @@
 import os
 import sys
 from torch.utils.data import DataLoader
-from torchvision import transforms
 
 sys.path.insert(0, "../")
 from data_loader import load_image_files

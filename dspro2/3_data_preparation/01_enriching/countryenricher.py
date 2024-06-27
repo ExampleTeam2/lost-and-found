@@ -1,10 +1,7 @@
 import os
 import re
 import json
-import pycountry
 import concurrent
-import reverse_geocoder as rg
-from fuzzywuzzy import process
 import sys
 
 sys.path.insert(0, "../../")
