@@ -68,10 +68,19 @@ class WandbDownloader:
             run_data[run_key] = run_info
         return run_data
 
+<<<<<<< Updated upstream
     def get_and_collect_best_runs(self, metric_name, file_names, metric_ascending=False):
         best_runs = self.get_best_runs(metric_name, metric_ascending=metric_ascending)
         print(f"Found {len(best_runs)} matching runs.")
         if not best_runs:
             print("No matching runs found.")
+=======
+    def get_and_collect_best_runs(self, metric_name, file_names):
+        best_runs = self.get_best_runs(metric_name)
+        if best_runs:
+          print(f"{self.project}: Found {len(best_runs)} matching runs for datasize {self.datasize} and {self.data_augmentation}.")
+        else:
+            print(f"{self.project}: No matching runs found for datasize {self.datasize} and {self.data_augmentation}.")
+>>>>>>> Stashed changes
         run_data = self.collect_run_data(best_runs, file_names)
         return run_data
