@@ -10,6 +10,7 @@ end_of_line = lf
 [*.{ini,py,py.tpl,rst,ipynb}]
 indent_style = space
 indent_size = 4
+trim_trailing_whitespace = true
 
 [*.{ini,js,ts,mjs,mts}]
 indent_style = space
