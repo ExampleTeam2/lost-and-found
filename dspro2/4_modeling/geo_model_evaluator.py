@@ -13,6 +13,8 @@ class GeoModelEvaluator(GeoModelInference):
 
     def evaluate(self, use_balanced_accuracy=False, second_balanced_on_countries_only=None, accuracy_per_country=False, median_metric=False):
         with wandb.init(reinit=True) as run:
+            print(f"Evaluating for run {run.name} ({run.id})")
+
             with torch.no_grad():
                 val_epoch = self.run_epoch(self.val_dataloader, is_train=False, use_balanced_accuracy=use_balanced_accuracy, balanced_on_countries_only=None, accuracy_per_country=accuracy_per_country, median_metric=median_metric)
 
