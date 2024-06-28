@@ -107,7 +107,7 @@ class GeoModelTrainer(GeoModelHarness):
             # Push best logs to wandb summary only
             for k, v in best_logs.items():
                 wandb.run.summary[k] = v
-            wandb.run.summary.update()
+            #wandb.run.summary.update()
 
             # Load and log the best model to wandb
             self.initialize_model(model_type=config.model_name)
