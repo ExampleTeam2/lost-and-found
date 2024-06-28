@@ -358,17 +358,27 @@ Follows...
 Follows...
 
 $$
-\begin{aligned} & \text {Table 1.1. Example table for the future results :) }\\ &\begin{array}{ccc|c} \hline \hline \text { Case } & \text { Method 1 } & \text { Method 2 } & \text { Test result } \\ \hline 1 & 50 & 837 & 970 \\ 2 & 47 & 877 & 230 \\ 3 & 31 & 25 & 415 \\ 4 & 35 & 144 & 23656 \\ 5 & 45 & 300 & 556 \\ \hline
+\begin{aligned} & \text {Table 1.1. Best runs for predicing coordinates }\\ &\begin{array}{cccc|c} \hline \hline \text { Size dataset } & \text { Augmented } & \text { Train distance (km) } & \text { Val distance (km) } & \text { Test distance (km) } \\ \hline 79'000 & No & 837 & 970 & xx \\ 81'505 & No & 877 & 230 & xx \\ 81'505 & Yes & 25 & 415 & xx \\ 332'786 & No & 144 & 23656 & xx \\ 332'786 & Yes & 300 & 556 & xx \\ \hline
 \end{array} \end{aligned}
 $$
 
-## Predicting countries
+## Predicting country
 
 Follows...
 
-## Predicting regions
+$$
+\begin{aligned} & \text {Table 1.1. Best runs for predicing country }\\ &\begin{array}{cccc|c} \hline \hline \text { Size dataset } & \text { Augmented } & \text { Train distance (km) } & \text { Val distance (km) } & \text { Test distance (km) } \\ \hline 79'000 & No & 837 & 970 & xx \\ 81'505 & No & 877 & 230 & xx \\ 81'505 & Yes & 25 & 415 & xx \\ 332'786 & No & 144 & 23656 & xx \\ 332'786 & Yes & 300 & 556 & xx \\ \hline
+\end{array} \end{aligned}
+$$
+## Predicting region
 
 Follows...
+
+
+$$
+\begin{aligned} & \text {Table 1.1. Best runs for predicing region }\\ &\begin{array}{cccc|c} \hline \hline \text { Size dataset } & \text { Augmented } & \text { Train distance (km) } & \text { Val distance (km) } & \text { Test distance (km) } \\ \hline 79'000 & No & 837 & 970 & xx \\ 81'505 & No & 877 & 230 & xx \\ 81'505 & Yes & 25 & 415 & xx \\ 332'786 & No & 144 & 23656 & xx \\ 332'786 & Yes & 300 & 556 & xx \\ \hline
+\end{array} \end{aligned}
+$$
 
 
 ## General
