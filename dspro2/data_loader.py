@@ -625,6 +625,10 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir="./tmp", always_l
         for file in os.listdir(path):
             if file.endswith(".pth"):
                 skip_zip = True
+                # If it has a long file name (100+) (probably unique), skip it if it is already in the tmp_dir
+                if len(file) > 100 and os.path.exists(os.path.join(tmp_dir, file)):
+                    print("Skipping copying " + file + " because it is already in the tmp_dir")
+                    continue
                 # Copy file to tmp_dir
                 print("Copying " + file)
                 shutil.copyfile(os.path.join(path, file), os.path.join(tmp_dir, file))
