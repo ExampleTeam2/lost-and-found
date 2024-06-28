@@ -79,7 +79,7 @@ def potentially_get_cached_file_path(file_names, config, name="data", suffix=".p
     file_path = get_cached_file_path(file_names, config, name=name, suffix=suffix)
     if cache_load_callback is not None:
         file_name = _get_basename(file_path)
-        print("Fetching remote cache for " + file_name)
+        print("Checking remote cache for " + file_name)
         cache_load_callback(file_name)
     if os.path.exists(file_path):
         return file_path
