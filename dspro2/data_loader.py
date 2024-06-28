@@ -626,7 +626,7 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir="./tmp", always_l
     # Load only the specified pth file if it is specified
     if only_load_pth is not None:
         file = only_load_pth
-        if os.path.exists(os.path.path(tmp_dir, file)):
+        if os.path.exists(os.path.join(path, file)):
             # Skip it if it is already in the tmp_dir
             if os.path.exists(os.path.join(tmp_dir, file)):
                 print("Skipping copying " + file + " because it is already in the tmp_dir")
