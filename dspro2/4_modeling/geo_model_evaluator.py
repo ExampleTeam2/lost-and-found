@@ -69,4 +69,10 @@ class GeoModelEvaluator(GeoModelInference):
 
         # Print results, floats to 4 decimal places
         for k, v in log.items():
-            print(f"{k}: {v:.4f}")
+            # if it's a dictionary, print each key-value pair on a new line
+            if isinstance(v, dict):
+                print(f"{k}:")
+                for k2, v2 in v.items():
+                    print(f"    {k2}: {v2:.4f}")
+            else:
+                print(f"{k}: {v:.4f}")
