@@ -23,10 +23,6 @@ class WandbDownloader:
 
         filtered_runs = []
         for run in runs:
-            # Skip if the run is running
-            if run.state == "running":
-                print(f"Run {run.id} is still running, skipping")
-                continue
 
             config = run.config
             matches = True
@@ -41,6 +37,10 @@ class WandbDownloader:
                 matches &= actual_image_size == self.input_image_size
 
             if matches:
+                # Skip if the run is running
+                if run.state == "running":
+                    print(f"Run {run.id} is still running, skipping")
+                    continue
                 filtered_runs.append(run)
 
         # Sort in descending order and take the top_n elements
