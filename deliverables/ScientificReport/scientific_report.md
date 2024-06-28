@@ -364,7 +364,7 @@ $$
 
 ## Predicting country
 
-Follows...
+Follows... DO different tables to see the differences for training validation? Show also the models... the different we tried...
 
 $$
 \begin{aligned} & \text {Table 1.1. Best runs for predicing country }\\ &\begin{array}{cccc|c} \hline \hline \text { Size dataset } & \text { Augmented } & \text { Train distance (km) } & \text { Val distance (km) } & \text { Test distance (km) } \\ \hline 79'000 & No & 837 & 970 & xx \\ 81'505 & No & 877 & 230 & xx \\ 81'505 & Yes & 25 & 415 & xx \\ 332'786 & No & 144 & 23656 & xx \\ 332'786 & Yes & 300 & 556 & xx \\ \hline
