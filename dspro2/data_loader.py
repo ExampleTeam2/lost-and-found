@@ -913,7 +913,7 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
     if limit and len(basenames) < (limit * 2 if not type else limit):
         raise ValueError("Can not set limit higher than the number of files available, remember that the limit is per pair of files if not just one type is loaded")
 
-    if limit:
+    if limit and len(basenames) > (limit * 2 if not type else limit):
         if download_link is not None and not from_remote_only and not has_loading_file:
             print("Warning: If you add local files, this will not be reproducible, consider setting from_remote_only to True")
         limited_files = _process_in_pairs(basenames, type, limit, shuffle_seed, additional_order=files_from_loading_file) if not skip_checks else process_in_pairs_simple(basenames, type, limit, shuffle_seed)

@@ -4,8 +4,6 @@ import numpy as np
 
 sys.path.insert(0, "../4_modeling")
 from coordinate_handler import cartesian_to_coordinates
-
-sys.path.insert(0, "../5_evaluation")
 from geo_model_inference import GeoModelInference
 
 
