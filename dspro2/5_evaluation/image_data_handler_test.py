@@ -32,7 +32,7 @@ class TestImageDataHandler(InferenceImageDataHandler):
                         parts = parts[:-1]
                     run_name = parts[-2]
                     test_file_identifier = f"{run_name}/{file_name}"
-                    
+
         # create test file identifier path if it is not None and does not exist
         if test_file_identifier is not None:
             os.makedirs(os.path.dirname(test_file_identifier), exist_ok=True)

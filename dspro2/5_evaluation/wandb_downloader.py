@@ -23,6 +23,11 @@ class WandbDownloader:
 
         filtered_runs = []
         for run in runs:
+            # Skip if the run is running
+            if run.state == "running":
+                print(f"Run {run.id} is still running, skipping")
+                continue
+
             config = run.config
             matches = True
             if self.data_augmentation is not None:
