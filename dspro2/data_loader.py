@@ -631,6 +631,12 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir="./tmp", always_l
             if os.path.exists(os.path.join(tmp_dir, file)):
                 print("Skipping copying " + file + " because it is already in the tmp_dir")
                 return loaded_zip
+            # Delete all other .pth files
+            for file in os.listdir(tmp_dir):
+                if file.endswith(".pth"):
+                    print("Deleting " + file)
+                    os.remove(os.path.join(tmp_dir, file))
+                    print("Deleted " + file)
             # Copy file to tmp_dir
             print("Copying " + file)
             shutil.copyfile(os.path.join(path, file), os.path.join(tmp_dir, file))
