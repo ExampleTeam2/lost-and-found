@@ -351,15 +351,6 @@ Creating the demo for the geoguessr wizard and how we are deploying the model in
 
 Follows...
 
----
-
-**Requirements:**
-
-1. Ensuring Model Reliability: Model validation is crucial for assessing the accuracy and reliability of the model. This section shows how the student evaluates the performance and generalizability of their model.
-2. Critical Evaluation: It encourages students to critically evaluate their model’s performance, understand its limitations, and discuss potential improvements.
-
----
-
 # Experiments and Results (and also discussions)
 
 ## Predicting coordinates
@@ -379,9 +370,22 @@ Follows...
 
 Follows...
 
+
 ## General
 
 Write also that we found out that a bigger data size matters more than bigger images for all of the prediction models, which is a really nice catch and learning.
+
+
+
+
+---
+
+**Requirements:**
+
+1. Ensuring Model Reliability: Model validation is crucial for assessing the accuracy and reliability of the model. This section shows how the student evaluates the performance and generalizability of their model.
+2. Critical Evaluation: It encourages students to critically evaluate their model’s performance, understand its limitations, and discuss potential improvements.
+
+---
 
 ---
 
