@@ -36,7 +36,7 @@ def hash_filenames(file_names):
     # Concatenate all file names into one long string and update the hash object
     for name in file_names:
         # Ensure encoding to bytes, as hashlib requires bytes input
-        hash_object.update(os.path.basename(name).encode("utf-8"))
+        hash_object.update(_get_basename(name).encode("utf-8"))
 
     # Get the hexadecimal representation of the hash
     hash_digest = hash_object.hexdigest()
@@ -75,8 +75,10 @@ def get_cached_file_path(file_names, config, name="data", suffix=".pth"):
 
 
 # Get the file path of cached processed data if it exists
-def potentially_get_cached_file_path(file_names, config, name="data", suffix=".pth"):
+def potentially_get_cached_file_path(file_names, config, name="data", suffix=".pth", cache_load_callback=None):
     file_path = get_cached_file_path(file_names, config, name=name, suffix=suffix)
+    if cache_load_callback is not None:
+        cache_load_callback(_get_basename(file_path))
     if os.path.exists(file_path):
         return file_path
     return None
@@ -178,7 +180,7 @@ def _get_files_counterparts(files, all_files):
     return files_counterparts
 
 
-# Replace one start of the file with another
+# Get the file name from a full path
 def _get_basename(file):
     return os.path.basename(file)
 
@@ -611,7 +613,7 @@ def _get_list_from_remote(download_link, file_location, json_file_location=None,
     return basenames, basenames_to_locations_map
 
 
-def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir="./tmp", always_load_zip=False, only_load_zip=False):
+def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir="./tmp", always_load_zip=False, only_load_zip=False, only_load_pth=None):
     # Create tmp_dir if it does not exist
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
@@ -619,20 +621,25 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir="./tmp", always_l
         os.makedirs(path)
     skip_zip = False
     loaded_zip = False
+    # Load only the specified pth file if it is specified
+    if only_load_pth is not None:
+        file = only_load_pth
+        if os.path.exists(os.path.path(tmp_dir, file)):
+            # Skip it if it is already in the tmp_dir
+            if os.path.exists(os.path.join(tmp_dir, file)):
+                print("Skipping copying " + file + " because it is already in the tmp_dir")
+                return loaded_zip
+            # Copy file to tmp_dir
+            print("Copying " + file)
+            shutil.copyfile(os.path.join(path, file), os.path.join(tmp_dir, file))
+            print("Copied " + file)
+        return loaded_zip
     if not only_load_zip:
-        # Copy all .pth files to tmp_dir if they exist
-        # And copy all .wandb files to tmp_dir if they exist
+        # copy all .wandb files to tmp_dir if they exist
         for file in os.listdir(path):
             if file.endswith(".pth"):
                 skip_zip = True
-                # If it has a long file name (100+) (probably unique), skip it if it is already in the tmp_dir
-                if len(file) > 100 and os.path.exists(os.path.join(tmp_dir, file)):
-                    print("Skipping copying " + file + " because it is already in the tmp_dir")
-                    continue
-                # Copy file to tmp_dir
-                print("Copying " + file)
-                shutil.copyfile(os.path.join(path, file), os.path.join(tmp_dir, file))
-                print("Copied " + file)
+                # Defer loading the zip file to later
             elif file.endswith(".wandb"):
                 # Copy file to tmp_dir
                 print("Copying " + file)
@@ -661,15 +668,15 @@ def _copy_and_unzip_files(path, zip_name, current_dir, tmp_dir="./tmp", always_l
     return loaded_zip
 
 
-def _load_from_zips_to_tmp(file_location, json_file_location=None, image_file_location=None, current_dir="./", tmp_dir="./tmp", always_load_zip=False, only_load_zip=False):
+def _load_from_zips_to_tmp(file_location, json_file_location=None, image_file_location=None, current_dir="./", tmp_dir="./tmp", always_load_zip=False, only_load_zip=False, only_load_pth=None):
     zip_name = "files.zip"
     loaded_zip = False
     if file_location is not None:
-        loaded_zip = _copy_and_unzip_files(file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip, only_load_zip=only_load_zip)
+        loaded_zip = _copy_and_unzip_files(file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip, only_load_zip=only_load_zip, only_load_pth=only_load_pth) or loaded_zip
     if json_file_location != file_location and json_file_location is not None and type != "png":
-        loaded_zip = _copy_and_unzip_files(json_file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip, only_load_zip=only_load_zip)
+        loaded_zip = _copy_and_unzip_files(json_file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip, only_load_zip=only_load_zip, only_load_pth=only_load_pth) or loaded_zip
     if image_file_location != file_location and image_file_location is not None and type != "json":
-        loaded_zip = _copy_and_unzip_files(image_file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip, only_load_zip=only_load_zip)
+        loaded_zip = _copy_and_unzip_files(image_file_location, zip_name, current_dir, tmp_dir, always_load_zip=always_load_zip, only_load_zip=only_load_zip, only_load_pth=only_load_pth) or loaded_zip
 
     return loaded_zip
 
@@ -682,7 +689,11 @@ def _copy_other_files(path, files_list_path, additional_files_paths, move=False)
     for file in additional_files_paths:
         if file.endswith(".pth"):
             # Copy file to path
-            pth_basename = os.path.basename(file)
+            pth_basename = _get_basename(file)
+            # If it has a long file name (100+) (probably unique), skip it if it is already in the path
+            if len(pth_basename) > 100 and os.path.exists(os.path.join(path, pth_basename)):
+                print("Skipping copying " + pth_basename + " because it is already in the path")
+                continue
             print("Copying " + pth_basename)
             if not move:
                 shutil.copyfile(file, os.path.join(path, pth_basename))
@@ -692,7 +703,7 @@ def _copy_other_files(path, files_list_path, additional_files_paths, move=False)
             print("Copied " + pth_basename)
         elif file.endswith(".wandb"):
             # Copy file to path
-            wandb_basename = os.path.basename(file)
+            wandb_basename = _get_basename(file)
             print("Copying " + wandb_basename)
             if move:
                 print("Copying " + wandb_basename + " anyway because it is very small, and it could be used later")
@@ -842,8 +853,8 @@ def _get_file_locations(file_location, json_file_location=None, image_file_locat
 # If `TMP_DIR_AND_ZIP=true` is set, the files will be loaded from a zip file into the tmp directory and saved to a zip file into the tmp directory. This is useful for large datasets and slow file systems like Google Colab.
 # In that case if in the file_location `.pth` files are found, they will be copied to the tmp directory and copied back after the files are loaded. This is used for caching.
 # If this is true and `USE_FILES_LIST=true` is set (and not mapping or pre-downloading), the copying of the `.zip` file will be skipped if `.pth` files are found.
-# If return_zip_load_and_additional_save_callback is set to True, a callback function will be returned that can be used to load the zip file late if required, as well as a callback function that can be used to save the `.pth` files.
-def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.path.dirname(__file__), "1_data_collection/.data"), json_file_location=None, image_file_location=None, filter_text="singleplayer", type="", limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16, allow_num_download_connections_env=True, countries_map_cached_basenames_to_countries={}, return_basenames_too=False, return_zip_load_and_additional_save_callback=False):
+# If return_load_and_additional_save_callback is set to True, a callback function will be returned that can be used to load the zip file or a specified .pth file later if required, as well as a callback function that can be used to save the `.pth` files.
+def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.path.dirname(__file__), "1_data_collection/.data"), json_file_location=None, image_file_location=None, filter_text="singleplayer", type="", limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16, allow_num_download_connections_env=True, countries_map_cached_basenames_to_countries={}, return_basenames_too=False, return_load_and_additional_save_callback=False):
     if download_link == "default":
         download_link = DEFAULT_DOWNLOAD_LINK
     download_link = resolve_env_variable(download_link, "DOWNLOAD_LINK", allow_download_link_env)
@@ -870,17 +881,25 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
     original_json_file_location = json_file_location
     original_image_file_location = image_file_location
 
+    def get_load_callback(pth_file_name=None):
+        return lambda: _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=always_load_zip, only_load_zip=True, only_load_pth=pth_file_name)
+
+    def get_only_load_pth_callback(pth_file_name=None):
+        if pth_file_name is None:
+            return
+        return get_load_callback(pth_file_name=pth_file_name)
+
     if not use_files_list:
         always_load_zip = True
     loaded_zip = False
-    zip_load_callback = None
+    load_callback = None
     if tmp_dir_and_zip:
         loaded_zip = _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=always_load_zip)
         file_location = tmp_dir
         json_file_location = tmp_dir
         image_file_location = tmp_dir
-        if return_zip_load_and_additional_save_callback and not loaded_zip:
-            zip_load_callback = lambda: _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=True, only_load_zip=True)
+        if return_load_and_additional_save_callback:
+            load_callback = get_load_callback if not loaded_zip else get_only_load_pth_callback
 
     basenames, basenames_to_locations_map, downloadable_files, pre_downloaded_new_files = _get_files_list(file_location, json_file_location, image_file_location, filter_text, type, download_link, pre_download, from_remote_only, allow_new_file_creation, skip_checks, num_download_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
     downloaded_new_files = pre_downloaded_new_files
@@ -937,9 +956,9 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
         if len(files_to_download):
             downloaded_new_files = True
             # If there is a zip file, download the previous files
-            if zip_load_callback:
-                zip_load_callback()
-                zip_load_callback = None
+            if load_callback:
+                load_callback()
+                load_callback = None
             _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location, num_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
 
     additional_save_callback = None
@@ -948,7 +967,7 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
         file_location = original_file_location
         json_file_location = original_json_file_location
         image_file_location = original_image_file_location
-        if return_zip_load_and_additional_save_callback:
+        if return_load_and_additional_save_callback:
             additional_save_callback = lambda move=False: _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, only_additional=True, skip_additional=False, move=move)
         if downloaded_new_files:
             _save_to_zips_from_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, only_additional=False, skip_additional=True)
@@ -981,11 +1000,11 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
     if skip_checks:
         actual_file_locations = _map_to_locations(files_to_load, basenames_to_locations_map, throw=True)
         if return_basenames_too:
-            if return_zip_load_and_additional_save_callback:
-                return actual_file_locations, files_to_load, zip_load_callback, additional_save_callback
+            if return_load_and_additional_save_callback:
+                return actual_file_locations, files_to_load, load_callback, additional_save_callback
             return actual_file_locations, files_to_load
-        if return_zip_load_and_additional_save_callback:
-            return actual_file_locations, zip_load_callback, additional_save_callback
+        if return_load_and_additional_save_callback:
+            return actual_file_locations, load_callback, additional_save_callback
         return actual_file_locations
 
     for file in files_to_load:
@@ -1002,12 +1021,12 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
         file.write("\n".join(files_to_load))
 
     if return_basenames_too:
-        if return_zip_load_and_additional_save_callback:
-            return actual_file_locations, files_to_load, zip_load_callback, additional_save_callback
+        if return_load_and_additional_save_callback:
+            return actual_file_locations, files_to_load, load_callback, additional_save_callback
         return actual_file_locations, files_to_load
 
-    if return_zip_load_and_additional_save_callback:
-        return actual_file_locations, zip_load_callback, additional_save_callback
+    if return_load_and_additional_save_callback:
+        return actual_file_locations, load_callback, additional_save_callback
 
     return actual_file_locations
 
@@ -1016,7 +1035,7 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
 def update_data_to_load(files_to_keep, old_loading_file="./data_list", new_loading_file="./updated_data_list", file_location=os.path.join(os.path.dirname(__file__), "1_data_collection/.data"), json_file_location=None, image_file_location=None, filter_text="singleplayer", type="", limit=0, shuffle_seed=None, download_link=None, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16):
     _, previous_files_to_load = get_data_to_load(old_loading_file, file_location, json_file_location, image_file_location, filter_text, type, limit, allow_new_file_creation=False, shuffle_seed=shuffle_seed, download_link=download_link, from_remote_only=from_remote_only, allow_file_location_env=allow_file_location_env, allow_json_file_location_env=allow_json_file_location_env, allow_image_file_location_env=allow_image_file_location_env, allow_download_link_env=allow_download_link_env, num_download_connections=num_download_connections, return_basenames_too=True)
     files_to_load = []
-    base_files_to_keep = set([os.path.basename(file) for file in files_to_keep])
+    base_files_to_keep = set([_get_basename(file) for file in files_to_keep])
     for previous_file_to_load in previous_files_to_load:
         if previous_file_to_load in base_files_to_keep:
             files_to_load.append(previous_file_to_load)
@@ -1054,7 +1073,7 @@ def load_json_file(file, allow_err=False):
             return json.load(f)
         except json.JSONDecodeError as error:
             if allow_err:
-                print(f"JSONDecodeError in {os.path.basename(file)}")
+                print(f"JSONDecodeError in {_get_basename(file)}")
                 print(error)
                 return None
             else:
