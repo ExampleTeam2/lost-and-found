@@ -366,13 +366,10 @@ Follows...
 
 Follows...
 
-
-$$ 
+$$
 \begin{aligned} & \text {Table 1.1. Example table for the future results :) }\\ &\begin{array}{cccc} \hline \hline \text { Case } & \text { Method 1 } & \text { Method 2 } & \text { Method 3 } \\ \hline 1 & 50 & 837 & 970 \\ 2 & 47 & 877 & 230 \\ 3 & 31 & 25 & 415 \\ 4 & 35 & 144 & 23656 \\ 5 & 45 & 300 & 556 \\ \hline
 \end{array} \end{aligned}
 $$
-
-
 
 ## Predicting countries
 
