@@ -1,8 +1,5 @@
-import sys
-
 import pandas as pd
 
-sys.path.insert(0, "../4_modeling")
 from wandb_downloader import WandbDownloader
 
 

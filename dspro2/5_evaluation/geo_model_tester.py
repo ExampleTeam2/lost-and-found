@@ -1,9 +1,5 @@
-import sys
-
 import torch
 
-
-sys.path.insert(0, "../4_modeling")
 from geo_model_inference import GeoModelInference
 
 
