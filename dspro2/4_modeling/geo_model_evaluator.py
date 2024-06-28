@@ -65,3 +65,7 @@ class GeoModelEvaluator(GeoModelInference):
 
             gc.collect()
             torch.cuda.empty_cache()
+
+            # Print results, floats to 4 decimal places
+            for k, v in log.items():
+                print(f"{k}: {v:.4f}")
