@@ -78,7 +78,9 @@ def get_cached_file_path(file_names, config, name="data", suffix=".pth"):
 def potentially_get_cached_file_path(file_names, config, name="data", suffix=".pth", cache_load_callback=None):
     file_path = get_cached_file_path(file_names, config, name=name, suffix=suffix)
     if cache_load_callback is not None:
-        cache_load_callback(_get_basename(file_path))
+        file_name = _get_basename(file_path)
+        print("Fetching remote cache for " + file_name)
+        cache_load_callback(file_name)
     if os.path.exists(file_path):
         return file_path
     return None
@@ -882,12 +884,12 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
     original_image_file_location = image_file_location
 
     def get_load_callback(pth_file_name=None):
-        return lambda: _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=always_load_zip, only_load_zip=True, only_load_pth=pth_file_name)
+        _load_from_zips_to_tmp(file_location, json_file_location, image_file_location, current_dir, tmp_dir, always_load_zip=always_load_zip, only_load_zip=True, only_load_pth=pth_file_name)
 
     def get_only_load_pth_callback(pth_file_name=None):
         if pth_file_name is None:
             return
-        return get_load_callback(pth_file_name=pth_file_name)
+        get_load_callback(pth_file_name=pth_file_name)
 
     if not use_files_list:
         always_load_zip = True
@@ -958,7 +960,7 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
             # If there is a zip file, download the previous files
             if load_callback:
                 load_callback()
-                load_callback = None
+                load_callback = get_only_load_pth_callback
             _download_files(download_link, files_to_download, file_location, json_file_location, image_file_location, num_connections=num_download_connections, use_files_list=use_files_list, nested=nested)
 
     additional_save_callback = None
