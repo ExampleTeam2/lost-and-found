@@ -10,7 +10,7 @@ echo "Dependencies installed"
 # Define the path to the notebook
 NOTEBOOK_PATH="dspro2/5_evaluation/evaluating_models.ipynb"
 OUTPUT_NAME="temp_executed_notebook"
-OUTPUT_PATH="dspro2/4_modeling"
+OUTPUT_PATH="dspro2/5_evaluation"
 
 # Activate the poetry environment and convert the notebook to a script
 poetry run jupyter nbconvert --ExecutePreprocessor.timeout=600 --to script $NOTEBOOK_PATH --output $OUTPUT_NAME
