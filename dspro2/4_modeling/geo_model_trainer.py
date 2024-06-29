@@ -108,6 +108,14 @@ class GeoModelTrainer(GeoModelHarness):
             for k, v in best_logs.items():
                 wandb.run.summary[k] = v
 
+            # Clean up
+            del best_val_metric
+            del best_logs
+            del self.model
+
+            gc.collect()
+            torch.cuda.empty_cache()
+
             # Load and log the best model to wandb
             self.initialize_model(model_type=config.model_name)
             self.model.load_state_dict(torch.load(model_path))
