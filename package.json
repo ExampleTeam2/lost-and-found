@@ -26,7 +26,7 @@
     "pdf:prepare": "run-script-os",
     "pdf:prepare:default": "echo 'Unsupported OS. Please install Pandoc and BasicTeX manually.'",
     "pdf:prepare:win32": "choco install pandoc & choco install miktex & echo \"Please restart your terminal.\"",
-    "pdf:prepare:darwin": "brew install pandoc; brew install --cask mactex; echo \"Please restart your terminal.\"",
+    "pdf:prepare:darwin": "brew install pandoc; (curl -L https://mirror.ctan.org/systems/mac/mactex/MacTeX.pkg -o MacTeX.pkg && sudo installer -pkg MacTeX.pkg -target /; rm MacTeX.pkg); echo \"Please restart your terminal.\"",
     "pdf:prepare:linux": "(if command -v apt-get >/dev/null; then sudo apt-get update && sudo apt-get install -y pandoc texlive-full; elif command -v yum >/dev/null; then sudo yum update && sudo yum install -y pandoc texlive-full; else echo 'No supported package manager found. Please install pandoc and texlive-full manually.'; fi); echo \"Please restart your terminal.\"",
     "pdf:export": "pandoc ./deliverables/ScientificReport/scientific_report.md --template ./deliverables/ScientificReport/.assets/eisvogel.latex --output ./deliverables/ScientificReport/scientific_report.pdf --from markdown --citeproc --csl ./deliverables/ScientificReport/.assets/apa.csl"
   },
