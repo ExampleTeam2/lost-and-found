@@ -24,6 +24,8 @@ To set it up simply type `yarn`.
 
 To see available commands, check out the `scripts` section of the `package.json` and run them using `yarn <command>`.
 
+All project relevant commands are handled via yarn, including formatting our python code and generating our report from our Markdown source.
+
 ## Course Coaches
 
 Within this module we are supervised by the following course coaches:
