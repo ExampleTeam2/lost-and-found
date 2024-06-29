@@ -22,7 +22,8 @@
     "scrape:count:images": "find 'dspro2/1_data_collection/.data/' -name 'geoguessr_location_singleplayer*' | wc -l && find 'dspro2/1_data_collection/.data/' -name 'geoguessr_location_multiplayer*' | wc -l",
     "format": "prettier --write . --print-width 2000 --prose-wrap preserve --single-quote",
     "python:prepare": "pip3 install poetry \"black[jupyter]\"",
-    "python:format": "black . -l 2000"
+    "python:format": "black . -l 2000",
+    "pdf:export": "pandoc ./deliverables/ScientificReport/scientific_report.md --template ./deliverables/ScientificReport/eisvogel.latex --output ./deliverables/ScientificReport/scientific_report.pdf --from markdown --citeproc --csl ./deliverables/ScientificReport/apa.csl"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.2",

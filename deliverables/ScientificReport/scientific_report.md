@@ -6,7 +6,7 @@ date: 2024-06-30
 toc: true
 toc-depth: 2
 toc-own-page: true
-bibliography: references.bib
+bibliography: ./deliverables/ScientificReport/references.bib
 csl: apa.csl
 titlepage: true
 titlepage-color: "1E90FF"
