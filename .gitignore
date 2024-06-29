@@ -60,3 +60,9 @@ dspro2/1_data_collection/data/cookies.json
 
 # Temp
 temp_executed_notebook.py
+
+# Generated LaTeX files
+*.tex
+
+# Pandoc log files
+*.log

@@ -6,8 +6,8 @@ date: 30-06-2024
 toc: true
 toc-depth: 2
 toc-own-page: true
-bibliography: ./deliverables/ScientificReport/assets/references.bib
-csl: ./deliverables/ScientificReport/assets/apa.csl
+bibliography: ./deliverables/ScientificReport/references/references.bib
+csl: ./deliverables/ScientificReport/.assets/apa.csl
 titlepage: true
 titlepage-color: "1E90FF"
 titlepage-text-color: "FFFFFF"
