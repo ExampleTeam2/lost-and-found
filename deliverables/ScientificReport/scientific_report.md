@@ -81,11 +81,7 @@ When it comes to relatively uniform street imagery, there are not many sources. 
 
 For this reason we instead opted for the online Geography game called Geoguessr <-LINK>. This has the advantage of not manually having to source where there is coverage, at what density and decide on a distribution. The game revolves around being "dropped" into a random location on Google Street View, and having to guess where it is located.
 
-<-POTENTIALLY INSERT GEOGUESSR PICTURE>
-
 Originally the player is allowed to move around, but there are modified modes to create harder difficulties which prevent the moving or even the panning of the camera, which is what we'll be opting for. This will also allow it to generalize more to other static pictures than if we were using the 360° spheres.
-
-<-POTENTIALLY INSERT SAMPLE PICTURES>
 
 Because different countries are of different sizes, but also have different amounts of Google Street View coverage, deciding on a representative distribution for generalization would be very difficult. Instead, we opted to play the Geoguessr multiplayer game mode called "Battle Royale: Countries" <-LINK>. This game mode revolves around trying to guess the country of a location before the opponents do. It has a much more even distribution of countries, while still taking into account the densities of different places.
 
@@ -98,8 +94,6 @@ Instead, we chose to collect data through the most popular singleplayer game mod
 <-INSERT SINGLEPLAYER GRAPH>
 
 To remedy this, we instead use the country distribution of our multiplayer games and apply it to our collected singleplayer data. This leaves a lot of data unused and forces us to remove very rare countries, but it allows us to get the required amount of data a lot quicker.
-
-<-POTENTIALLY INSERT MAPPED SINGLEPLAYER GRAPH>
 
 ### Web scraping
 
@@ -121,8 +115,18 @@ To make sure our data is collected correctly, we manually inspected it periodica
 
 ## Data analysis?? (We do not have this section now...)
 
-<font color="red">Introduce the part Visualize where we see the distribution? </font>
+As mentioned before under “Data source” and described in detail below under “Mapping to a distribution”, we map our data according to the occurrences of countries in the multiplayer data. Because of this, we started looking at our country distributions quite early. 
 
+<-POTENTIALLY INSERT SINGLEPLAYER GRAPH AGAIN>
+
+The singleplayer data country distribution is heavily skewed, consisting mostly of pictures of the United States and a few other overrepresented countries. We knew that this would hamper performance and that a lot of the smallest countries would not have sufficient data for training.
+However, we also saw a chance to be able to predict a lot of mid-sized countries and smaller countries. Interestingly, it also includes a lot of locations that would normally not be expected to have Google Street View coverage, like very small island nations and even North Korea. This is due to the data not only including official Street View imagery, but also user-submitted photospheres.
+
+<-POTENTIALLY INSERT SAMPLE PICTURES>
+
+After sampling a couple of images we not only realized that predicting the country would be a lot harder than we initially anticipated, wondering ourselves about which labels belonged to which images. We also realized that some images are very dark, low resolution, or blurry, especially the aforementioned photospheres, which we decided to filter before training.
+
+<font color="red">Maybe write more? </font>
 ## Data processing
 
 ### Resizing of the images
@@ -135,7 +139,7 @@ In our project, we focused on collecting images from Geoguessr in Singleplayer m
 
 Our objective is to explore different approaches using low-resolution images to evaluate their effectiveness in predicting coordinates, regions, and countries. For this purpose, we require all three pieces of information for each image, enabling us to train models for accurate predictions. Throughout the process, we encountered various challenges. Reverse geocoding allowed us to derive country information from coordinates, but the `pycountry` module did not always provide comprehensive location data. For example, Kosovo is not officially recognized by `pycountry`, necessitating its manual addition to our country list. This adjustment was crucial since Geoguessr included information about Kosovo, which was not covered by the `reverse_geocoder` and `pycountry` modules.
 
-We also faced difficulties mapping the correct country to the provided data when names were derived from Multiplayer mode. To address this, we implemented fuzzy matching to find the best match for each image based on the given data from the JSON files, ensuring accurate country assignment.
+We also faced difficulties mapping the correct country to the provided data when names were derived from Multiplayer mode. To address this, we implemented fuzzy matching to find the best match for sample based on the given data from the JSON files, ensuring accurate country assignment.
 
 To enhance the efficiency of processing our large dataset, we employed multiple workers to handle the data concurrently. This approach significantly improved the processing speed by batching the dataset and utilizing parallel processing.
 
