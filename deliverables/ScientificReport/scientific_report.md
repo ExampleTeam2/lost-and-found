@@ -2,7 +2,7 @@
 title: "Lost & Found: Predicting Locations from Images"
 subtitle: "Teamname: Example Team"
 author: ["Linus Schlumberger", "Lukas Stöckli", "Yutaro Sigrist"]
-date: 2024-06-30
+date: 30-06-2024
 toc: true
 toc-depth: 2
 toc-own-page: true
