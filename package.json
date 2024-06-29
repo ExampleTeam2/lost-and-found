@@ -23,7 +23,7 @@
     "format": "prettier --write . --print-width 2000 --prose-wrap preserve --single-quote",
     "python:prepare": "pip3 install poetry \"black[jupyter]\"",
     "python:format": "black . -l 2000",
-    "pdf:export": "pandoc ./deliverables/ScientificReport/scientific_report.md --template ./deliverables/ScientificReport/eisvogel.latex --output ./deliverables/ScientificReport/scientific_report.pdf --from markdown --citeproc --csl ./deliverables/ScientificReport/apa.csl"
+    "pdf:export": "pandoc ./deliverables/ScientificReport/scientific_report.md --template ./deliverables/ScientificReport/assets/eisvogel.latex --output ./deliverables/ScientificReport/scientific_report.pdf --from markdown --citeproc --csl ./deliverables/ScientificReport/assets/apa.csl"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.2",
