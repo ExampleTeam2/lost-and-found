@@ -9,10 +9,10 @@ toc-depth: 2
 toc-own-page: true
 bibliography: ./deliverables/ScientificReport/references/references.bib
 csl: ./deliverables/ScientificReport/.assets/apa.csl
-lang: "en"
+lang: 'en'
 titlepage: true
-titlepage-rule-color: "360049"
-titlepage-background: "./deliverables/ScientificReport/.assets/background5.pdf"
+titlepage-rule-color: '360049'
+titlepage-background: './deliverables/ScientificReport/.assets/background5.pdf'
 ---
 
 # Introduction
@@ -367,18 +367,25 @@ Follows...
 # Experiments and Results (and also discussions)
 
 ## Validation methodologies
+
 Follows…
 
 ## Model results in comparison
+
 Follows…
+
 ## Importance of weight decay
+
 Follows…
 
 ## Importance of learning rates
+
 Follows...
 
 ## Results
+
 ### Predicting coordinates
+
 Follows...
 
 $$
@@ -444,6 +451,7 @@ $$
 $$
 
 ### Comparison to human performances
+
 Follows...
 
 ## General
@@ -478,7 +486,6 @@ Here we should discuss the implications of our results, our limitations, and pos
 ---
 
 # References
-
 
 # Appendix
 
