@@ -366,32 +366,85 @@ Follows...
 
 # Experiments and Results (and also discussions)
 
-## Predicting coordinates
+## Validation methodologies
+Follows…
 
+## Model results in comparison
+Follows…
+## Importance of weight decay
+Follows…
+
+## Importance of learning rates
+Follows...
+
+## Results
+### Predicting coordinates
 Follows...
 
 $$
-\begin{aligned} & \text {Table 1.1. Best runs for predicing coordinates }\\ &\begin{array}{cccc|c} \hline \hline \text { Size dataset } & \text { Augmented } & \text { Train distance (km) } & \text { Val distance (km) } & \text { Test distance (km) } \\ \hline 79'000 & No & 837 & 970 & xx \\ 81'505 & No & 877 & 230 & xx \\ 81'505 & Yes & 25 & 415 & xx \\ 332'786 & No & 144 & 23656 & xx \\ 332'786 & Yes & 300 & 556 & xx \\ \hline
-\end{array} \end{aligned}
+\begin{aligned}
+& \text{Table 1.1. Best runs for predicting coordinates} \\
+&\begin{array}{cccc|c}
+\hline \hline
+\text{Size dataset} & \text{Augmented} & \text{Train distance (km)} & \text{Val distance (km)} & \text{Test distance (km)} \\
+\hline
+79'000 & \text{No} & 837 & 970 & xx^1 \\
+81'505 & \text{No} & 877 & 230 & xx^2 \\
+81'505 & \text{Yes} & 25 & 415 & xx \\
+332'786 & \text{No} & 144 & 23656 & xx \\
+332'786 & \text{Yes} & 300 & 556 & xx \\
+\hline
+\end{array} \\
+& \text{Note: Models } ^1 \text{ResNet50 and } ^2 \text{EfficientNet-B1 had the best performance for each method.}
+\end{aligned}
 $$
 
-## Predicting country
+### Predicting country
 
 Follows... DO different tables to see the differences for training validation? Show also the models... the different we tried...
 
 $$
-\begin{aligned} & \text {Table 1.1. Best runs for predicing country }\\ &\begin{array}{cccc|c} \hline \hline \text { Size dataset } & \text { Augmented } & \text { Train distance (km) } & \text { Val distance (km) } & \text { Test distance (km) } \\ \hline 79'000 & No & 837 & 970 & xx \\ 81'505 & No & 877 & 230 & xx \\ 81'505 & Yes & 25 & 415 & xx \\ 332'786 & No & 144 & 23656 & xx \\ 332'786 & Yes & 300 & 556 & xx \\ \hline
-\end{array} \end{aligned}
+\begin{aligned}
+& \text{Table 1.1. Best runs for predicting coordinates} \\
+&\begin{array}{cccc|c}
+\hline \hline
+\text{Size dataset} & \text{Augmented} & \text{Train distance (km)} & \text{Val distance (km)} & \text{Test distance (km)} \\
+\hline
+79'000 & \text{No} & 837 & 970 & xx^1 \\
+81'505 & \text{No} & 877 & 230 & xx^2 \\
+81'505 & \text{Yes} & 25 & 415 & xx \\
+332'786 & \text{No} & 144 & 23656 & xx \\
+332'786 & \text{Yes} & 300 & 556 & xx \\
+\hline
+\end{array} \\
+& \text{Note: Models } ^1 \text{ResNet50 and } ^2 \text{EfficientNet-B1 had the best performance for each method.}
+\end{aligned}
 $$
 
-## Predicting region
+### Predicting region
 
 Follows...
 
 $$
-\begin{aligned} & \text {Table 1.1. Best runs for predicing region }\\ &\begin{array}{cccc|c} \hline \hline \text { Size dataset } & \text { Augmented } & \text { Train distance (km) } & \text { Val distance (km) } & \text { Test distance (km) } \\ \hline 79'000 & No & 837 & 970 & xx \\ 81'505 & No & 877 & 230 & xx \\ 81'505 & Yes & 25 & 415 & xx \\ 332'786 & No & 144 & 23656 & xx \\ 332'786 & Yes & 300 & 556 & xx \\ \hline
-\end{array} \end{aligned}
+\begin{aligned}
+& \text{Table 1.1. Best runs for predicting coordinates} \\
+&\begin{array}{cccc|c}
+\hline \hline
+\text{Size dataset} & \text{Augmented} & \text{Train distance (km)} & \text{Val distance (km)} & \text{Test distance (km)} \\
+\hline
+79'000 & \text{No} & 837 & 970 & xx^1 \\
+81'505 & \text{No} & 877 & 230 & xx^2 \\
+81'505 & \text{Yes} & 25 & 415 & xx \\
+332'786 & \text{No} & 144 & 23656 & xx \\
+332'786 & \text{Yes} & 300 & 556 & xx \\
+\hline
+\end{array} \\
+& \text{Note: Models } ^1 \text{ResNet50 and } ^2 \text{EfficientNet-B1 had the best performance for each method.}
+\end{aligned}
 $$
+
+### Comparison to human performances
+Follows...
 
 ## General
 
@@ -425,3 +478,10 @@ Here we should discuss the implications of our results, our limitations, and pos
 ---
 
 # References
+
+
+# Appendix
+
+## Insert Kanban Board
+
+## Insert GitLab Link to Project and also the link for open dataset
