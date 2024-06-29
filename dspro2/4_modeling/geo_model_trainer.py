@@ -166,6 +166,8 @@ class GeoModelTrainer(GeoModelHarness):
             wandb.save(wandb_model_path)
 
             # Clean up
+            del best_val_metric
+            del best_logs
             del self.model
 
             gc.collect()

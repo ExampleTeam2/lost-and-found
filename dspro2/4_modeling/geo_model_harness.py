@@ -294,7 +294,7 @@ class GeoModelHarness:
             avg_metric = total_metric / len(data_loader.dataset)
             return_dict["avg_metric"] = avg_metric
             if median_metric:
-                median_metric = np.median(np.array(all_metrics))
+                median_metric = np.median(np.array(all_metrics)).item()
                 return_dict["median_metric"] = median_metric
 
         if not self.use_coordinates:
