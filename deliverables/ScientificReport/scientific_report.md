@@ -2,17 +2,17 @@
 title: 'Lost & Found: Predicting Locations from Images'
 subtitle: 'Teamname: Example Team'
 author: ['Linus Schlumberger', 'Lukas Stöckli', 'Yutaro Sigrist']
+keywords: [Ai, Image Classification, Geolocation, Deep Learning, Image Recognition, Geoguessr]
 date: 30-06-2024
 toc: true
 toc-depth: 2
 toc-own-page: true
 bibliography: ./deliverables/ScientificReport/references/references.bib
 csl: ./deliverables/ScientificReport/.assets/apa.csl
+lang: "en"
 titlepage: true
-titlepage-color: '1E90FF'
-titlepage-text-color: 'FFFFFF'
-titlepage-rule-color: 'FFFFFF'
-titlepage-rule-height: 2
+titlepage-rule-color: "360049"
+titlepage-background: "./deliverables/ScientificReport/.assets/background5.pdf"
 ---
 
 # Introduction
