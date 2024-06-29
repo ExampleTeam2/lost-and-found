@@ -1,7 +1,7 @@
 ---
-title: "Lost & Found: Predicting Locations from Images"
-subtitle: "Teamname: Example Team"
-author: ["Linus Schlumberger", "Lukas Stöckli", "Yutaro Sigrist"]
+title: 'Lost & Found: Predicting Locations from Images'
+subtitle: 'Teamname: Example Team'
+author: ['Linus Schlumberger', 'Lukas Stöckli', 'Yutaro Sigrist']
 date: 30-06-2024
 toc: true
 toc-depth: 2
@@ -9,21 +9,19 @@ toc-own-page: true
 bibliography: ./deliverables/ScientificReport/references/references.bib
 csl: ./deliverables/ScientificReport/.assets/apa.csl
 titlepage: true
-titlepage-color: "1E90FF"
-titlepage-text-color: "FFFFFF"
-titlepage-rule-color: "FFFFFF"
+titlepage-color: '1E90FF'
+titlepage-text-color: 'FFFFFF'
+titlepage-rule-color: 'FFFFFF'
 titlepage-rule-height: 2
 ---
-
-
-
 
 # Introduction
 
 ## Group Members
+
 [Linus Schlumberger](https://gitlab.com/Killusions)  
 [Lukas Stöckli](https://gitlab.com/Valairaa)  
-[Yutaro Sigrist](https://gitlab.com/yusigrist)  
+[Yutaro Sigrist](https://gitlab.com/yusigrist)
 
 ## Problem description
 
@@ -125,7 +123,7 @@ To make sure our data is collected correctly, we manually inspected it periodica
 
 ## Data analysis?? (We do not have this section now...)
 
-As mentioned before under “Data source” and described in detail below under “Mapping to a distribution”, we map our data according to the occurrences of countries in the multiplayer data. Because of this, we started looking at our country distributions quite early. 
+As mentioned before under “Data source” and described in detail below under “Mapping to a distribution”, we map our data according to the occurrences of countries in the multiplayer data. Because of this, we started looking at our country distributions quite early.
 
 <-POTENTIALLY INSERT SINGLEPLAYER GRAPH AGAIN>
 
@@ -137,6 +135,7 @@ However, we also saw a chance to be able to predict a lot of mid-sized countries
 After sampling a couple of images we not only realized that predicting the country would be a lot harder than we initially anticipated, wondering ourselves about which labels belonged to which images. We also realized that some images are very dark, low resolution, or blurry, especially the aforementioned photospheres, which we decided to filter before training.
 
 <font color="red">Maybe write more? </font>
+
 ## Data processing
 
 ### Resizing of the images
