@@ -20,12 +20,10 @@ titlepage-rule-height: 2
 
 # Introduction
 
-**Group Members**  
+## Group Members
 [Linus Schlumberger](https://gitlab.com/Killusions)  
 [Lukas Stöckli](https://gitlab.com/Valairaa)  
 [Yutaro Sigrist](https://gitlab.com/yusigrist)  
-
-# Introduction
 
 ## Problem description
 
