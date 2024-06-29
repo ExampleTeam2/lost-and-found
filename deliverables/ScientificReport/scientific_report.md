@@ -1,17 +1,29 @@
-# Lost & Found: Predicting Locations from Images
+---
+title: "Lost & Found: Predicting Locations from Images"
+subtitle: "Teamname: Example Team"
+author: ["Linus Schlumberger", "Lukas Stöckli", "Yutaro Sigrist"]
+date: 2024-06-30
+toc: true
+toc-depth: 2
+toc-own-page: true
+bibliography: references.bib
+csl: apa.csl
+titlepage: true
+titlepage-color: "1E90FF"
+titlepage-text-color: "FFFFFF"
+titlepage-rule-color: "FFFFFF"
+titlepage-rule-height: 2
+---
 
-Team name: ExampleTeam
 
-**Group Members**
-[Linus Schlumberger](https://gitlab.com/Killusions)
-[Lukas Stöckli](https://gitlab.com/Valairaa)
-[Yutaro Sigrist](https://gitlab.com/yusigrist)
 
-```table-of-contents
-title: # Table of content
-style: nestedList
-includeLinks: true
-```
+
+# Introduction
+
+**Group Members**  
+[Linus Schlumberger](https://gitlab.com/Killusions)  
+[Lukas Stöckli](https://gitlab.com/Valairaa)  
+[Yutaro Sigrist](https://gitlab.com/yusigrist)  
 
 # Introduction
 
