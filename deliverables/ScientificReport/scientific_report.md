@@ -409,31 +409,34 @@ $$
 $$
 
 ### Predicting country
-
-Follows...
+Follows... 
 
 $$
 \begin{aligned}
 & \text{Table 1.1. Best validation performances for predicting coordinates.} \\
-&\begin{array}{ccc|cc|cc}
-\hline
-& \text{Settings} & & \text{ Val. Acc. } && \text{Val. Balanced Acc.}\\
-\hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 (Mapped)}^1 & \text{Top-5 (Mapped)}^1 & \text{Top-1} & \text{Top-5}
+&\begin{array}{ccc|cc|cccc}
+\hline 
+ \text{Settings} && & \text{ Validation} & \text{Accuracy } & \text{Validation balanced} & \text{Accuracy } 
 \\
 \hline
-\text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x}\\
-\text{EfficientNet-B1} & \text{81,505} & \text{FALSE} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x}\\
-\text{EfficientNet-B1} & \text{81,505} & \text{TRUE} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x}\\
-\text{EfficientNet-B1} & \text{332,786} & \text{FALSE} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x} \\
-\text{ResNet50} & \text{332,786} & \text{TRUE} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x}\\
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 Mapped}^1 & \text{Top-1}
+\\
+\hline
+\text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{63.18\%} & \text{89.90\%} & \text{-} & \text{63.43\%}\\
+\text{EfficientNet-B1} & \text{81,505} & \text{FALSE} & \text{48.90\%} & \text{80.24\%} & \text{-} & \text{50.25\%}\\
+\text{EfficientNet-B3} & \text{81,505} & \text{TRUE} & \text{38.89\%} & \text{70.81\%} & \text{-} & \text{38.89\%}\\
+\text{EfficientNet-B1} & \text{332,786} & \text{FALSE} & \text{71.66\%} & \text{91.71\%} & \text{59.61\%} & \text{46.86\%}\\
+\text{EfficientNet-B1} & \text{332,786} & \text{TRUE} & \text{64.89\%} & \text{88.24\%} & \text{51.42\%} & \text{40.83\%}\\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Validation accuracy of Mapped is based on fewer countries than Unmapped. Even with equal distribution,  }
-\\ & \text{ } \text{ } \text{ balanced accuracy should be considered.}
-\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }
+& \text{}^1 \text{ Validation accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
+\\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } 
 \end{aligned}
 $$
+
+
+-> Es gibt nur balances accuracy Top 1 xD... und countries, sowie regions sind fertig. Kann man eintragen!!!
 
 ### Predicting region
 
@@ -461,6 +464,7 @@ $$
 \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }
 \end{aligned}
 $$
+
 
 Important: Top 5 does not make sense in regions for guessing the countries!! Because it is predicting mostly 5 x times the same country. Make the rest with top1 and top5 for regions.
 
@@ -490,6 +494,7 @@ $$
 & \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }
 \end{aligned}
 $$
+
 
 ### Predicting country
 
