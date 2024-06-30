@@ -444,7 +444,7 @@ $$
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
 \hline
-\text{resnet50} & \text{79,000}^2 & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{1.40\%} & \text{0.90\%} & \text{0.08\%}, & \text{0.56\%} & \text{0.10\%}
 \\
 \text{resnet50} & \text{81,505} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
 \\
@@ -469,7 +469,7 @@ $$
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
 \hline
-\text{resnet50} & \text{79,000}^2 & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{2.90\%} & \text{2.84\%} & \text{0.85\%}, & \text{4.03\%} & \text{1.07\%}
 \\
 \text{resnet50} & \text{81,505} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
 \\
