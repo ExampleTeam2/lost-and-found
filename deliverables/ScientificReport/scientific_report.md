@@ -596,13 +596,35 @@ $$
 
 ### Mapped versus unmapped
 
-Follows...DO
+Follows...
 
 
-
-add table 2.5
-
-
+$$
+\begin{aligned}
+& \text{Table 2.5. Comparing correctly guessed countries between a mapped and an unmapped model.} \\
+&\begin{array}{ccc|cc}
+\hline
+ \text{Mapped}^1 & & & \text{Unmapped}^2\\
+\hline
+\text{Order} & \text{Countryname} & \text{Accuracy} & \text{Order} & \text{Countryname} & \text{Accuracy}
+\\
+\hline
+\text{1} & \text{Austria} & \text{100.00\%} & \text{1} & \text{India} & \text{94.95\%} \\
+\text{2} & \text{Senegal} & \text{91.60\%} & \text{2} & \text{Japan} & \text{89.49\%} \\
+\text{3} & \text{Kenya} & \text{88.40\%} & \text{3} & \text{Ghana} & \text{87.87\%} \\
+\hline
+\text{4} & \text{Kyrgyzstan} & \text{85.71\%} & \text{4} & \text{Kyrgyzstan} & \text{82.29\%} \\
+\text{5} & \text{Portugal} & \text{56.14\%} & \text{5} & \text{Portugal} & \text{41.34\%} \\
+\hline
+\text{-3} & \text{Lao People's Democratic Republic} & \text{33.33\%} & \text{-3} & \text{Maldives} & \text{0.00\%} \\
+\text{-2} & \text{Czechia} & \text{32.20\%} & \text{-2} & \text{Lebanon} & \text{0.00\%} \\
+\text{-1} & \text{Slovakiary} & \text{20.31\%} & \text{-1} & \text{Kazakhstan} & \text{0.00\%} \\
+\hline
+\end{array} \\
+& \text{}^1 \text{ Model: EfficientNet-B1, 79,000, without augmentation } \\ 
+& ^2 \text{ Model: EfficientNet-B1, 332,786, without augmentation}
+\end{aligned}
+$$
 
 ### Comparison to human performances
 
@@ -638,7 +660,6 @@ $$
 & \text{}^1 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^2 \text{ The dataset is evenly distributed. }\\
 \end{aligned}
 $$
-
 
 ## General
 
