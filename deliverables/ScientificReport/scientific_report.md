@@ -410,7 +410,7 @@ $$
 \text{ResNet50} & \text{332,786}^4 & \text{TRUE} & \text{1,019.94} & \text{2,549.33} \\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }  \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not evenly distributed. }
+& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }  \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not fairly distributed. }
 \end{aligned}
 $$
 
@@ -438,7 +438,7 @@ $$
 \end{array} \\
 & \text{}^1 \text{ Validation accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
 \\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
-\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. }
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not farily distributed. }
 \end{aligned}
 $$
 
@@ -466,7 +466,7 @@ $$
 \end{array} \\
 & \text{}^1 \text{ To measure the distance for each region, the midpoint of the region was used, and the median  }
 \\ & \text{ } \text{ } \text{ distance was calculated in kilometers (km).}
-\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. }
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not fairly distributed. }
 \end{aligned}
 $$
 
@@ -490,12 +490,9 @@ $$
 \end{array} \\
 & \text{}^1 \text{ Validation accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
 \\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
-\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. }
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not fairly distributed. }
 \end{aligned}
 $$
-
-<font color="red">Important: Top 5 does not make sense in regions for guessing the countries!! Because it is predicting mostly 5 x times the same country. Make the rest with top1 and top5 for regions.</font>
-
 ## Test results on best models
 
 ### Predicting coordinates
@@ -516,7 +513,7 @@ $$
 \text{ResNet50} & \text{332,786}^2 & \text{TRUE} & \text{1,015.33} & \text{2,552.98} \\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ The dataset is not evenly distributed. }
+& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ The dataset is not fairly distributed. }
 \end{aligned}
 $$
 
@@ -542,7 +539,7 @@ $$
 \end{array} \\
 & \text{}^1 \text{ Test accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
 \\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
-\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. }
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not fairly distributed. }
 \end{aligned}
 $$
 
@@ -568,7 +565,7 @@ $$
 \end{array} \\
 & \text{}^1 \text{ To measure the distance for each region, the midpoint of the region was used, and the median  }
 \\ & \text{ } \text{ } \text{ distance was calculated in kilometers (km).}
-\\ & ^2 \text{ The dataset is not evenly distributed. }
+\\ & ^2 \text{ The dataset is not fairly distributed. }
 \end{aligned}
 $$
 
@@ -590,7 +587,7 @@ $$
 \end{array} \\
 & \text{}^1 \text{ Test accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
 \\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
-\\ & ^2 \text{ The dataset is not evenly distributed. }
+\\ & ^2 \text{ The dataset is not farily distributed. }
 \end{aligned}
 $$
 
