@@ -370,18 +370,6 @@ Follows...
 
 Follows…
 
-## Model results in comparison
-
-Follows…
-
-## Importance of weight decay
-
-Follows…
-
-## Importance of learning rates
-
-Follows...
-
 ## Results
 
 ### Predicting coordinates
@@ -501,6 +489,10 @@ $$
 ### Comparison to human performances
 
 Follows...
+
+
+
+Note: Make also a table, because we do not show the learning progress. Just the results...
 
 ## General
 
