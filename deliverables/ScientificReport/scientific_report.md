@@ -129,7 +129,9 @@ To make sure our data is collected correctly, we manually inspected it periodica
 
 (After an initial run of our singleplayer script, we noticed that the way we collected coordinates in multiplayer did no longer work and had been collecting incorrect coordinates for tens of thousands of images. To address this, we built an additional script looking up the correct coordinates using the "game id", this was a lot quicker than the collection of new data, allowing us to correct the mistake quite quickly. We also then used this new way of looking up coordinates for our collection script.)
 
-<font color="red"> Also write about the ToS we searched and that is not mentioned about web scrapping and therefore it is allowed if it is not exactly permitted from the ToS. </font>
+On the Terms of Service of GeoGuessr it is never mentioned web scrapping is not allowed, so we think that it is not against there ToS.
+
+[GeoGuessr ToS](https://www.geoguessr.com/terms)
 
 ## Data analysis?? (We do not have this section now...)
 
