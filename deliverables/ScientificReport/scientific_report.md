@@ -113,12 +113,14 @@ Originally the player is allowed to move around, but there are modified modes to
 Because different countries are of different sizes, but also have different amounts of Google Street View coverage, deciding on a representative distribution for generalization would be very difficult. Instead, we opted to play the Geoguessr multiplayer game mode called "Battle Royale: Countries". This game mode revolves around trying to guess the country of a location before the opponents do. It has a much more even distribution of countries, while still taking into account the densities of different places.
 
 ![multiplayer_graph|400](./images/multiplayer_graph.png)
+*Figure 1: Graph of all countries of the multiplayer dataset, 2024*
 
 Unfortunately, data collection using a multiplayer game mode is quite slow, as even though we do not need to guess and can spectate the rest of the game, we still need to wait for the other players to guess every round. The number of concurrent games was also limited by the number of currently active players. Additionally, while spectating it is not easily possible to get the exact coordinates of a location, restricting us to only predicting the correct countries. Lastly, we were detected by their anti-cheating software as the automation environment is injecting scripts into the website.
 
 Instead, we chose to collect data through the most popular singleplayer game mode called "World" ("Classic Maps"), by putting in arbitrary guesses and playing a lot of rounds. This allowed us to collect data a lot quicker, as well as also collecting the coordinates, however, it came at the cost of a very skewed distribution.
 
 ![singleplayer_graph|400](./images/singleplayer_graph.png)
+*Figure 2: Graph of all countries of the singleplayer dataset, 2024*
 
 To remedy this, we instead use the country distribution of our multiplayer games and apply it to our collected singleplayer data. This leaves a lot of data unused and forces us to remove very rare countries, but it allows us to get to the required amount of data a lot quicker.
 
@@ -143,11 +145,13 @@ Regarding the legal aspects, in the [Terms of Service of GeoGuessr](https://www.
 As mentioned before under “Data source” and described in detail below under “Mapping to a distribution”, we map our data according to the occurrences of countries in the multiplayer data. Because of this, we started looking at our country distributions quite early.
 
 ![singleplayer_graph|400](./images/singleplayer_graph.png)
+*Figure 3: Graph of all countries of the SINGLEPLAYER dataset, 2024*
 
 The singleplayer data country distribution is heavily skewed, consisting mostly of pictures of the United States and a few other overrepresented countries. We knew that this would hamper performance and that a lot of the smallest countries would not have sufficient data for training.
 However, we also saw a chance to be able to predict a lot of mid-sized countries and smaller countries. Interestingly, it also includes a lot of locations that would normally not be expected to have Google Street View coverage, like very small island nations and even North Korea. This is due to the data not only including official Street View imagery but also user-submitted photospheres.
 
 ![sample|450](deliverables/ScientificReport/images/sample.png)
+*Figure 4: Image of sample places, 2024*
 
 After sampling a couple of images, we not only realized that predicting the country would be a lot harder than we initially anticipated, wondering ourselves about which labels belonged to which images. We also realized that some images are very dark, low resolution, or blurry, especially the aforementioned photospheres, which we decided to filter before training.
 
@@ -156,7 +160,7 @@ Additionally, when we were mapping our country distribution from multiplayer to 
 To investigate if this was a labeling issue, we decided to generate an interactive map, allowing us to see where exactly all our locations are located. And this confirmed that we did indeed not have any singleplayer data in Bermuda. Unfortunately, we can only speculate about the reasons for this one-sided omission.
 
 ![heatmap|400](./images/Heatmap.png)
-
+*Figure 5: Heatmap of the distribution around the world, 2024*
 ## Data processing
 
 ### Resizing of the images
@@ -196,7 +200,9 @@ To address issues with our scraping's inherently unstable nature, as well as the
 
 To filter images we started by setting a minimum threshold of the biggest variance of color between the pixels of an image, meaning either red, green, or blue has to vary by some amount. This easily filters out black screens and dark images, like the ones indoors or inside tunnels. Additionally, we added a threshold for the variance after the laplacian kernel was applied, allowing us to filter some blurry and low-quality images. We set our thresholds after doing manual sampling and some test runs.
 
-![variance|400](./images/variance.png)
+![variance|400](./images/variance.png "Image of places with the variances")
+*Figure 6: Image of places with the variances, 2024*
+
 
 Additionally, we realized that some rounds were in the exact same locations, so we decided to filter out duplicates by comparing their coordinates, only keeping the first occurrence. This, as well as the image filtering, comes with the added benefit of filtering corrupted data, which would otherwise have to be handled in our training code.
 
@@ -316,6 +322,7 @@ To evaluate the impact of data augmentation, we will train our model with and wi
 | ![](./images/tmpa7p5kouq.png)  | ![](./images/tmp1pl4i5xs.png) |
 | ![](./images/tmp2l10v9sw1.png) | ![](./images/tmpa7gecexf.png) |
 | ![](./images/tmpjh2k2i3h.png)  |                               |
+*Figure 7-11: 5 example images of augmentation, 2024*
 
 These augmentation techniques are essential for making our model robust and capable of generalizing to different images beyond the specific conditions of Google Street View. By simulating various real-world conditions, we aim to improve the model's ability to handle diverse and unseen environments.
 
