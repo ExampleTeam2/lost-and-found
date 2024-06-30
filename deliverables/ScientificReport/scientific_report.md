@@ -630,10 +630,9 @@ $$
 
 ### Comparison to human performances
 
-The main goal of this student project is to determine if an Image Classification Model can outperform humans in guessing the countries or regions of images based solely on the image itself, without additional information.
+To compare the model with a human baseline, we created a script to track correct and incorrect guesses, establishing a representative baseline measurement. Linus, an experienced Geoguessr player, served as an advanced baseline, while Yutaro and Lukas, who had not played the game, acted as amateur baselines. This mix provided a good comparison against the best model for country prediction.
 
-
-We compared our model's performance with our own. The results show that our best model outperforms us significantly. Even when matched against our advanced GeoGuessr player, Linus, the model performs much better.
+The main goal of this project is to determine if an image classification model can outperform humans in guessing the countries or regions of images based solely on the images themselves, without additional information. As shown in Table 2.6, the pretrained and fine-tuned model significantly outperforms all three players, exceeding their top accuracies by more than 30%.
 
 $$
 \begin{aligned}
