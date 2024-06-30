@@ -388,21 +388,25 @@ Follows...
 
 Follows...
 
+
+
 $$
 \begin{aligned}
-& \text{Table 1.1. Best runs for predicting coordinates} \\
-&\begin{array}{cccc|c}
-\hline \hline
-\text{Size dataset} & \text{Augmented} & \text{Train distance (km)} & \text{Val distance (km)} & \text{Test distance (km)} \\
+& \text{Table 1.1. Best performances for predicting coordinates.} \\
+&\begin{array}{ccc|cc|cc|c}
+\hline 
+& \text{Settings} & & \text{Training} && \text{Validation} & & \text{Test} \\
 \hline
-79'000 & \text{No} & 837 & 970 & xx^1 \\
-81'505 & \text{No} & 877 & 230 & xx^2 \\
-81'505 & \text{Yes} & 25 & 415 & xx \\
-332'786 & \text{No} & 144 & 23656 & xx \\
-332'786 & \text{Yes} & 300 & 556 & xx \\
+\text{Model} & \text{Datasize} & \text{Augmented} & \text{Loss} & \text{Distance}^1 & \text{Loss} & \text{Distance}^1 & \text{Distance}^1\\
+\hline
+\text{resnet50} & 79'000 & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
+\text{resnet50} & 81'505 & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
+\text{resnet50} & 81'505 & \text{TRUE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
+\text{resnet50} & 332'786 & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
+\text{resnet50} & 332'786 & \text{TRUE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
 \hline
 \end{array} \\
-& \text{Note: Models } ^1 \text{ResNet50 and } ^2 \text{EfficientNet-B1 had the best performance for each method.}
+& \text{}^1 \text{ Distances are in kilometers (km). } 
 \end{aligned}
 $$
 
@@ -412,21 +416,24 @@ Follows... DO different tables to see the differences for training validation? S
 
 $$
 \begin{aligned}
-& \text{Table 1.1. Best runs for predicting coordinates} \\
-&\begin{array}{cccc|c}
-\hline \hline
-\text{Size dataset} & \text{Augmented} & \text{Train distance (km)} & \text{Val distance (km)} & \text{Test distance (km)} \\
+& \text{Table 2.1. Best performances for predicting countries.} \\
+&\begin{array}{ccc|c|cc|cc}
+\hline 
+& \text{Settings} & & \text{Training} & \text{Validation} & & \text{Test} \\
 \hline
-79'000 & \text{No} & 837 & 970 & xx^1 \\
-81'505 & \text{No} & 877 & 230 & xx^2 \\
-81'505 & \text{Yes} & 25 & 415 & xx \\
-332'786 & \text{No} & 144 & 23656 & xx \\
-332'786 & \text{Yes} & 300 & 556 & xx \\
+\text{Model} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
+\hline
+\text{resnet50} & 79'000 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 81'505 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 81'505 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 332'786 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 332'786 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \hline
 \end{array} \\
-& \text{Note: Models } ^1 \text{ResNet50 and } ^2 \text{EfficientNet-B1 had the best performance for each method.}
+& \text{Note:} \text{ Following... } 
 \end{aligned}
 $$
+
 
 ### Predicting region
 
@@ -434,22 +441,63 @@ Follows...
 
 $$
 \begin{aligned}
-& \text{Table 1.1. Best runs for predicting coordinates} \\
-&\begin{array}{cccc|c}
-\hline \hline
-\text{Size dataset} & \text{Augmented} & \text{Train distance (km)} & \text{Val distance (km)} & \text{Test distance (km)} \\
+& \text{Table 2.1. Best performances for predicting regions.} \\
+&\begin{array}{ccc|c|cc|cc}
+\hline 
+& \text{Settings} & & \text{Training} & \text{Validation} & & \text{Test} \\
 \hline
-79'000 & \text{No} & 837 & 970 & xx^1 \\
-81'505 & \text{No} & 877 & 230 & xx^2 \\
-81'505 & \text{Yes} & 25 & 415 & xx \\
-332'786 & \text{No} & 144 & 23656 & xx \\
-332'786 & \text{Yes} & 300 & 556 & xx \\
+\text{Model} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
 \hline
-\end{array} \\
-& \text{Note: Models } ^1 \text{ResNet50 and } ^2 \text{EfficientNet-B1 had the best performance for each method.}
+\text{resnet50} & 79'000 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 81'505 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 81'505 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 332'786 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 332'786 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\hline
+\end{array}
 \end{aligned}
 $$
 
+$$
+\begin{aligned}
+& \text{Table 2.2. Best performances for predicting countries with the regions model.} \\
+&\begin{array}{ccc|c|cc|cc}
+\hline 
+& \text{Settings} & & \text{Training} & \text{Validation} & & \text{Test} \\
+\hline
+\text{Model} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
+\hline
+\text{resnet50} & 79'000 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 81'505 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 81'505 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 332'786 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 332'786 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\hline
+\end{array}
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+& \text{Table 2.3. Best performances for measuring distances with the region's model.} \\
+&\begin{array}{ccc|cc|cc|c}
+\hline 
+& \text{Settings} & & \text{Training} && \text{Validation} && \text{Test} \\
+\hline
+\text{Model} & \text{Datasize} & \text{Augmented} & \text{Loss} & \text{Distance}^1 & \text{Loss} & \text{Distance}^1 & \text{Distance}^1\\
+\hline
+\text{resnet50} & 79'000 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 81'505 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 81'505 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 332'786 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & 332'786 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\hline
+\end{array} \\
+& \text{Note:} \text{ For measuring the distance for each region the middle Point of the region was taken and }
+\\ & \text{the median instead of the mean for ignoring outlier predictions.}
+\\ & ^1 \text{ Distances are in kilometers (km).}
+\end{aligned}
+$$
 ### Comparison to human performances
 
 Follows...
