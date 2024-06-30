@@ -12,6 +12,7 @@ csl: ./deliverables/ScientificReport/.assets/apa.csl
 lang: 'en'
 titlepage: true
 titlepage-rule-color: '360049'
+titlepage-rule-height: 1	
 titlepage-background: './deliverables/ScientificReport/.assets/background5.pdf'
 ---
 
