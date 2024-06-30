@@ -1,19 +1,28 @@
 ---
-title: 'Lost & Found: Predicting Locations from Images'
-subtitle: 'Teamname: Example Team'
-author: ['Linus Schlumberger', 'Lukas Stöckli', 'Yutaro Sigrist']
-keywords: [Ai, Image Classification, Geolocation, Deep Learning, Image Recognition, Geoguessr]
+title: "Lost & Found: Predicting Locations from Images"
+subtitle: "Teamname: Example Team"
+author:
+  - Linus Schlumberger
+  - Lukas Stöckli
+  - Yutaro Sigrist
+keywords:
+  - Ai
+  - Image Classification
+  - Geolocation
+  - Deep Learning
+  - Image Recognition
+  - Geoguessr
 date: 30-06-2024
 toc: true
 toc-depth: 2
 toc-own-page: true
 bibliography: ./deliverables/ScientificReport/references/references.bib
 csl: ./deliverables/ScientificReport/.assets/apa.csl
-lang: 'en'
+lang: en
 titlepage: true
-titlepage-rule-color: '360049'
-titlepage-rule-height: 1	
-titlepage-background: './deliverables/ScientificReport/.assets/background5.pdf'
+titlepage-rule-color: "360049"
+titlepage-rule-height: 1
+titlepage-background: ./deliverables/ScientificReport/.assets/background5.pdf
 ---
 
 # Introduction
@@ -444,8 +453,8 @@ $$
 \text{resnet50} & \text{79,000} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \text{resnet50} & \text{81,505} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \text{resnet50} & \text{81,505} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{332,786} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{332,786} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{efficientnet\_b1} & \text{332,786} & \text{FALSE} & 33\% & 20\% & 42\% & 20\% & 41\%\\
+\text{efficientnet\_b1} & \text{332,786} & \text{TRUE} & 0.8\% & 0.9\% & 2\% & 0.8\% & 2\%\\
 \hline
 \end{array}
 \end{aligned}
@@ -463,8 +472,8 @@ $$
 \text{resnet50} & \text{79,000} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \text{resnet50} & \text{81,505} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \text{resnet50} & \text{81,505} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{332,786} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{332,786} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{efficientnet\_b1} & \text{332,786} & \text{FALSE} & 66\% & 59\% & 69\% & 64\% & 73\%\\
+\text{efficientnet\_b1} & \text{332,786} & \text{TRUE} & 2\% & 2\% & 11\% & 3\% & 11\%\\
 \hline
 \end{array}
 \end{aligned}
@@ -482,8 +491,8 @@ $$
 \text{resnet50} & \text{79,000} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \text{resnet50} & \text{81,505} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \text{resnet50} & \text{81,505} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{332,786} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{332,786} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{efficientnet\_b1} & \text{332,786} & \text{FALSE} & 36.46 & 569 & 41.48 & 476 & 385\\
+\text{efficientnet\_b1} & \text{332,786} & \text{TRUE} & 2\% & 2\% & 11\% & 10\% & 7883\\
 \hline
 \end{array} \\
 & \text{Note:} \text{ For measuring the distance for each region the middle Point of the region was taken and }
