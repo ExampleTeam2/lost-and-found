@@ -474,6 +474,8 @@ $$
 \end{aligned}
 $$
 
+Our best model, EfficientNet-B1 trained on a larger, non-augmented dataset of 332,786 samples, achieves a Top-1 validation accuracy of 64.72% and a balanced Top-1 mapped accuracy of 53.99%, with an overall accuracy of 41.77%. This performance is notable given the dataset's unequal distribution and the restrictions on the subset of countries.
+
 $$
 \begin{aligned}
 & \text{Table 1.4. Best validation performances for predicting countries with region prediction model.} \\
