@@ -605,7 +605,7 @@ add table 2.5
 
 ### Comparison to human performances
 
-Follows...
+We compared our model's performance with our own. The results show that our best model outperforms us significantly. Even when matched against our advanced GeoGuessr player, Linus, the model performs much better.
 
 
 $$
