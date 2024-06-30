@@ -1,6 +1,6 @@
 ---
-title: "Lost & Found: Predicting Locations from Images"
-subtitle: "Teamname: Example Team"
+title: 'Lost & Found: Predicting Locations from Images'
+subtitle: 'Teamname: Example Team'
 author:
   - Linus Schlumberger
   - Lukas Stöckli
@@ -20,11 +20,12 @@ bibliography: ./deliverables/ScientificReport/references/references.bib
 csl: ./deliverables/ScientificReport/.assets/apa.csl
 lang: en
 titlepage: true
-titlepage-rule-color: "360049"
+titlepage-rule-color: '360049'
 titlepage-rule-height: 1
 titlepage-background: ./deliverables/ScientificReport/.assets/background5.pdf
-linkcolor: "0096FF"
+linkcolor: '0096FF'
 ---
+
 # Introduction
 
 ## Group Members
@@ -155,6 +156,7 @@ Additionally, when we were mapping our country distribution from multiplayer to 
 To investigate if this was a labeling issue, we decided to generate an interactive map, allowing us to see where exactly all our locations are located. And this confirmed that we did indeed not have any singleplayer data in Bermuda. Unfortunately, we can only speculate about the reasons for this one-sided omission.
 
 ![heatmap|400](./images/Heatmap.png)
+
 ## Data processing
 
 ### Resizing of the images
@@ -170,9 +172,10 @@ Our objective is to explore different approaches using low-resolution images to 
 We also faced difficulties mapping the correct country to the provided data when names were derived from multiplayer mode. To address this, we used a fuzzy matching algorithm to find the best match for a sample based on the given country name, ensuring accurate country assignment.
 
 To enhance the efficiency of processing our large dataset, we employed multiple workers to handle the data concurrently. This approach significantly improved the processing speed.
+
 ### Region Enriching (Source, Mapping)
 
-To get the region of our image samples, we first searched for a list of regions around the world. And decide to use [a data source file from Natural Earth](https://www.naturalearthdata.com/downloads/110m-cultural-vectors/#:~:text=Issues%20%7C%20Version%20History%20%C2%BB-,Admin,-1%20%E2%80%93%20States%2C%20Provinces), which we then converted to GeoJSON for ease of use. 
+To get the region of our image samples, we first searched for a list of regions around the world. And decide to use [a data source file from Natural Earth](https://www.naturalearthdata.com/downloads/110m-cultural-vectors/#:~:text=Issues%20%7C%20Version%20History%20%C2%BB-,Admin,-1%20%E2%80%93%20States%2C%20Provinces), which we then converted to GeoJSON for ease of use.
 For each region, we had a list of coordinates, which mark the border of the region, but for our predictions, we had to get the middle point of each one. This is where the Python library "geopandas" comes in handy.
 This library has the advantage of being able to work with GeoJSON files and having an integrated middle point calculation function. In addition, we add a unique region_name for each region using the country name + name of the region + id. This is needed since some of the regions have similar or the same name.
 After this preparation, we used the middle point to get the region for each image using their coordinates and the k-nearest-neighbor method.
@@ -494,6 +497,7 @@ $$
 \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not fairly distributed. }
 \end{aligned}
 $$
+
 ## Test results on best models
 
 ### Predicting coordinates
@@ -522,7 +526,6 @@ $$
 
 Follows...
 
-
 $$
 \begin{aligned}
 & \text{Table 2.2. Best test performances for predicting countries.} \\
@@ -548,7 +551,6 @@ $$
 
 Follows...DO different tables to see the differences for training validation? Show also the models... the different we tried...
 
-
 $$
 \begin{aligned}
 & \text{Table 2.3. Best test performances for predicting regions.} \\
@@ -569,7 +571,6 @@ $$
 \\ & ^2 \text{ The dataset is not fairly distributed. }
 \end{aligned}
 $$
-
 
 $$
 \begin{aligned}
@@ -596,7 +597,6 @@ $$
 
 Follows...
 
-
 $$
 \begin{aligned}
 & \text{Table 2.5. Comparing correctly guessed countries between a mapped and an unmapped model.} \\
@@ -619,7 +619,7 @@ $$
 \text{-1} & \text{Slovakiary} & \text{20.31\%} & \text{-1} & \text{Kazakhstan} & \text{0.00\%} \\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Model: EfficientNet-B1, 79,000, without augmentation } \\ 
+& \text{}^1 \text{ Model: EfficientNet-B1, 79,000, without augmentation } \\
 & ^2 \text{ Model: EfficientNet-B1, 332,786, without augmentation}
 \end{aligned}
 $$
@@ -627,7 +627,6 @@ $$
 ### Comparison to human performances
 
 We compared our model's performance with our own. The results show that our best model outperforms us significantly. Even when matched against our advanced GeoGuessr player, Linus, the model performs much better.
-
 
 $$
 \begin{aligned}
