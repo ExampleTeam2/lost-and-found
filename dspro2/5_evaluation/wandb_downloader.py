@@ -79,7 +79,6 @@ class WandbDownloader:
             run_info = WandbDownloader.get_run_data(self.api, self.entity, self.project, run, file_names)
             run_data[run_key] = run_info
         return run_data
-        return
 
     def get_and_collect_best_runs(self, metric_name, file_names, metric_ascending=False):
         best_runs = self.get_best_runs(metric_name, metric_ascending=metric_ascending)
