@@ -398,8 +398,6 @@ Our dataset, consisting of 79,000 and 81,505 data points, is fairly distributed 
 
 ## Validation results
 
-Note: At this step, take the best runs for each setting and compare them at validation accuracy score. And after that, take the best 2 models for each Prediction and test them, if they are not already tested. One with augmentation and one without augmentation.
-
 ### Predicting coordinates
 
 Follows...
