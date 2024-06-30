@@ -80,8 +80,8 @@ class WandbDownloader:
             run_data[run_key] = run_info
         return run_data
 
-    def get_and_collect_best_runs(self, metric_name, file_names, metric_ascending=False):
-        best_runs = self.get_best_runs(metric_name, metric_ascending=metric_ascending)
+    def get_and_collect_best_runs(self, metric_name, file_names, metric_ascending=False, run_id=None):
+        best_runs = self.get_best_runs(metric_name, metric_ascending=metric_ascending) if run_id is None else [self.api.run(f"{self.entity}/{self.project}/{run_id}")]
         if best_runs:
             print(f"{self.project}: Found {len(best_runs)} matching runs for datasize {self.datasize} and {self.data_augmentation}.")
         else:
