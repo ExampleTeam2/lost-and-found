@@ -448,7 +448,7 @@ Follows....
 $$
 \begin{aligned}
 & \text{Table 1.3. Best validation performances for predicting regions.} \\
-&\begin{array}{ccc|cc|cccc}
+&\begin{array}{ccc|cc|cc}
 \hline
  \text{Settings} && & \text{ Validation} & \text{Accuracy } & \text{Validation balanced}
 \\
@@ -459,8 +459,8 @@ $$
 \text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{0.97\%} & \text{2.97\%} & \text{6,126.90} & \text{0.39\%} \\
 \text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{11.18\%} & \text{26.85\%} & \text{556.32} & \text{5.30\%}\\
 \text{EfficientNet-B1} & \text{81,505}^3 & \text{TRUE} & \text{0.67\%} & \text{1.77\%} & \text{6,271.56} & \text{0.13\%}\\
-\text{EfficientNet-B1} & \text{332,786}^4 & \text{FALSE} & \text{20.31\%} & \text{42.02\%} & \text{382.58\%} & \text{41.77\%}\\
-\text{EfficientNet-B1} & \text{332,786}^4 & \text{TRUE} & \text{0.55\%} & \text{2.09\%} & \text{7,411.92\%} & \text{0.23\%}\\
+\text{EfficientNet-B1} & \text{332,786}^4 & \text{FALSE} & \text{20.31\%} & \text{42.02\%} & \text{382.58} & \text{41.77\%}\\
+\text{EfficientNet-B1} & \text{332,786}^4 & \text{TRUE} & \text{0.55\%} & \text{2.09\%} & \text{7,411.92} & \text{0.23\%}\\
 \hline
 \end{array} \\
 & \text{}^1 \text{ To measure the distance for each region, the midpoint of the region was used, and the median  }
@@ -501,48 +501,21 @@ $$
 
 Follows...
 
-
-
 $$
 \begin{aligned}
 & \text{Table 2.1. Best test performances for predicting coordinates.} \\
 &\begin{array}{ccc|cc}
 \hline
- \text{Settings} & & & \text{Validation}\\
+ \text{Settings} & & & \text{Test}\\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Median distance}^1 & \text{Mean distance}^1
 \\
 \hline
-\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{809.41} & \text{1,728.09} \\
-\text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{1,022.05} & \text{2,417.70} \\
-\text{EfficientNet-B1} & \text{81,505}^3 & \text{TRUE}  & \text{1,127.23} & \text{2,695.30} \\
-\text{EfficientNet-B1} & \text{332,786}^4 & \text{FALSE} & \text{706.81} & \text{1,850.84} \\
-\text{ResNet50} & \text{332,786}^4 & \text{TRUE} & \text{1,019.94} & \text{2,549.33} \\
+\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{706.76} & \text{1,815.74} \\
+\text{ResNet50} & \text{332,786}^2 & \text{TRUE} & \text{1,015.33} & \text{2,552.98} \\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }  \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. }
-\end{aligned}
-$$
-
-
-$$
-\begin{aligned}
-& \text{Table 1.1. Best performances for predicting coordinates.} \\
-&\begin{array}{ccc|c|c|cc}
-\hline
-& \text{Settings} & & \text{Training} & \text{Validation} &  \text{Test} \\
-\hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Distance}^1 & \text{Distance}^1 & \text{Distance}^1 & \text{Distance Median}^1
-\\
-\hline
-\text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{904.95} & \text{1,728.09} & \text{1,891.59} & \text{870.03} \\
-\text{EfficientNet-B1} & \text{81,505} & \text{FALSE} & \text{1,175.91} & \text{2,417.58} & \text{2,518.26} & \text{1,058.09} \\
-\text{EfficientNet-B1} & \text{81,505} & \text{TRUE} & \text{1,246.15} & \text{2,695.31} & \text{2,615.16} & \text{1,100.60}  \\
-\text{EfficientNet-B1} & \text{332,786} & \text{FALSE} & \text{894.93} & \text{1,850.88}& \text{1,815.74} & \text{706.76} \\
-\text{ResNet50} & \text{332,786} & \text{TRUE} & \text{730.24} & \text{2,549.59} & \text{2,552.98} & \text{1,015.33} \\
-\hline
-\end{array} \\
-& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }
+& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ The dataset is not evenly distributed. }
 \end{aligned}
 $$
 
@@ -550,28 +523,25 @@ $$
 
 Follows...
 
+
 $$
 \begin{aligned}
-& \text{Table 2.1. Best performances for predicting countries.} \\
-&\begin{array}{ccc|c|c|cc|c}
+& \text{Table 2.2. Best test performances for predicting countries.} \\
+&\begin{array}{ccc|cc|cc}
 \hline
-& \text{Settings} & & \text{Training} & \text{Validation} & \text{Test} && \text{Test bal.}^1\\
+ \text{Settings} && & \text{ Test} & \text{Accuracy } & \text{Test balanced} & \text{Accuracy }
+\\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 Mapped}^1 & \text{Top-1}
+\\
 \hline
-\text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{99.46\%} & \text{63.18\%} & \text{58.35\%} & \text{89.11\%} & \text{57.48\%}
-\\
-\text{EfficientNet-B1} & \text{81,505} & \text{FALSE} & \text{99.05\%} & \text{49.41\%} & \text{44.02\%}, & \text{78.16\%} & \text{42.74\%}
-\\
-\text{EfficientNet-B3} & \text{81,505} & \text{TRUE} & \text{99.53\%} & \text{38.88\%} & \text{33.06\%}, & \text{67.87\%} & \text{32.46\%}
-\\
-\text{EfficientNet-B1} & \text{332,786} & \text{FALSE} & \text{98.17\%} & \text{71.66\%} & \text{72.14\%}, & \text{92.11\%} & \text{60.10\%}
-\\
-\text{EfficientNet-B1} & \text{332,786} & \text{TRUE} & \text{97.60\%} & \text{63.98\%} & \text{64.96\%}, & \text{88.39\%} & \text{51.04\%}
-\\
+\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{58.35\%} & \text{89.11\%} & \text{-} & \text{57.48\%}\\
+\text{EfficientNet-B1} & \text{332,786}^4 & \text{TRUE} & \text{64.96\%} & \text{88.39\%} & \text{51.04\%} & \text{39.73\%}\\
 \hline
 \end{array} \\
-& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). }
+& \text{}^1 \text{ Test accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
+\\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. }
 \end{aligned}
 $$
 
@@ -579,75 +549,47 @@ $$
 
 Follows...DO different tables to see the differences for training validation? Show also the models... the different we tried...
 
-$$
-\begin{aligned}
-& \text{Table 2.1. Best performances for predicting regions.} \\
-&\begin{array}{ccc|c|c|cc|c}
-\hline
-& \text{Settings} & & \text{Training} & \text{Validation} & \text{Test} && \text{Test bal.}^1\\
-\hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
-\hline
-\text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{1.40\%} & \text{0.90\%} & \text{0.08\%}, & \text{0.56\%} & \text{0.10\%}
-\\
-\text{resnet50} & \text{81,505} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
-\\
-\text{resnet50} & \text{81,505} & \text{TRUE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
-\\
-\text{resnet50} & \text{332,786} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
-\\
-\text{resnet50} & \text{332,786} & \text{TRUE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
-\\
-\hline
-\end{array} \\
-& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). }
-\end{aligned}
-$$
 
 $$
 \begin{aligned}
-& \text{Table 2.1. Best performances for predicting countries with the region model.} \\
-&\begin{array}{ccc|c|c|cc|c}
+& \text{Table 2.3. Best test performances for predicting regions.} \\
+&\begin{array}{ccc|cc|cc}
 \hline
-& \text{Settings} & & \text{Training} & \text{Validation} & \text{Test} && \text{Test bal.}^1\\
+ \text{Settings} && & \text{ Test} & \text{Accuracy } & \text{Test balanced}
+\\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median Distance}^1 & \text{Top-1 Acc.}
+\\
 \hline
-\text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{2.90\%} & \text{2.84\%} & \text{0.85\%}, & \text{4.03\%} & \text{1.07\%}
-\\
-\text{resnet50} & \text{81,505} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
-\\
-\text{resnet50} & \text{81,505} & \text{TRUE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
-\\
-\text{resnet50} & \text{332,786} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
-\\
-\text{resnet50} & \text{332,786} & \text{TRUE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
-\\
+\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{x\%} & \text{X\%} & \text{X} & \text{x\%}\\
+\text{EfficientNet-B1} & \text{332,786}^2 & \text{TRUE} & \text{0.81\%} & \text{2.03\%} & \text{7883.03} & \text{0.13\%}\\
 \hline
 \end{array} \\
-& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). }
+& \text{}^1 \text{ To measure the distance for each region, the midpoint of the region was used, and the median  }
+\\ & \text{ } \text{ } \text{ distance was calculated in kilometers (km).}
+\\ & ^2 \text{ The dataset is not evenly distributed. }
 \end{aligned}
 $$
 
+
 $$
 \begin{aligned}
-& \text{Table 2.3. Best performances for measuring distances with the region's model.} \\
-&\begin{array}{ccc|cc|cc|c}
+& \text{Table 2.4. Best test performances for predicting countries with region prediction model.} \\
+&\begin{array}{ccc|c|cc}
 \hline
-& \text{Settings} & & \text{Training} && \text{Validation} && \text{Test} \\
+ \text{Settings} && & \text{ Test Accuracy}  & \text{Test balanced} & \text{Accuracy }
+\\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Loss} & \text{Distance}^1 & \text{Loss} & \text{Distance}^1 & \text{Distance}^1\\
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-1 Mapped}^1 & \text{Top-1}
+\\
 \hline
-\text{resnet50} & \text{79,000} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{81,505} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{81,505} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{efficientnet\_b1} & \text{332,786} & \text{FALSE} & 36.46 & 569 & 41.48 & 476 & 385\\
-\text{efficientnet\_b1} & \text{332,786} & \text{TRUE} & 2\% & 2\% & 11\% & 10\% & 7883\\
+\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}\\
+\text{EfficientNet-B1} & \text{332,786}^2 & \text{TRUE} & \text{3.00\%} & \text{3.33\%} & \text{1.96\%}\\
 \hline
 \end{array} \\
-& \text{Note:} \text{ For measuring the distance for each region the middle Point of the region was taken and }
-\\ & \text{the median instead of the mean for ignoring outlier predictions.}
-\\ & ^1 \text{ Distances are in kilometers (km).}
+& \text{}^1 \text{ Test accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
+\\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
+\\ & ^2 \text{ The dataset is not evenly distributed. }
 \end{aligned}
 $$
 
@@ -655,7 +597,37 @@ $$
 
 Follows...
 
-Note: Make also a table, because we do not show the learning progress. Just the results...
+
+$$
+\begin{aligned}
+& \text{Table 2.5. Best test performances for predicting countries.} \\
+&\begin{array}{ccc|ccc}
+\hline
+ \text{Settings} && & \text{ Test} & \text{balanced } & \text{Accuracy }
+\\
+\hline
+\text{Best Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-3 } & \text{Top-5 }
+\\
+\hline
+\text{EfficientNet-B1} & \text{79,000}^1 \text{ }^2 & \text{FALSE} & \text{58.35\%} & \text{81.61\%} & \text{89.11\%}\\
+\hline
+\hline
+\text{Advanced Player} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-3 } & \text{Top-5 }
+\\
+\hline
+\text{Linus} & \text{30}^1 \text{ }^2 & \text{FALSE} & \text{26.67\%} & \text{43.33\%} & \text{56.67\%} \\
+\hline
+\text{Amateur Player} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-3 } & \text{Top-5 }
+\\
+\hline
+\text{Yutaro } & \text{30}^1 \text{ }^2 & \text{FALSE} & \text{10.00\%} & \text{13.33\%} & \text{20.00\%} \\
+\text{Lukas} & \text{50}^1 \text{ }^2 & \text{FALSE} & \text{8.00\%} & \text{22.00\%} & \text{30.00\%}\\
+\hline
+\end{array} \\
+& \text{}^1 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^2 \text{ The dataset is evenly distributed. }\\
+\end{aligned}
+$$
+
 
 ## General
 
