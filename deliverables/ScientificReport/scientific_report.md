@@ -302,9 +302,10 @@ To evaluate the impact of data augmentation, we will train our model with and wi
 
 #### Some Examples:
 
-| ![](./images/tmpa7p5kouq.png)     | ![](./images/tmp1pl4i5xs.png) |
+|                     |              |
 | --------------------------------- | ----------------------------- |
-| ![](./images/tmp2l10v9sw%201.png) | ![](./images/tmpa7gecexf.png) |
+| ![](./images/tmpa7p5kouq.png)     | ![](./images/tmp1pl4i5xs.png) |
+| ![](./images/tmp2l10v9sw1.png) | ![](./images/tmpa7gecexf.png) |
 | ![](./images/tmpjh2k2i3h.png)     |                               |
 
 These augmentation techniques are essential for making our model robust and capable of generalizing to different images beyond the specific conditions of Google Street View. By simulating various real-world conditions, we aim to improve the model's ability to handle diverse and unseen environments.
