@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+
+
+# Reference: https://github.com/LukasHaas/PIGEON
 
 
 class GeolocalizationLoss(nn.Module):
@@ -19,16 +21,8 @@ class GeolocalizationLoss(nn.Module):
         distance = radius * c
         return distance
 
+    # Computes the haversine distance between two matrices of points
     def haversine_matrix(self, x, y):
-        """Computes the haversine distance between two matrices of points
-
-        Args:
-            x (Tensor): matrix 1 (N, 2) -> (lat, lon)
-            y (Tensor): matrix 2 (M, 2) -> (lat, lon)
-
-        Returns:
-            Tensor: haversine distance in km -> shape (N, M)
-        """
         x_rad, y_rad = torch.deg2rad(x), torch.deg2rad(y)
         delta = x_rad.unsqueeze(2) - y_rad
         p = torch.cos(x_rad[:, 1]).unsqueeze(1) * torch.cos(y_rad[1, :]).unsqueeze(0)
@@ -37,15 +31,8 @@ class GeolocalizationLoss(nn.Module):
         km = (self.rad_torch * c) / 1000
         return km
 
+    # Haversine smooths labels for shared representation learning across geocells.
     def smooth_labels(self, distances):
-        """Haversine smooths labels for shared representation learning across geocells.
-
-        Args:
-            distances (Tensor): distance (km) matrix of size (batch_size, num_geocells)
-
-        Returns:
-            Tensor: smoothed labels
-        """
         adj_distances = distances - distances.min(dim=-1, keepdim=True)[0]
         smoothed_labels = torch.exp(-adj_distances / self.temperature)
         smoothed_labels = torch.nan_to_num(smoothed_labels, nan=0.0, posinf=0.0, neginf=0.0)
