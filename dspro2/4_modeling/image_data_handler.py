@@ -23,7 +23,7 @@ def inspect_transformed_images(transformed_images, num_images=5):
 
 
 class ImageDataHandler:
-    def __init__(self, list_files, augmented_transform, base_transform, preprocessing_config={}, prediction_type=None, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_load_callback=None, cache_additional_save_callback=None, save_test_data=True, random_seed=42, inspect_transformed=False, move_files=False, get_cache=True):
+    def __init__(self, list_files, augmented_transform, base_transform, preprocessing_config={}, prediction_type=None, batch_size=100, train_ratio=0.7, val_ratio=0.2, test_ratio=0.1, cache=True, cache_load_callback=None, cache_additional_save_callback=None, save_test_data=True, random_seed=42, inspect_transformed=False, move_files=False, get_cache=True, get_test_data_cache=True):
         assert train_ratio + val_ratio + test_ratio - 1 <= 0.001, "Ratios should sum to 1"
 
         self.batch_size = batch_size
@@ -139,7 +139,7 @@ class ImageDataHandler:
 
         if save_test_data:
             # If previous run already saved test data, use that run link
-            cached_run_link = potentially_get_cached_file_path(list_files, {"prediction_type": prediction_type, **preprocessing_config} if prediction_type is not None else preprocessing_config, "run", ".wandb")
+            cached_run_link = potentially_get_cached_file_path(list_files, {"prediction_type": prediction_type, **preprocessing_config} if prediction_type is not None else preprocessing_config, "run", ".wandb") if get_test_data_cache else None
             if cached_run_link is not None:
                 print(f"Using run link from: {os.path.basename(cached_run_link)}")
                 # Read first line as text, strip whitespace, and split by newline

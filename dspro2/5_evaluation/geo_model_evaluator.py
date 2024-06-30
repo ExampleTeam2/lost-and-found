@@ -1,4 +1,6 @@
 import gc
+import os
+import shutil
 
 import torch
 import wandb
@@ -7,12 +9,32 @@ from geo_model_inference import GeoModelInference
 
 
 class GeoModelEvaluator(GeoModelInference):
-    def __init__(self, val_dataloader, num_classes=3, predict_coordinates=False, country_to_index=None, region_to_index=None, region_index_to_middle_point=None, region_index_to_country_index=None, predict_regions=False):
+    def __init__(self, val_dataloader, num_classes=3, predict_coordinates=False, country_to_index=None, region_to_index=None, region_index_to_middle_point=None, region_index_to_country_index=None, predict_regions=False, test_data_path=None):
         super().__init__(num_classes=num_classes, predict_coordinates=predict_coordinates, country_to_index=country_to_index, region_to_index=region_to_index, region_index_to_middle_point=region_index_to_middle_point, region_index_to_country_index=region_index_to_country_index, predict_regions=predict_regions)
+        self.test_data_path = test_data_path
         self.val_dataloader = val_dataloader
 
     def evaluate(self, model_type, model_path, use_balanced_accuracy=False, second_balanced_on_countries_only=None, accuracy_per_country=False, median_metric=False):
         self.prepare(model_type=model_type, model_path=model_path)
+
+        if self.test_data_path is not None:
+            print("Pushing test data to wandb...")
+
+            run_dir = wandb.run.dir
+            # Get directory of the run (without /files)
+            run_dir = os.path.dirname(run_dir) if run_dir.endswith("files") else run_dir
+
+            # Copy test data to run directory
+            wandb_test_data_path = os.path.join(run_dir, "test_data.pth")
+            # write json file
+            shutil.copy(self.test_data_path, wandb_test_data_path)
+            wandb.save(wandb_test_data_path)
+            # Only save the test data once
+            self.test_data_path = None
+
+            print("Test data pushed to wandb, stopping run.")
+
+            return
 
         with torch.no_grad():
             val_epoch = self.run_epoch(self.val_dataloader, is_train=False, use_balanced_accuracy=use_balanced_accuracy, balanced_on_countries_only=None, accuracy_per_country=accuracy_per_country, median_metric=median_metric)
