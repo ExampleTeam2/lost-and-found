@@ -387,17 +387,16 @@ $$
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Loss} & \text{Distance}^1 & \text{Loss} & \text{Distance}^1 & \text{Distance}^1\\
 \hline
-\text{resnet50} & \text{79,000} & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
+\text{resnet50} & \text{79,000}^2 & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
 \text{resnet50} & \text{81,505} & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
 \text{resnet50} & \text{81,505} & \text{TRUE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
 \text{resnet50} & \text{332,786} & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
 \text{resnet50} & \text{332,786} & \text{TRUE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Distances are in kilometers (km). } 
+& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } 
 \end{aligned}
-$$
-
+$$ 
 ### Predicting country
 
 Follows... DO different tables to see the differences for training validation? Show also the models... the different we tried...
