@@ -412,7 +412,9 @@ $$
 
 ### Predicting country
 
-Follows...
+Our best model, EfficientNet-B1 trained on 332,786 images without augmentation, achieves a remarkable Top-5 accuracy of 91.71% and a Top-1 Mapped accuracy of 71.66% and for the balanced accuracy it is 59.61%. Which shows that it can predict it not bad even if the distribution is even.
+
+follows...
 
 $$
 \begin{aligned}
