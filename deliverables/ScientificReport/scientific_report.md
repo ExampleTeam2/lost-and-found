@@ -359,7 +359,8 @@ For monitoring and deploying we log and push all of our run data to "Weights and
 
 1. **Core Competency in Data Science:** Data processing is a fundamental step in any data science project. Demonstrating this process shows the student's ability to handle and prepare data for analysis, which is a critical skill in the field.
 2. **Transparency and Reproducibility:** Detailing the data processing steps ensures transparency and aids in the reproducibility of the results, which are key aspects of scientific research.
-___
+
+---
 
 # Methods
 
