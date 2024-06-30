@@ -103,7 +103,6 @@ Originally the player is allowed to move around, but there are modified modes to
 
 Because different countries are of different sizes, but also have different amounts of Google Street View coverage, deciding on a representative distribution for generalization would be very difficult. Instead, we opted to play the Geoguessr multiplayer game mode called "Battle Royale: Countries" <-LINK>. This game mode revolves around trying to guess the country of a location before the opponents do. It has a much more even distribution of countries, while still taking into account the densities of different places.
 
-
 ![|600](mulitplayer_graph.png)
 
 Unfortunately, data collection using a multiplayer game mode is quite slow, as even though we do not need to guess and can spectate the rest of the game, we still need to wait for the other players to guess every round. The number of concurrent games was also be limited by the number of currently active players. Additionally, while spectating it is not easily possible to get the exact coordinates of a location, restricting us to only predicting the correct countries. Lastly, we were detected by their anti-cheating software as the automation environment is injecting scripts into the website.
@@ -141,7 +140,7 @@ As mentioned before under “Data source” and described in detail below under 
 The singleplayer data country distribution is heavily skewed, consisting mostly of pictures of the United States and a few other overrepresented countries. We knew that this would hamper performance and that a lot of the smallest countries would not have sufficient data for training.
 However, we also saw a chance to be able to predict a lot of mid-sized countries and smaller countries. Interestingly, it also includes a lot of locations that would normally not be expected to have Google Street View coverage, like very small island nations and even North Korea. This is due to the data not only including official Street View imagery, but also user-submitted photospheres.
 
- ![|750](deliverables/ScientificReport/images/sample.png)
+![|750](deliverables/ScientificReport/images/sample.png)
 
 After sampling a couple of images we not only realized that predicting the country would be a lot harder than we initially anticipated, wondering ourselves about which labels belonged to which images. We also realized that some images are very dark, low resolution, or blurry, especially the aforementioned photospheres, which we decided to filter before training.
 
@@ -303,11 +302,11 @@ To evaluate the impact of data augmentation, we will train our model with and wi
 
 #### Some Examples:
 
-|                     |              |
-| --------------------------------- | ----------------------------- |
-| ![](./images/tmpa7p5kouq.png)     | ![](./images/tmp1pl4i5xs.png) |
+|                                |                               |
+| ------------------------------ | ----------------------------- |
+| ![](./images/tmpa7p5kouq.png)  | ![](./images/tmp1pl4i5xs.png) |
 | ![](./images/tmp2l10v9sw1.png) | ![](./images/tmpa7gecexf.png) |
-| ![](./images/tmpjh2k2i3h.png)     |                               |
+| ![](./images/tmpjh2k2i3h.png)  |                               |
 
 These augmentation techniques are essential for making our model robust and capable of generalizing to different images beyond the specific conditions of Google Street View. By simulating various real-world conditions, we aim to improve the model's ability to handle diverse and unseen environments.
 
@@ -406,19 +405,20 @@ $$
 \text{ResNet50} & \text{332,786}^4 & \text{TRUE} & \text{x} & \text{x} & \text{x} \\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }  \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. } 
+& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }  \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. }
 \end{aligned}
 $$
 
 ### Predicting country
-Follows... 
+
+Follows...
 
 $$
 \begin{aligned}
 & \text{Table 1.2. Best validation performances for predicting countries.} \\
 &\begin{array}{ccc|cc|cccc}
-\hline 
- \text{Settings} && & \text{ Validation} & \text{Accuracy } & \text{Validation balanced} & \text{Accuracy } 
+\hline
+ \text{Settings} && & \text{ Validation} & \text{Accuracy } & \text{Validation balanced} & \text{Accuracy }
 \\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 Mapped}^1 & \text{Top-1}
@@ -433,7 +433,7 @@ $$
 \end{array} \\
 & \text{}^1 \text{ Validation accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
 \\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
-\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. } 
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. }
 \end{aligned}
 $$
 
@@ -445,7 +445,7 @@ $$
 \begin{aligned}
 & \text{Table 1.3. Best validation performances for predicting regions.} \\
 &\begin{array}{ccc|cc|cccc}
-\hline 
+\hline
  \text{Settings} && & \text{ Validation} & \text{Accuracy } & \text{Validation balanced}
 \\
 \hline
@@ -461,17 +461,16 @@ $$
 \end{array} \\
 & \text{}^1 \text{ To measure the distance for each region, the midpoint of the region was used, and the median  }
 \\ & \text{ } \text{ } \text{ distance was calculated in kilometers (km).}
-\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. } 
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. }
 \end{aligned}
 $$
-
 
 $$
 \begin{aligned}
 & \text{Table 1.4. Best validation performances for predicting countries with region prediction model.} \\
 &\begin{array}{ccc|c|cc}
-\hline 
- \text{Settings} && & \text{ Validation Accuracy}  & \text{Validation balanced} & \text{Accuracy } 
+\hline
+ \text{Settings} && & \text{ Validation Accuracy}  & \text{Validation balanced} & \text{Accuracy }
 \\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-1 Mapped}^1 & \text{Top-1}
@@ -486,7 +485,7 @@ $$
 \end{array} \\
 & \text{}^1 \text{ Validation accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
 \\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
-\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. } 
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. }
 \end{aligned}
 $$
 
@@ -518,7 +517,6 @@ $$
 & \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }
 \end{aligned}
 $$
-
 
 ### Predicting country
 
