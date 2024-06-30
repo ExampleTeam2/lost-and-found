@@ -28,8 +28,8 @@ class GeoModelTester(GeoModelInference):
                 test_top1_balanced_accuracy_country = test_epoch["top1_balanced_accuracy_country"]
 
         print(f"Network-Model: {model_type}")
-        parts = model_path.split('/')
-        project_name = parts[5].rsplit('-', 1)[-1]
+        parts = model_path.split("/")
+        project_name = parts[5].rsplit("-", 1)[-1]
         run_id = parts[6]
         print(f"Project Name: {project_name}")
         print(f"Run ID: {run_id}")

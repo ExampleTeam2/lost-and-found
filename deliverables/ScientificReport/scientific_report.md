@@ -1,6 +1,6 @@
 ---
-title: "Lost & Found: Predicting Locations from Images"
-subtitle: "Teamname: Example Team"
+title: 'Lost & Found: Predicting Locations from Images'
+subtitle: 'Teamname: Example Team'
 author:
   - Linus Schlumberger
   - Lukas Stöckli
@@ -20,7 +20,7 @@ bibliography: ./deliverables/ScientificReport/references/references.bib
 csl: ./deliverables/ScientificReport/.assets/apa.csl
 lang: en
 titlepage: true
-titlepage-rule-color: "360049"
+titlepage-rule-color: '360049'
 titlepage-rule-height: 1
 titlepage-background: ./deliverables/ScientificReport/.assets/background5.pdf
 ---
@@ -378,18 +378,20 @@ For monitoring and deploying we log and push all of our run data to "Weights and
 To represent the entire process and all the findings from our hyperparameter tuning, we included the unmapped dataset in the results. This approach revealed that models trained with more data showed improved learning capabilities. This observation provided an initial indication that a larger dataset could significantly impact performance, even more so than a smaller, fairly distributed dataset. To evaluate how the best networks perform with our scraped dataset, we also compared metrics for models trained with and without data augmentation. This comparison allowed us to assess the benefit of data augmentation on external datasets, particularly given their poorer performance on our dataset.
 
 Our dataset, consisting of 79,000 and 81,505 data points, is fairly distributed based on our data preparation workflow. However, larger datasets posed a problem due to their uneven distribution. For instance, the United States represented 20% of the dataset, significantly affecting the testing results. To address this issue, we filtered these datasets to create fairly distributed test sets, removing non-existent countries and regions from the already fairly distributed datasets. This approach allowed us to compare the models' test performances more accurately. To further ensure fair testing performance, we introduced the «balanced_accuracy_score» method from the «scikit-learn» library. Although our filtering process aimed to create fairly distributed data, it did not maintain an exact balance, as we prioritized retaining as much data as possible without excessive deletion. The «balanced_accuracy_score» provides a balanced accuracy measure, enabling us to compare the best performances empirically and smoothly.
+
 ## Validation results
 
 Note: At this step, take the best runs for each setting and compare them at validation accuracy score. And after that, take the best 2 models for each Prediction and test them, if they are not already tested. One with augmentation and one without augmentation.
 
 ### Predicting coordinates
+
 Follows...
 
 $$
 \begin{aligned}
 & \text{Table 1.1. Best validation performances for predicting coordinates.} \\
 &\begin{array}{ccc|c|cc}
-\hline 
+\hline
 & \text{Settings} & & \text{Training} & \text{Validation}\\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Distance}^1 & \text{Median Distance}^1 & \text{Distance}^1
@@ -402,18 +404,19 @@ $$
 \text{ResNet50} & \text{332,786} & \text{TRUE} & \text{x} & \text{x} & \text{x} \\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } 
+& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }
 \end{aligned}
 $$
-### Predicting country
-Follows... 
 
+### Predicting country
+
+Follows...
 
 $$
 \begin{aligned}
 & \text{Table 1.1. Best validation performances for predicting coordinates.} \\
 &\begin{array}{ccc|cc|cc}
-\hline 
+\hline
 & \text{Settings} & & \text{ Val. Acc. } && \text{Val. Balanced Acc.}\\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 (Mapped)}^1 & \text{Top-5 (Mapped)}^1 & \text{Top-1} & \text{Top-5}
@@ -428,18 +431,19 @@ $$
 \end{array} \\
 & \text{}^1 \text{ Validation accuracy of Mapped is based on fewer countries than Unmapped. Even with equal distribution,  }
 \\ & \text{ } \text{ } \text{ balanced accuracy should be considered.}
-\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } 
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }
 \end{aligned}
 $$
-### Predicting region
-Follows....
 
+### Predicting region
+
+Follows....
 
 $$
 \begin{aligned}
 & \text{Table 1.1. Best validation performances for predicting coordinates.} \\
 &\begin{array}{ccc|c|cc}
-\hline 
+\hline
 & \text{Settings} & & \text{Training} & \text{Validation}\\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Balanced Accuracy (Mapped)}^1 & \text{Balanced Accuracy}
@@ -454,23 +458,23 @@ $$
 \end{array} \\
 & \text{}^1 \text{ Validation accuracy of Mapped is based on fewer countries than Unmapped. Even with equal distribution,  }
 \\ & \text{ } \text{ } \text{ balanced accuracy should be considered.}
-\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } 
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }
 \end{aligned}
 $$
 
-
-
 Important: Top 5 does not make sense in regions for guessing the countries!! Because it is predicting mostly 5 x times the same country. Make the rest with top1 and top5 for regions.
+
 ## Test results on best models
 
 ### Predicting coordinates
+
 Follows...
 
 $$
 \begin{aligned}
 & \text{Table 1.1. Best performances for predicting coordinates.} \\
 &\begin{array}{ccc|c|c|cc}
-\hline 
+\hline
 & \text{Settings} & & \text{Training} & \text{Validation} &  \text{Test} \\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Distance}^1 & \text{Distance}^1 & \text{Distance}^1 & \text{Distance Median}^1
@@ -483,23 +487,19 @@ $$
 \text{ResNet50} & \text{332,786} & \text{TRUE} & \text{730.24} & \text{2,549.59} & \text{2,552.98} & \text{1,015.33} \\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } 
+& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }
 \end{aligned}
 $$
 
-
-
-
-
 ### Predicting country
 
-Follows... 
+Follows...
 
 $$
 \begin{aligned}
 & \text{Table 2.1. Best performances for predicting countries.} \\
 &\begin{array}{ccc|c|c|cc|c}
-\hline 
+\hline
 & \text{Settings} & & \text{Training} & \text{Validation} & \text{Test} && \text{Test bal.}^1\\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
@@ -516,7 +516,7 @@ $$
 \\
 \hline
 \end{array} \\
-& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). } 
+& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). }
 \end{aligned}
 $$
 
@@ -528,7 +528,7 @@ $$
 \begin{aligned}
 & \text{Table 2.1. Best performances for predicting regions.} \\
 &\begin{array}{ccc|c|c|cc|c}
-\hline 
+\hline
 & \text{Settings} & & \text{Training} & \text{Validation} & \text{Test} && \text{Test bal.}^1\\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
@@ -545,7 +545,7 @@ $$
 \\
 \hline
 \end{array} \\
-& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). } 
+& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). }
 \end{aligned}
 $$
 
@@ -553,7 +553,7 @@ $$
 \begin{aligned}
 & \text{Table 2.1. Best performances for predicting countries with the region model.} \\
 &\begin{array}{ccc|c|c|cc|c}
-\hline 
+\hline
 & \text{Settings} & & \text{Training} & \text{Validation} & \text{Test} && \text{Test bal.}^1\\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
@@ -570,14 +570,15 @@ $$
 \\
 \hline
 \end{array} \\
-& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). } 
+& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). }
 \end{aligned}
 $$
+
 $$
 \begin{aligned}
 & \text{Table 2.3. Best performances for measuring distances with the region's model.} \\
 &\begin{array}{ccc|cc|cc|c}
-\hline 
+\hline
 & \text{Settings} & & \text{Training} && \text{Validation} && \text{Test} \\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Loss} & \text{Distance}^1 & \text{Loss} & \text{Distance}^1 & \text{Distance}^1\\
@@ -599,9 +600,8 @@ $$
 
 Follows...
 
-
-
 Note: Make also a table, because we do not show the learning progress. Just the results...
+
 ## General
 
 Write also that we found out that a bigger data size matters more than bigger images for all of the prediction models, which is a really nice catch and learning.
