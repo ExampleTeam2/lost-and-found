@@ -501,6 +501,28 @@ Follows...
 
 $$
 \begin{aligned}
+& \text{Table 2.1. Best test performances for predicting coordinates.} \\
+&\begin{array}{ccc|cc}
+\hline
+ \text{Settings} & & & \text{Validation}\\
+\hline
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Median distance}^1 & \text{Mean distance}^1
+\\
+\hline
+\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{809.41} & \text{1,728.09} \\
+\text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{1,022.05} & \text{2,417.70} \\
+\text{EfficientNet-B1} & \text{81,505}^3 & \text{TRUE}  & \text{1,127.23} & \text{2,695.30} \\
+\text{EfficientNet-B1} & \text{332,786}^4 & \text{FALSE} & \text{706.81} & \text{1,850.84} \\
+\text{ResNet50} & \text{332,786}^4 & \text{TRUE} & \text{1,019.94} & \text{2,549.33} \\
+\hline
+\end{array} \\
+& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }  \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. }
+\end{aligned}
+$$
+
+
+$$
+\begin{aligned}
 & \text{Table 1.1. Best performances for predicting coordinates.} \\
 &\begin{array}{ccc|c|c|cc}
 \hline
