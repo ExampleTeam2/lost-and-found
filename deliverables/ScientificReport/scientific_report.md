@@ -360,7 +360,7 @@ Creating the demo for the geoguessr wizard and how we are deploying the model in
 
 ---
 
-## Model performance on other datasets
+## Model performance on other datasets (describe here the method)
 
 Follows...
 
@@ -377,7 +377,6 @@ Follows…
 Follows...
 
 
-
 $$
 \begin{aligned}
 & \text{Table 1.1. Best performances for predicting coordinates.} \\
@@ -385,7 +384,7 @@ $$
 \hline 
 & \text{Settings} & & \text{Training} && \text{Validation} & & \text{Test} \\
 \hline
-\text{Model} & \text{Datasize} & \text{Augmented} & \text{Loss} & \text{Distance}^1 & \text{Loss} & \text{Distance}^1 & \text{Distance}^1\\
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Loss} & \text{Distance}^1 & \text{Loss} & \text{Distance}^1 & \text{Distance}^1\\
 \hline
 \text{resnet50} & 79'000 & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
 \text{resnet50} & 81'505 & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
@@ -409,7 +408,7 @@ $$
 \hline 
 & \text{Settings} & & \text{Training} & \text{Validation} & & \text{Test} \\
 \hline
-\text{Model} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
 \hline
 \text{resnet50} & 79'000 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \text{resnet50} & 81'505 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
@@ -434,7 +433,7 @@ $$
 \hline 
 & \text{Settings} & & \text{Training} & \text{Validation} & & \text{Test} \\
 \hline
-\text{Model} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
 \hline
 \text{resnet50} & 79'000 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \text{resnet50} & 81'505 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
@@ -453,7 +452,7 @@ $$
 \hline 
 & \text{Settings} & & \text{Training} & \text{Validation} & & \text{Test} \\
 \hline
-\text{Model} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
 \hline
 \text{resnet50} & 79'000 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \text{resnet50} & 81'505 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
@@ -472,7 +471,7 @@ $$
 \hline 
 & \text{Settings} & & \text{Training} && \text{Validation} && \text{Test} \\
 \hline
-\text{Model} & \text{Datasize} & \text{Augmented} & \text{Loss} & \text{Distance}^1 & \text{Loss} & \text{Distance}^1 & \text{Distance}^1\\
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Loss} & \text{Distance}^1 & \text{Loss} & \text{Distance}^1 & \text{Distance}^1\\
 \hline
 \text{resnet50} & 79'000 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \text{resnet50} & 81'505 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
@@ -493,6 +492,9 @@ Follows...
 
 
 Note: Make also a table, because we do not show the learning progress. Just the results...
+
+## Performance on other datasets
+Follows...
 
 ## General
 
