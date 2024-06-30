@@ -444,7 +444,7 @@ $$
 
 ### Predicting region
 
-Follows....
+Our best model achieves a Top-5 accuracy of approximately 42%, which is quite impressive given the circumstances. Additionally, the median distance of false predictions is around 382 km, roughly equivalent to the length of Switzerland. Considering that our predictions span the entire globe and the images we use are of very low resolution, this performance is noteworthy.
 
 $$
 \begin{aligned}
