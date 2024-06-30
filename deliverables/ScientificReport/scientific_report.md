@@ -300,7 +300,7 @@ Another method we used in this student project is hyperparameter tuning. It is a
 
 For our hyperparameter tuning, we focused on two different parameters: learning rate and weight decay. We trained the models on five different learning rates: 1e-1, 1e-2, 1e-3, 1e-4, and 1e-5. The learning rate significantly impacts how well the model can learn. After initial experiments with a broader range of learning rates, these five were the most promising during training.
 
-Additionally, we applied three different weight decay values: 1e-1, 1e-2, and 1e-3. Weight decay helps penalize large weights in the network, leading to several benefits: reducing overfitting, improving model stability, promoting feature sharing, and enhancing generalization in over-parameterized models. These three weight decay values helped achieve higher performance compared to not using weight decay. We did not need L2 regularization because the AdamW optimizer handles it internally.
+Additionally, we applied three different weight decay values: 0, 1e-1, 1e-2, and 1e-3. Weight decay helps penalize large weights in the network, leading to several benefits: reducing overfitting, improving model stability, promoting feature sharing, and enhancing generalization in over-parameterized models. These three weight decay values helped achieve higher performance compared to not using weight decay. We did not need L2 regularization because the AdamW optimizer handles it internally.
 
 ## Human baseline performance
 
@@ -366,10 +366,11 @@ Follows...
 
 # Experiments and Results (and also discussions)
 
-## Validation methodologies
+### Validation and Testing Methodologies
 
-Follows…
+To represent the entire process and all the findings from our hyperparameter tuning, we included the unmapped dataset in the results. This approach revealed that models trained with more data showed improved learning capabilities. This observation provided an initial indication that a larger dataset could significantly impact performance, even more so than a smaller, fairly distributed dataset. To evaluate how the best networks perform with our scraped dataset, we also compared metrics for models trained with and without data augmentation. This comparison allowed us to assess the benefit of data augmentation on external datasets, particularly given their poorer performance on our own dataset.
 
+Our dataset, consisting of 79,000 and 81,505 data points, is fairly distributed based on our data preparation workflow. However, larger datasets posed a problem due to their uneven distribution. For instance, the United States represented 20% of the dataset, significantly affecting the testing results. To address this issue, we filtered these datasets to create fairly distributed test sets, removing non-existent countries and regions from the already fairly distributed datasets. This approach allowed us to compare the models' test performances more accurately. To further ensure fair testing performance, we introduced the «balanced_accuracy_score» method from the «scikit-learn» library. Although our filtering process aimed to create fairly distributed data, it did not maintain an exact balance, as we prioritized retaining as much data as possible without excessive deletion. The «balanced_accuracy_score» provides an absolute balanced accuracy measure, enabling us to compare the best performances empirically and smoothly.
 ## Results
 
 ### Predicting coordinates
@@ -386,11 +387,11 @@ $$
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Loss} & \text{Distance}^1 & \text{Loss} & \text{Distance}^1 & \text{Distance}^1\\
 \hline
-\text{resnet50} & 79'000 & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
-\text{resnet50} & 81'505 & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
-\text{resnet50} & 81'505 & \text{TRUE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
-\text{resnet50} & 332'786 & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
-\text{resnet50} & 332'786 & \text{TRUE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
+\text{resnet50} & \text{79,000} & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
+\text{resnet50} & \text{81,505} & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
+\text{resnet50} & \text{81,505} & \text{TRUE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
+\text{resnet50} & \text{332,786} & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
+\text{resnet50} & \text{332,786} & \text{TRUE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
 \hline
 \end{array} \\
 & \text{}^1 \text{ Distances are in kilometers (km). } 
@@ -404,20 +405,20 @@ Follows... DO different tables to see the differences for training validation? S
 $$
 \begin{aligned}
 & \text{Table 2.1. Best performances for predicting countries.} \\
-&\begin{array}{ccc|c|cc|cc}
+&\begin{array}{ccc|c|c|cc|c}
 \hline 
-& \text{Settings} & & \text{Training} & \text{Validation} & & \text{Test} \\
+& \text{Settings} & & \text{Training} & \text{Validation} & \text{Test} && \text{Test bal.}^1\\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
 \hline
-\text{resnet50} & 79'000 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 81'505 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 81'505 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 332'786 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 332'786 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{79,000} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{81,505} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{81,505} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{332,786} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{332,786} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \hline
 \end{array} \\
-& \text{Note:} \text{ Following... } 
+& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.}
 \end{aligned}
 $$
 
@@ -435,11 +436,11 @@ $$
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
 \hline
-\text{resnet50} & 79'000 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 81'505 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 81'505 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 332'786 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 332'786 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{79,000} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{81,505} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{81,505} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{332,786} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{332,786} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \hline
 \end{array}
 \end{aligned}
@@ -454,11 +455,11 @@ $$
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
 \hline
-\text{resnet50} & 79'000 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 81'505 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 81'505 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 332'786 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 332'786 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{79,000} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{81,505} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{81,505} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{332,786} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{332,786} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \hline
 \end{array}
 \end{aligned}
@@ -473,11 +474,11 @@ $$
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Loss} & \text{Distance}^1 & \text{Loss} & \text{Distance}^1 & \text{Distance}^1\\
 \hline
-\text{resnet50} & 79'000 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 81'505 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 81'505 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 332'786 & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & 332'786 & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{79,000} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{81,505} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{81,505} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{332,786} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{332,786} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \hline
 \end{array} \\
 & \text{Note:} \text{ For measuring the distance for each region the middle Point of the region was taken and }
