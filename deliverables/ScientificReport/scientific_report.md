@@ -353,10 +353,6 @@ To speed up training in other environments, especially when using a lot of trans
 
 For monitoring and deploying we log and push all of our run data to "Weights and Biases" <-LINK>, which allows us to plot and compare many runs, as well as automatically do hyperparameter-tuning. After each training we also push the model weights as well as the test data, if it has not been saved before, otherwise a link to it. This allows us to deploy a model and calculate the final metrics in seconds.
 
-To talk about:
-
-Creating the demo for the geoguessr wizard and how we are deploying the model in this real-world scenario
-
 ---
 
 **Requirements:**
@@ -382,10 +378,92 @@ Creating the demo for the geoguessr wizard and how we are deploying the model in
 To represent the entire process and all the findings from our hyperparameter tuning, we included the unmapped dataset in the results. This approach revealed that models trained with more data showed improved learning capabilities. This observation provided an initial indication that a larger dataset could significantly impact performance, even more so than a smaller, fairly distributed dataset. To evaluate how the best networks perform with our scraped dataset, we also compared metrics for models trained with and without data augmentation. This comparison allowed us to assess the benefit of data augmentation on external datasets, particularly given their poorer performance on our dataset.
 
 Our dataset, consisting of 79,000 and 81,505 data points, is fairly distributed based on our data preparation workflow. However, larger datasets posed a problem due to their uneven distribution. For instance, the United States represented 20% of the dataset, significantly affecting the testing results. To address this issue, we filtered these datasets to create fairly distributed test sets, removing non-existent countries and regions from the already fairly distributed datasets. This approach allowed us to compare the models' test performances more accurately. To further ensure fair testing performance, we introduced the «balanced_accuracy_score» method from the «scikit-learn» library. Although our filtering process aimed to create fairly distributed data, it did not maintain an exact balance, as we prioritized retaining as much data as possible without excessive deletion. The «balanced_accuracy_score» provides a balanced accuracy measure, enabling us to compare the best performances empirically and smoothly.
-## Results
+## Validation results
+
+Note: At this step, take the best runs for each setting and compare them at validation accuracy score. And after that, take the best 2 models for each Prediction and test them, if they are not already tested. One with augmentation and one without augmentation.
 
 ### Predicting coordinates
+Follows...
 
+$$
+\begin{aligned}
+& \text{Table 1.1. Best validation performances for predicting coordinates.} \\
+&\begin{array}{ccc|c|cc}
+\hline 
+& \text{Settings} & & \text{Training} & \text{Validation}\\
+\hline
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Distance}^1 & \text{Median Distance}^1 & \text{Distance}^1
+\\
+\hline
+\text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{x}  & \text{x} & \text{x} \\
+\text{EfficientNet-B1} & \text{81,505} & \text{FALSE} & \text{x} & \text{x} & \text{x} \\
+\text{EfficientNet-B1} & \text{81,505} & \text{TRUE} & \text{x} & \text{x} & \text{x} \\
+\text{EfficientNet-B1} & \text{332,786} & \text{FALSE} & \text{x} & \text{x} & \text{x} \\
+\text{ResNet50} & \text{332,786} & \text{TRUE} & \text{x} & \text{x} & \text{x} \\
+\hline
+\end{array} \\
+& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } 
+\end{aligned}
+$$
+### Predicting country
+Follows... 
+
+
+$$
+\begin{aligned}
+& \text{Table 1.1. Best validation performances for predicting coordinates.} \\
+&\begin{array}{ccc|cc|cc}
+\hline 
+& \text{Settings} & & \text{ Val. Acc. } && \text{Val. Balanced Acc.}\\
+\hline
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 (Mapped)}^1 & \text{Top-5 (Mapped)}^1 & \text{Top-1} & \text{Top-5}
+\\
+\hline
+\text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x}\\
+\text{EfficientNet-B1} & \text{81,505} & \text{FALSE} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x}\\
+\text{EfficientNet-B1} & \text{81,505} & \text{TRUE} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x}\\
+\text{EfficientNet-B1} & \text{332,786} & \text{FALSE} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x} \\
+\text{ResNet50} & \text{332,786} & \text{TRUE} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x} & \text{x}\\
+\hline
+\end{array} \\
+& \text{}^1 \text{ Validation accuracy of Mapped is based on fewer countries than Unmapped. Even with equal distribution,  }
+\\ & \text{ } \text{ } \text{ balanced accuracy should be considered.}
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } 
+\end{aligned}
+$$
+### Predicting region
+Follows....
+
+
+$$
+\begin{aligned}
+& \text{Table 1.1. Best validation performances for predicting coordinates.} \\
+&\begin{array}{ccc|c|cc}
+\hline 
+& \text{Settings} & & \text{Training} & \text{Validation}\\
+\hline
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Balanced Accuracy (Mapped)}^1 & \text{Balanced Accuracy}
+\\
+\hline
+\text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{x}  & \text{x} & \text{x} \\
+\text{EfficientNet-B1} & \text{81,505} & \text{FALSE} & \text{x} & \text{x} & \text{x} \\
+\text{EfficientNet-B1} & \text{81,505} & \text{TRUE} & \text{x} & \text{x} & \text{x} \\
+\text{EfficientNet-B1} & \text{332,786} & \text{FALSE} & \text{x} & \text{x} & \text{x} \\
+\text{ResNet50} & \text{332,786} & \text{TRUE} & \text{x} & \text{x} & \text{x} \\
+\hline
+\end{array} \\
+& \text{}^1 \text{ Validation accuracy of Mapped is based on fewer countries than Unmapped. Even with equal distribution,  }
+\\ & \text{ } \text{ } \text{ balanced accuracy should be considered.}
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } 
+\end{aligned}
+$$
+
+
+
+Important: Top 5 does not make sense in regions for guessing the countries!! Because it is predicting mostly 5 x times the same country. Make the rest with top1 and top5 for regions.
+## Test results on best models
+
+### Predicting coordinates
 Follows...
 
 $$
@@ -408,6 +486,11 @@ $$
 & \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } 
 \end{aligned}
 $$
+
+
+
+
+
 ### Predicting country
 
 Follows... 
@@ -436,6 +519,7 @@ $$
 & ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). } 
 \end{aligned}
 $$
+
 ### Predicting region
 
 Follows...DO different tables to see the differences for training validation? Show also the models... the different we tried...
@@ -489,7 +573,6 @@ $$
 & ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). } 
 \end{aligned}
 $$
-
 $$
 \begin{aligned}
 & \text{Table 2.3. Best performances for measuring distances with the region's model.} \\
@@ -511,6 +594,7 @@ $$
 \\ & ^1 \text{ Distances are in kilometers (km).}
 \end{aligned}
 $$
+
 ### Comparison to human performances
 
 Follows...
