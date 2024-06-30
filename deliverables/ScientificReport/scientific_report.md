@@ -562,7 +562,7 @@ $$
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median Distance}^1 & \text{Top-1 Acc.}
 \\
 \hline
-\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{58.35\%} & \text{89.11\%} & \text{X} & \text{x\%}\\
+\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{58.35\%} & \text{89.11\%} & \text{385.55} & \text{8.45\%}\\
 \text{EfficientNet-B1} & \text{332,786}^2 & \text{TRUE} & \text{0.81\%} & \text{2.03\%} & \text{7883.03} & \text{0.13\%}\\
 \hline
 \end{array} \\
@@ -583,7 +583,7 @@ $$
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-1 Mapped}^1 & \text{Top-1}
 \\
 \hline
-\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}\\
+\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{64.73\%} & \text{54.69\%} & \text{41.61\%}\\
 \text{EfficientNet-B1} & \text{332,786}^2 & \text{TRUE} & \text{3.00\%} & \text{3.33\%} & \text{1.96\%}\\
 \hline
 \end{array} \\
