@@ -130,14 +130,13 @@ To make sure our data is collected correctly, we manually inspected it periodica
 (After an initial run of our singleplayer script, we noticed that the way we collected coordinates in multiplayer did no longer work and had been collecting incorrect coordinates for tens of thousands of images. To address this, we built an additional script looking up the correct coordinates using the "game id", this was a lot quicker than the collection of new data, allowing us to correct the mistake quite quickly. We also then used this new way of looking up coordinates for our collection script.)
 
 On the Terms of Service of GeoGuessr it is never mentioned web scrapping is not allowed, so we think that it is not against there ToS.
-
 [GeoGuessr ToS](https://www.geoguessr.com/terms)
 
 ## Data analysis?? (We do not have this section now...)
 
 As mentioned before under “Data source” and described in detail below under “Mapping to a distribution”, we map our data according to the occurrences of countries in the multiplayer data. Because of this, we started looking at our country distributions quite early.
 
-<-POTENTIALLY INSERT SINGLEPLAYER GRAPH AGAIN>
+![|400](./images/singleplayer_graph.png)
 
 The singleplayer data country distribution is heavily skewed, consisting mostly of pictures of the United States and a few other overrepresented countries. We knew that this would hamper performance and that a lot of the smallest countries would not have sufficient data for training.
 However, we also saw a chance to be able to predict a lot of mid-sized countries and smaller countries. Interestingly, it also includes a lot of locations that would normally not be expected to have Google Street View coverage, like very small island nations and even North Korea. This is due to the data not only including official Street View imagery, but also user-submitted photospheres.
