@@ -413,7 +413,7 @@ Follows...
 
 $$
 \begin{aligned}
-& \text{Table 1.2. Best validation performances for predicting coordinates.} \\
+& \text{Table 1.2. Best validation performances for predicting countries.} \\
 &\begin{array}{ccc|cc|cccc}
 \hline 
  \text{Settings} && & \text{ Validation} & \text{Accuracy } & \text{Validation balanced} & \text{Accuracy } 
@@ -441,7 +441,7 @@ Follows....
 
 $$
 \begin{aligned}
-& \text{Table 1.3. Best validation performances for predicting coordinates.} \\
+& \text{Table 1.3. Best validation performances for predicting regions.} \\
 &\begin{array}{ccc|cc|cccc}
 \hline 
  \text{Settings} && & \text{ Validation} & \text{Accuracy } & \text{Validation balanced}
@@ -464,11 +464,31 @@ $$
 $$
 
 
+$$
+\begin{aligned}
+& \text{Table 1.4. Best validation performances for predicting countries with region prediction model.} \\
+&\begin{array}{ccc|c|cc}
+\hline 
+ \text{Settings} && & \text{ Validation Accuracy}  & \text{Validation balanced} & \text{Accuracy } 
+\\
+\hline
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-1 Mapped}^1 & \text{Top-1}
+\\
+\hline
+\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{2.84\%} & \text{-} & \text{4.23\%} \\
+\text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{38.32\%} & \text{-} & \text{39.98\%}\\
+\text{EfficientNet-B1} & \text{81,505}^3 & \text{TRUE} & \text{2.36\%} & \text{-} & \text{3.25\%}\\
+\text{EfficientNet-B1} & \text{332,786}^4 & \text{FALSE} & \text{64.72\%} & \text{53.99\%} & \text{41.77\%}\\
+\text{EfficientNet-B1} & \text{332,786}^4 & \text{TRUE} & \text{3.69\%} & \text{4.05\%} & \text{2.49\%}\\
+\hline
+\end{array} \\
+& \text{}^1 \text{ Validation accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
+\\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
+\\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. } 
+\end{aligned}
+$$
 
-
-
-
-Important: Top 5 does not make sense in regions for guessing the countries!! Because it is predicting mostly 5 x times the same country. Make the rest with top1 and top5 for regions.
+<font color="red">Important: Top 5 does not make sense in regions for guessing the countries!! Because it is predicting mostly 5 x times the same country. Make the rest with top1 and top5 for regions.</font>
 
 ## Test results on best models
 
