@@ -370,10 +370,6 @@ Creating the demo for the geoguessr wizard and how we are deploying the model in
 
 ---
 
-## Model performance on other datasets (describe here the method)
-
-Follows...
-
 # Experiments and Results (and also discussions)
 
 ### Validation and Testing Methodologies
@@ -422,13 +418,13 @@ $$
 \hline
 \text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{99.46\%} & \text{63.18\%} & \text{58.35\%} & \text{89.11\%} & \text{57.48\%}
 \\
-\text{resnet50} & \text{81,505} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\text{EfficientNet-B1} & \text{81,505} & \text{FALSE} & \text{99.05\%} & \text{49.41\%} & \text{44.02\%}, & \text{78.16\%} & \text{42.74\%}
 \\
-\text{resnet50} & \text{81,505} & \text{TRUE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\text{EfficientNet-B3} & \text{81,505} & \text{TRUE} & \text{99.53\%} & \text{38.88\%} & \text{33.06\%}, & \text{67.87\%} & \text{32.46\%}
 \\
-\text{resnet50} & \text{332,786} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\text{EfficientNet-B1} & \text{332,786} & \text{FALSE} & \text{98.17\%} & \text{71.66\%} & \text{72.14\%}, & \text{92.11\%} & \text{60.10\%}
 \\
-\text{resnet50} & \text{332,786} & \text{TRUE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\text{EfficientNet-B1} & \text{332,786} & \text{TRUE} & \text{97.60\%} & \text{63.98\%} & \text{64.96\%}, & \text{88.39\%} & \text{51.04\%}
 \\
 \hline
 \end{array} \\
@@ -448,11 +444,16 @@ $$
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
 \hline
-\text{resnet50} & \text{79,000} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{81,505} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{81,505} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{efficientnet\_b1} & \text{332,786} & \text{FALSE} & 33\% & 20\% & 42\% & 20\% & 41\%\\
-\text{efficientnet\_b1} & \text{332,786} & \text{TRUE} & 0.8\% & 0.9\% & 2\% & 0.8\% & 2\%\\
+\text{resnet50} & \text{79,000}^2 & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
+\text{resnet50} & \text{81,505} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
+\text{resnet50} & \text{81,505} & \text{TRUE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
+\text{resnet50} & \text{332,786} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
+\text{resnet50} & \text{332,786} & \text{TRUE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
 \hline
 \end{array} \\
 & ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). } 
@@ -461,20 +462,26 @@ $$
 
 $$
 \begin{aligned}
-& \text{Table 2.2. Best performances for predicting countries with the regions model.} \\
-&\begin{array}{ccc|c|cc|cc}
+& \text{Table 2.1. Best performances for predicting countries with the region model.} \\
+&\begin{array}{ccc|c|c|cc|c}
 \hline 
-& \text{Settings} & & \text{Training} & \text{Validation} & & \text{Test} \\
+& \text{Settings} & & \text{Training} & \text{Validation} & \text{Test} && \text{Test bal.}^1\\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
 \hline
-\text{resnet50} & \text{79,000} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{81,505} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{81,505} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{efficientnet\_b1} & \text{332,786} & \text{FALSE} & 66\% & 59\% & 69\% & 64\% & 73\%\\
-\text{efficientnet\_b1} & \text{332,786} & \text{TRUE} & 2\% & 2\% & 11\% & 3\% & 11\%\\
+\text{resnet50} & \text{79,000}^2 & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
+\text{resnet50} & \text{81,505} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
+\text{resnet50} & \text{81,505} & \text{TRUE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
+\text{resnet50} & \text{332,786} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
+\text{resnet50} & \text{332,786} & \text{TRUE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
 \hline
-\end{array}
+\end{array} \\
+& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). } 
 \end{aligned}
 $$
 
@@ -506,10 +513,6 @@ Follows...
 
 
 Note: Make also a table, because we do not show the learning progress. Just the results...
-
-## Performance on other datasets
-Follows...
-
 ## General
 
 Write also that we found out that a bigger data size matters more than bigger images for all of the prediction models, which is a really nice catch and learning.
@@ -542,9 +545,3 @@ Here we should discuss the implications of our results, our limitations, and pos
 ---
 
 # References
-
-# Appendix
-
-## Insert Kanban Board
-
-## Insert GitLab Link to Project and also the link for open dataset
