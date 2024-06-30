@@ -382,17 +382,18 @@ Follows...
 $$
 \begin{aligned}
 & \text{Table 1.1. Best performances for predicting coordinates.} \\
-&\begin{array}{ccc|cc|cc|c}
+&\begin{array}{ccc|c|c|cc}
 \hline 
-& \text{Settings} & & \text{Training} && \text{Validation} & & \text{Test} \\
+& \text{Settings} & & \text{Training} & \text{Validation} &  \text{Test} \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Loss} & \text{Distance}^1 & \text{Loss} & \text{Distance}^1 & \text{Distance}^1\\
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Distance}^1 & \text{Distance}^1 & \text{Distance}^1 & \text{Distance Median}^1
+\\
 \hline
-\text{resnet50} & \text{79,000}^2 & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
-\text{resnet50} & \text{81,505} & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
-\text{resnet50} & \text{81,505} & \text{TRUE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
-\text{resnet50} & \text{332,786} & \text{FALSE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
-\text{resnet50} & \text{332,786} & \text{TRUE} & 0.45 & 300 & 0.76 & 2000 & 1800 \\
+\text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{904.95} & \text{1,728.09} & \text{1,891.59} & \text{870.03} \\
+\text{resnet50} & \text{81,505} & \text{FALSE} & \text{xXx} & \text{xXx} & \text{xXx} & \text{xXx} \\
+\text{resnet50} & \text{81,505} & \text{TRUE} & \text{xXx} & \text{xXx} & \text{xXx} & \text{xXx}  \\
+\text{resnet50} & \text{332,786} & \text{FALSE} & \text{xXx} & \text{xXx}& \text{xXx} & \text{xXx} \\
+\text{resnet50} & \text{332,786} & \text{TRUE} & \text{xXx} & \text{xXx} & \text{xXx} & \text{xXx} \\
 \hline
 \end{array} \\
 & \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } 
@@ -411,11 +412,16 @@ $$
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
 \hline
-\text{resnet50} & \text{79,000} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{81,505} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{81,505} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{332,786} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
-\text{resnet50} & \text{332,786} & \text{TRUE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
+\text{resnet50} & \text{79,000} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
+\text{resnet50} & \text{81,505} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
+\text{resnet50} & \text{81,505} & \text{TRUE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
+\text{resnet50} & \text{332,786} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
+\text{resnet50} & \text{332,786} & \text{TRUE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\\
 \hline
 \end{array} \\
 & ^1\text{ This test metric was measured using a balanced and fairly distributed test set.}
