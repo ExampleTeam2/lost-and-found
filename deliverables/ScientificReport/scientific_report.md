@@ -619,15 +619,15 @@ $$
 \\
 \hline
 \text{1} & \text{Austria} & \text{100.00\%} & \text{1} & \text{India} & \text{94.95\%} \\
-\text{2} & \text{Senegal} & \text{91.60\%} & \text{2} & \text{Japan} & \text{89.49\%} \\
-\text{3} & \text{Kenya} & \text{88.40\%} & \text{3} & \text{Ghana} & \text{87.87\%} \\
+\text{2} & \text{Senegal} & \text{91.60\%} & \text{2} & \text{United States} & \text{89.72\%} \\
+\text{3} & \text{Kenya} & \text{88.40\%} & \text{3} & \text{Japan} & \text{89.49\%} \\
 \hline
-\text{4} & \text{Kyrgyzstan} & \text{85.71\%} & \text{4} & \text{Kyrgyzstan} & \text{82.29\%} \\
-\text{5} & \text{Portugal} & \text{56.14\%} & \text{5} & \text{Portugal} & \text{41.34\%} \\
+\text{-5} & \text{Lao People's Democratic Republic} & \text{33.33\%} & \text{54} & \text{Lao People's Democratic Republic} & \text{50.00\%} \\
+\text{-4} & \text{Czechia} & \text{32.19\%} & \text{-36} & \text{Czechia} & \text{28.71\%} \\
 \hline
-\text{-3} & \text{Lao People's Democratic Republic} & \text{33.33\%} & \text{-3} & \text{Maldives} & \text{0.00\%} \\
-\text{-2} & \text{Czechia} & \text{32.20\%} & \text{-2} & \text{Lebanon} & \text{0.00\%} \\
-\text{-1} & \text{Slovakiary} & \text{20.31\%} & \text{-1} & \text{Kazakhstan} & \text{0.00\%} \\
+\text{-3} & \text{Latvia} & \text{22.07\%} & \text{-3} & \text{Maldives} & \text{0.00\%} \\
+\text{-2} & \text{Slovenia} & \text{21.56\%} & \text{-2} & \text{Lebanon} & \text{0.00\%} \\
+\text{-1} & \text{Slovakia} & \text{20.31\%} & \text{-1} & \text{China} & \text{0.00\%} \\
 \hline
 \end{array} \\
 & \text{}^1 \text{ Model: EfficientNet-B1, 79,000, without augmentation } \\
@@ -671,9 +671,6 @@ $$
 \end{aligned}
 $$
 
-## General
-
-Write also that we found out that a bigger data size matters more than bigger images for all of the prediction models, which is a really nice catch and learning.
 
 ---
 
@@ -693,6 +690,8 @@ Our Hypothesis: The main goal of this student project is to determine if an Imag
 ---
 
 # Conclusions and Future Work
+
+Write also that we found out that a bigger data size matters more than bigger images for all of the prediction models, which is a really nice catch and learning.
 
 Follows...
 
