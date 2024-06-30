@@ -369,15 +369,14 @@ Follows...
 
 ### Validation and Testing Methodologies
 
-To represent the entire process and all the findings from our hyperparameter tuning, we included the unmapped dataset in the results. This approach revealed that models trained with more data showed improved learning capabilities. This observation provided an initial indication that a larger dataset could significantly impact performance, even more so than a smaller, fairly distributed dataset. To evaluate how the best networks perform with our scraped dataset, we also compared metrics for models trained with and without data augmentation. This comparison allowed us to assess the benefit of data augmentation on external datasets, particularly given their poorer performance on our own dataset.
+To represent the entire process and all the findings from our hyperparameter tuning, we included the unmapped dataset in the results. This approach revealed that models trained with more data showed improved learning capabilities. This observation provided an initial indication that a larger dataset could significantly impact performance, even more so than a smaller, fairly distributed dataset. To evaluate how the best networks perform with our scraped dataset, we also compared metrics for models trained with and without data augmentation. This comparison allowed us to assess the benefit of data augmentation on external datasets, particularly given their poorer performance on our dataset.
 
-Our dataset, consisting of 79,000 and 81,505 data points, is fairly distributed based on our data preparation workflow. However, larger datasets posed a problem due to their uneven distribution. For instance, the United States represented 20% of the dataset, significantly affecting the testing results. To address this issue, we filtered these datasets to create fairly distributed test sets, removing non-existent countries and regions from the already fairly distributed datasets. This approach allowed us to compare the models' test performances more accurately. To further ensure fair testing performance, we introduced the «balanced_accuracy_score» method from the «scikit-learn» library. Although our filtering process aimed to create fairly distributed data, it did not maintain an exact balance, as we prioritized retaining as much data as possible without excessive deletion. The «balanced_accuracy_score» provides an absolute balanced accuracy measure, enabling us to compare the best performances empirically and smoothly.
+Our dataset, consisting of 79,000 and 81,505 data points, is fairly distributed based on our data preparation workflow. However, larger datasets posed a problem due to their uneven distribution. For instance, the United States represented 20% of the dataset, significantly affecting the testing results. To address this issue, we filtered these datasets to create fairly distributed test sets, removing non-existent countries and regions from the already fairly distributed datasets. This approach allowed us to compare the models' test performances more accurately. To further ensure fair testing performance, we introduced the «balanced_accuracy_score» method from the «scikit-learn» library. Although our filtering process aimed to create fairly distributed data, it did not maintain an exact balance, as we prioritized retaining as much data as possible without excessive deletion. The «balanced_accuracy_score» provides a balanced accuracy measure, enabling us to compare the best performances empirically and smoothly.
 ## Results
 
 ### Predicting coordinates
 
 Follows...
-
 
 $$
 \begin{aligned}
@@ -390,15 +389,15 @@ $$
 \\
 \hline
 \text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{904.95} & \text{1,728.09} & \text{1,891.59} & \text{870.03} \\
-\text{resnet50} & \text{81,505} & \text{FALSE} & \text{xXx} & \text{xXx} & \text{xXx} & \text{xXx} \\
-\text{resnet50} & \text{81,505} & \text{TRUE} & \text{xXx} & \text{xXx} & \text{xXx} & \text{xXx}  \\
-\text{resnet50} & \text{332,786} & \text{FALSE} & \text{xXx} & \text{xXx}& \text{xXx} & \text{xXx} \\
-\text{resnet50} & \text{332,786} & \text{TRUE} & \text{xXx} & \text{xXx} & \text{xXx} & \text{xXx} \\
+\text{EfficientNet-B1} & \text{81,505} & \text{FALSE} & \text{1,175.91} & \text{2,417.58} & \text{2,518.26} & \text{1,058.09} \\
+\text{EfficientNet-B1} & \text{81,505} & \text{TRUE} & \text{1,246.15} & \text{2,695.31} & \text{2,615.16} & \text{1,100.60}  \\
+\text{EfficientNet-B1} & \text{332,786} & \text{FALSE} & \text{894.93} & \text{1,850.88}& \text{1,815.74} & \text{706.76} \\
+\text{ResNet50} & \text{332,786} & \text{TRUE} & \text{730.24} & \text{2,549.59} & \text{2,552.98} & \text{1,015.33} \\
 \hline
 \end{array} \\
 & \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } 
 \end{aligned}
-$$ 
+$$
 ### Predicting country
 
 Follows... DO different tables to see the differences for training validation? Show also the models... the different we tried...
