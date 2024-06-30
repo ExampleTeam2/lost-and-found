@@ -1,6 +1,6 @@
 ---
-title: 'Lost & Found: Predicting Locations from Images'
-subtitle: 'Teamname: Example Team'
+title: "Lost & Found: Predicting Locations from Images"
+subtitle: "Teamname: Example Team"
 author:
   - Linus Schlumberger
   - Lukas Stöckli
@@ -20,9 +20,10 @@ bibliography: ./deliverables/ScientificReport/references/references.bib
 csl: ./deliverables/ScientificReport/.assets/apa.csl
 lang: en
 titlepage: true
-titlepage-rule-color: '360049'
+titlepage-rule-color: "360049"
 titlepage-rule-height: 1
 titlepage-background: ./deliverables/ScientificReport/.assets/background5.pdf
+linkcolor: "0096FF"
 ---
 
 # Introduction
