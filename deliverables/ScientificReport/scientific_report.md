@@ -597,12 +597,14 @@ $$
 
 ### Mapped versus unmapped
 
-Follows...
+As shown in Table 2.5, the model trained on mapped data achieved at least 20.31% correct guesses for all countries, with no country falling below this threshold, as seen on the left side of the table. In contrast, the right side reveals that the model trained on unmapped data had to guess more countries, increasing complexity. Some countries had no correct guesses, indicating the model struggled to learn from certain regions.
+
+Additionally, in the middle of Table 2.5, it is evident that two countries had higher accuracy in the model trained with mapped data. This suggests that higher data quality leads to better performance in the existing cases, with reduced complexity due to fewer countries needing to be predicted.
 
 $$
 \begin{aligned}
 & \text{Table 2.5. Comparing correctly guessed countries between a mapped and an unmapped model.} \\
-&\begin{array}{ccc|cc}
+&\begin{array}{ccc|ccc}
 \hline
  \text{Mapped}^1 & & & \text{Unmapped}^2\\
 \hline
@@ -627,6 +629,9 @@ $$
 $$
 
 ### Comparison to human performances
+
+The main goal of this student project is to determine if an Image Classification Model can outperform humans in guessing the countries or regions of images based solely on the image itself, without additional information.
+
 
 We compared our model's performance with our own. The results show that our best model outperforms us significantly. Even when matched against our advanced GeoGuessr player, Linus, the model performs much better.
 
