@@ -409,7 +409,7 @@ $$
 \text{ResNet50} & \text{332,786}^4 & \text{TRUE} & \text{1,019.94} & \text{2,549.33} \\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }  \\ & ^3 \text{ The dataset is evenly distributed. }\\ & ^4 \text{ The dataset is not evenly distributed. }
+& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }  \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not evenly distributed. }
 \end{aligned}
 $$
 
@@ -428,9 +428,9 @@ $$
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 Mapped}^1 & \text{Top-1}
 \\
 \hline
-\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{63.18\%} & \text{89.90\%} & \text{-} & \text{63.43\%}\\
-\text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{48.90\%} & \text{80.24\%} & \text{-} & \text{50.25\%}\\
-\text{EfficientNet-B3} & \text{81,505}^3 & \text{TRUE} & \text{38.89\%} & \text{70.81\%} & \text{-} & \text{38.89\%}\\
+\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{63.18\%} & \text{89.90\%} & \text{63.43\%} & \text{-}\\
+\text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{48.90\%} & \text{80.24\%} & \text{50.25\%} & \text{-}\\
+\text{EfficientNet-B3} & \text{81,505}^3 & \text{TRUE} & \text{38.89\%} & \text{70.81\%} & \text{38.89\%} & \text{-} \\
 \text{EfficientNet-B1} & \text{332,786}^4 & \text{FALSE} & \text{71.66\%} & \text{91.71\%} & \text{59.61\%} & \text{46.86\%}\\
 \text{EfficientNet-B1} & \text{332,786}^4 & \text{TRUE} & \text{64.89\%} & \text{88.24\%} & \text{51.42\%} & \text{40.83\%}\\
 \hline
@@ -480,9 +480,9 @@ $$
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-1 Mapped}^1 & \text{Top-1}
 \\
 \hline
-\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{2.84\%} & \text{-} & \text{4.23\%} \\
-\text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{38.32\%} & \text{-} & \text{39.98\%}\\
-\text{EfficientNet-B1} & \text{81,505}^3 & \text{TRUE} & \text{2.36\%} & \text{-} & \text{3.25\%}\\
+\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{2.84\%} & \text{4.23\%} & \text{-} \\
+\text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{38.32\%} & \text{39.98\%} & \text{-}\\
+\text{EfficientNet-B1} & \text{81,505}^3 & \text{TRUE} & \text{2.36\%}  & \text{3.25\%} & \text{-} \\
 \text{EfficientNet-B1} & \text{332,786}^4 & \text{FALSE} & \text{64.72\%} & \text{53.99\%} & \text{41.77\%}\\
 \text{EfficientNet-B1} & \text{332,786}^4 & \text{TRUE} & \text{3.69\%} & \text{4.05\%} & \text{2.49\%}\\
 \hline
@@ -535,7 +535,7 @@ $$
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 Mapped}^1 & \text{Top-1}
 \\
 \hline
-\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{58.35\%} & \text{89.11\%} & \text{-} & \text{57.48\%}\\
+\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{58.35\%} & \text{89.11\%}  & \text{57.48\%} & \text{-}\\
 \text{EfficientNet-B1} & \text{332,786}^4 & \text{TRUE} & \text{64.96\%} & \text{88.39\%} & \text{51.04\%} & \text{39.73\%}\\
 \hline
 \end{array} \\
@@ -561,7 +561,7 @@ $$
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median Distance}^1 & \text{Top-1 Acc.}
 \\
 \hline
-\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{x\%} & \text{X\%} & \text{X} & \text{x\%}\\
+\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{58.35\%} & \text{89.11\%} & \text{X} & \text{x\%}\\
 \text{EfficientNet-B1} & \text{332,786}^2 & \text{TRUE} & \text{0.81\%} & \text{2.03\%} & \text{7883.03} & \text{0.13\%}\\
 \hline
 \end{array} \\
@@ -593,6 +593,16 @@ $$
 \end{aligned}
 $$
 
+### Mapped versus unmapped
+
+Follows...DO
+
+
+
+add table 2.5
+
+
+
 ### Comparison to human performances
 
 Follows...
@@ -600,7 +610,7 @@ Follows...
 
 $$
 \begin{aligned}
-& \text{Table 2.5. Best test performances for predicting countries.} \\
+& \text{Table 2.6. Best test performances for predicting countries.} \\
 &\begin{array}{ccc|ccc}
 \hline
  \text{Settings} && & \text{ Test} & \text{balanced } & \text{Accuracy }
