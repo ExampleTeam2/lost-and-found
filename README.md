@@ -1,4 +1,4 @@
-# DSPRO2
+# Lost & Found: Predicting Locations from Images
 
 ## General
 
