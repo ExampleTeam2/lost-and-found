@@ -300,7 +300,12 @@ To evaluate the impact of data augmentation, we will train our model with and wi
 - **Random Rotation**: This augmentation randomly rotates the image by up to 10 degrees. It helps the model become invariant to slight rotations, which is important since objects in Google Street View images can appear slightly rotated due to changes in the car's movement or camera alignment.
 - **Color Jitter**: This augmentation randomly changes the brightness, contrast, saturation, and hue of the image. For example, varying the brightness can simulate different times of day (e.g., night vs. bright daylight), while adjusting the hue and saturation can account for different weather conditions or camera sensor variations. This makes the model more robust to lighting and color changes that are common in real-world scenarios.
 
-<font color="lightgreen"> >>> Add here a picture of the training augmentation to see what it visually >>> </font>
+#### Some Examples:
+
+| ![](./images/tmpa7p5kouq.png)     | ![](./images/tmp1pl4i5xs.png) |
+| --------------------------------- | ----------------------------- |
+| ![](./images/tmp2l10v9sw%201.png) | ![](./images/tmpa7gecexf.png) |
+| ![](./images/tmpjh2k2i3h.png)     |                               |
 
 These augmentation techniques are essential for making our model robust and capable of generalizing to different images beyond the specific conditions of Google Street View. By simulating various real-world conditions, we aim to improve the model's ability to handle diverse and unseen environments.
 
