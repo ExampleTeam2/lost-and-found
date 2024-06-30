@@ -409,7 +409,7 @@ $$
 $$
 ### Predicting country
 
-Follows... DO different tables to see the differences for training validation? Show also the models... the different we tried...
+Follows... 
 
 $$
 \begin{aligned}
@@ -420,7 +420,7 @@ $$
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
 \hline
-\text{resnet50} & \text{79,000} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
+\text{EfficientNet-B1} & \text{79,000}^2 & \text{FALSE} & \text{99.46\%} & \text{63.18\%} & \text{58.35\%} & \text{89.11\%} & \text{57.48\%}
 \\
 \text{resnet50} & \text{81,505} & \text{FALSE} & \text{x\%} & \text{x\%} & \text{x\%}, & \text{x\%} & \text{x\%}
 \\
@@ -432,23 +432,21 @@ $$
 \\
 \hline
 \end{array} \\
-& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.}
+& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). } 
 \end{aligned}
 $$
-
-
 ### Predicting region
 
-Follows...
+Follows...DO different tables to see the differences for training validation? Show also the models... the different we tried...
 
 $$
 \begin{aligned}
 & \text{Table 2.1. Best performances for predicting regions.} \\
-&\begin{array}{ccc|c|cc|cc}
+&\begin{array}{ccc|c|c|cc|c}
 \hline 
-& \text{Settings} & & \text{Training} & \text{Validation} & & \text{Test} \\
+& \text{Settings} & & \text{Training} & \text{Validation} & \text{Test} && \text{Test bal.}^1\\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.}\\
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-1 Acc.} & \text{Top-5 Acc.} & \text{Top-1 Acc.}\\
 \hline
 \text{resnet50} & \text{79,000} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
 \text{resnet50} & \text{81,505} & \text{FALSE} & 10\% & 10\% & 10\% & 10\% & 10\%\\
@@ -456,7 +454,8 @@ $$
 \text{efficientnet\_b1} & \text{332,786} & \text{FALSE} & 33\% & 20\% & 42\% & 20\% & 41\%\\
 \text{efficientnet\_b1} & \text{332,786} & \text{TRUE} & 0.8\% & 0.9\% & 2\% & 0.8\% & 2\%\\
 \hline
-\end{array}
+\end{array} \\
+& ^1\text{ This test metric was measured using a balanced and fairly distributed test set.} \\ & ^2 \text{ Dataset contains a larger image size of 320x180 instead of 130x80 (width x height). } 
 \end{aligned}
 $$
 
