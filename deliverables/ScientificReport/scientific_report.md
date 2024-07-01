@@ -499,7 +499,7 @@ $$
 
 ### Predicting country
 
-Follows...
+The best model also shows good performance in predicting countries. When comparing the results with the validation data, the models performed slightly worse, but they still maintained strong overall performance. Interestingly, the EfficientNet-B1 model, which was trained on a larger image size and without augmentation, performed only 6.44% worse in the balanced Top-1 metric. This suggests that with sufficient data, augmentation becomes increasingly beneficial. The model requires some structure and stability in the training data. With smaller datasets, overly aggressive augmentation can lead to poor performance if the augmentation is too strongly applied.
 
 $$
 \begin{aligned}
@@ -509,7 +509,7 @@ $$
  \text{Settings} && & \text{ Test} & \text{accuracy } & \text{Test balanced accuracy} & \text{ }
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 Mapped}^1 & \text{Top-1}
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 mapped}^1 & \text{Top-1}
 \\
 \hline
 \text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{58.35\%} & \text{89.11\%}  & \text{57.48\%} & \text{-}\\
@@ -639,24 +639,6 @@ $$
 \end{array} \\ & ^1 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\
 \end{aligned}
 $$
-
----
-
-**Requirements:**
-
-1. Ensuring Model Reliability: Model validation is crucial for assessing the accuracy and reliability of the model. This section shows how the student evaluates the performance and generalizability of their model.
-2. Critical Evaluation: It encourages students to critically evaluate their model’s performance, understand its limitations, and discuss potential improvements.
-
----
-
----
-
-List here all results in plots, confusion matrix and so on. The goal of these sections is to present our result and explain how they help in solving the problem we are working on, and to answer the research questions we are trying to answer.
-
-Our Hypothesis: The main goal of this student project is to determine if an Image Classification Model can outperform humans in guessing the countries or regions of images based solely on the image itself, without additional information.
-
----
-
 # Conclusions and Future Work
 
 ## General findings
