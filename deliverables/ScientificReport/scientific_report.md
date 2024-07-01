@@ -94,7 +94,7 @@ EfficientNet, proposed by Tan and Le (2020), introduces a new model scaling meth
 
 ## Contributions
 
-This paper has four main contributions. Firstly, we are publishing our code for efficient training, distribution, and evaluation as a GitHub repository, which also includes the code for our data collection process [@killusions2024lostAndfound]. Additionally, we are publishing our collected dataset, the largest public dataset of its kind [@killusions2024StreetLocationImages]. Secondly, we address the limitations of current geolocation models by developing a novel approach that leverages low-resolution images, enabling accurate geolocation in more realistic and diverse scenarios. Thirdly, we enhance the dataset by expanding it to include more countries, ensuring a balanced and distributed representation, which is crucial for mitigating biases present in state-of-the-art models. Lastly, we tackle hardware limitations by optimizing image sizes, making the model more accessible and efficient for deployment on various hardware platforms.
+This paper has four main contributions. Firstly, we are publishing our code for efficient training, distribution, and evaluation as a GitHub repository, which also includes the code for our data collection process [@schlumberger2024lostAndfound]. Additionally, we are publishing our collected dataset, the largest public dataset of its kind [@schlumberger2024StreetLocationImages]. Secondly, we address the limitations of current geolocation models by developing a novel approach that leverages low-resolution images, enabling accurate geolocation in more realistic and diverse scenarios. Thirdly, we enhance the dataset by expanding it to include more countries, ensuring a balanced and distributed representation, which is crucial for mitigating biases present in state-of-the-art models. Lastly, we tackle hardware limitations by optimizing image sizes, making the model more accessible and efficient for deployment on various hardware platforms.
 
 Our contributions make the task of image geolocation more accessible, making it more practical and effective for a wide range of applications and enabling future improvements. By addressing these key challenges, we believe our work will pave the way for the development of more robust and universally applicable geolocation technologies.
 
@@ -414,7 +414,7 @@ $$
 & \text{Table 1.2. Best validation performances for predicting countries.} \\
 &\begin{array}{ccc|cc|cccc}
 \hline
- \text{Settings} && & \text{ Validation} & \text{accuracy } & \text{Validation balanced} & \text{accuracy }
+ \text{Settings} && & \text{ Validation} & \text{accuracy } & \text{Validation balanced  accuracy} & \text{ }
 \\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 mapped}^1 & \text{Top-1}
@@ -442,7 +442,7 @@ $$
 & \text{Table 1.3. Best validation performances for predicting regions.} \\
 &\begin{array}{ccc|cc|cc}
 \hline
- \text{Settings} && & \text{ Validation} & \text{accuracy } & \text{Validation balanced}
+ \text{Settings} && & \text{ Validation} & \text{accuracy } & \text{Validation balanced accuaracy} & \text{ }
 \\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1 acc.}
@@ -468,7 +468,7 @@ $$
 & \text{Table 1.4. Best validation performances for predicting countries with region prediction model.} \\
 &\begin{array}{ccc|c|cc}
 \hline
- \text{Settings} && & \text{ Validation accuracy}  & \text{Validation balanced} & \text{accuracy }
+ \text{Settings} && & \text{ Validation accuracy}  & \text{Validation balanced accuracy} & \text{ }
 \\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-1 mapped}^1 & \text{Top-1}
@@ -520,7 +520,7 @@ $$
 & \text{Table 2.2. Best test performances for predicting countries.} \\
 &\begin{array}{ccc|cc|cc}
 \hline
- \text{Settings} && & \text{ Test} & \text{accuracy } & \text{Test balanced} & \text{accuracy }
+ \text{Settings} && & \text{ Test} & \text{accuracy } & \text{Test balanced accuracy} & \text{ }
 \\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 Mapped}^1 & \text{Top-1}
@@ -545,7 +545,7 @@ $$
 & \text{Table 2.3. Best test performances for predicting regions.} \\
 &\begin{array}{ccc|cc|cc}
 \hline
- \text{Settings} && & \text{ Test} & \text{accuracy } & \text{Test balanced}
+ \text{Settings} && & \text{ Test} & \text{accuracy } & \text{Test balanced accuracy} & \text{ }
 \\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1 acc.}
@@ -566,7 +566,7 @@ $$
 & \text{Table 2.4. Best test performances for predicting countries with region prediction model.} \\
 &\begin{array}{ccc|c|cc}
 \hline
- \text{Settings} && & \text{ Test accuracy}  & \text{Test balanced} & \text{accuracy }
+ \text{Settings} && & \text{ Test accuracy}  & \text{Test balanced accuracy} & \text{ }
 \\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-1 mapped}^1 & \text{Top-1}
@@ -595,7 +595,7 @@ $$
 \hline
  \text{Mapped}^1 & & & \text{Unmapped}^2\\
 \hline
-\text{Order} & \text{Countryname} & \text{Accuracy} & \text{Order} & \text{Countryname} & \text{Accuracy}
+\text{Order} & \text{Country} & \text{Accuracy} & \text{Order} & \text{Country} & \text{Accuracy}
 \\
 \hline
 \text{1} & \text{Kenya} & \text{83.56\%} & \text{1} & \text{India} & \text{94.95\%} \\
@@ -610,7 +610,7 @@ $$
 \text{-1} & \text{Slovakia} & \text{12.21\%} & \text{-1} & \text{China} & \text{0.00\%} \\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Model: EfficientNet-B1, 332,786, without augmentation } \\
+& \text{}^1 \text{ Model: EfficientNet-B1, 81,505, without augmentation } \\
 & ^2 \text{ Model: EfficientNet-B1, 332,786, without augmentation}
 \end{aligned}
 $$
@@ -626,28 +626,27 @@ $$
 & \text{Table 2.6. Best test performances for predicting countries.} \\
 &\begin{array}{ccc|ccc}
 \hline
- \text{Settings} && & \text{ Test} & \text{balanced } & \text{accuracy }
+ \text{Settings} && & \text{ } & \text{Test accuracy} & \text{ }
 \\
 \hline
 \text{Best Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-3 } & \text{Top-5 }
 \\
 \hline
-\text{EfficientNet-B1} & \text{79,000}^1 \text{ }^2 & \text{FALSE} & \text{58.35\%} & \text{81.61\%} & \text{89.11\%}\\
+\text{EfficientNet-B1} & \text{79,000} \text{ }^1 & \text{FALSE} & \text{58.35\%} & \text{81.61\%} & \text{89.11\%}\\
 \hline
 \hline
 \text{Advanced Player} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-3 } & \text{Top-5 }
 \\
 \hline
-\text{Linus} & \text{30}^1 \text{ }^2 & \text{FALSE} & \text{26.67\%} & \text{43.33\%} & \text{56.67\%} \\
+\text{Linus} & \text{30} \text{ }^1 & \text{FALSE} & \text{26.67\%} & \text{43.33\%} & \text{56.67\%} \\
 \hline
 \text{Amateur Player} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-3 } & \text{Top-5 }
 \\
 \hline
-\text{Yutaro } & \text{30}^1 \text{ }^2 & \text{FALSE} & \text{10.00\%} & \text{13.33\%} & \text{20.00\%} \\
-\text{Lukas} & \text{50}^1 \text{ }^2 & \text{FALSE} & \text{8.00\%} & \text{22.00\%} & \text{30.00\%}\\
+\text{Yutaro } & \text{30} \text{ }^1 & \text{FALSE} & \text{10.00\%} & \text{13.33\%} & \text{20.00\%} \\
+\text{Lukas} & \text{50} \text{ }^1 & \text{FALSE} & \text{8.00\%} & \text{22.00\%} & \text{30.00\%}\\
 \hline
-\end{array} \\
-& \text{}^1 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^2 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\
+\end{array} \\ & ^1 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\
 \end{aligned}
 $$
 
