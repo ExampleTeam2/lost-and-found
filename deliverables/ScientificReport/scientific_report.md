@@ -94,7 +94,7 @@ EfficientNet, proposed by Tan and Le (2020), introduces a new model scaling meth
 
 ## Contributions
 
-This paper has four main contributions. Firstly, we are publishing not only our code for efficient training, distribution, and evaluation but additionally also providing our code for data collection and our collected dataset, the biggest public one of its kind. Secondly, we address the limitations of current geolocation models by developing a novel approach that leverages low-resolution images, enabling accurate geolocation in more realistic and diverse scenarios. Thirdly, we enhance the dataset by expanding it to include more countries, ensuring a balanced and distributed representation, which is crucial for mitigating biases present in state-of-the-art models. Lastly, we tackle hardware limitations by optimizing image sizes, making the model more accessible and efficient for deployment on various hardware platforms.
+This paper has four main contributions. Firstly, we are publishing our code for efficient training, distribution, and evaluation as a GitHub repository, which also includes the code for our data collection process [@killusions2024lostAndfound]. Additionally, we are publishing our collected dataset, the largest public dataset of its kind [@killusions2024StreetLocationImages]. Secondly, we address the limitations of current geolocation models by developing a novel approach that leverages low-resolution images, enabling accurate geolocation in more realistic and diverse scenarios. Thirdly, we enhance the dataset by expanding it to include more countries, ensuring a balanced and distributed representation, which is crucial for mitigating biases present in state-of-the-art models. Lastly, we tackle hardware limitations by optimizing image sizes, making the model more accessible and efficient for deployment on various hardware platforms.
 
 Our contributions make the task of image geolocation more accessible, making it more practical and effective for a wide range of applications and enabling future improvements. By addressing these key challenges, we believe our work will pave the way for the development of more robust and universally applicable geolocation technologies.
 
@@ -131,8 +131,6 @@ To collect this data, we built our own scraper, utilizing the testing and browse
 Our script starts by logging in and storing the cookies for further sessions, it then accepts the cookie conditions and attempts to start a game. We do this by navigating the page using the text, as there are no stable identifiers. For multiplayer, it additionally checks for rate-limiting or if it joined the same game as another instance of the script, in those cases it waits for a certain amount of time and attempts the same again.
 
 After a game starts it will wait for a round to start, wait for the image to load, hide all other elements on the page, move the mouse cursor out of the way, and take a screenshot. For singleplayer, it then guesses a random location, while in multiplayer it waits for the round to end, spectating the rest of the game afterward. At the end of each round, the coordinates or in the case of multiplayer the country are read from the page and saved to a file. Both of these files are named after the "game id", which we extract from the URL, preventing duplicates. This is then repeated until the script is stopped.
-
-<-POTENTIALLY INSERT SCRAPING CONTROL FLOW GRAPH>
 
 Initially, we had a lot of issues with stability, especially with our parallelized workers. After we got rid of hardware bottlenecks, we also looked to eliminate as many fixed waits as possible, replacing them with dynamic ones to avoid timing issues. Finally, we made sure to enable auto-restarting and added a lot of other measures to completely restart after our environment stops working, which can happen during extended scraping sessions due to memory limitations. We then let this script run in parallel, non-stop, for multiple weeks, collecting 18,582 multiplayer data points and 356,606 singleplayer data points.
 
@@ -269,15 +267,6 @@ where
 - $\tau$ is a temperature parameter.
 
 Finally, the cross-entropy loss is calculated between the model outputs and the smoothed labels.
-
----
-
-**Requirements:**
-
-1. **Understanding and Application:** This section allows students to demonstrate their understanding of various methodologies and their ability to apply appropriate techniques to their specific project.
-2. **Rationale and Justification:** Discussing the methods used provides insight into the student’s decision-making process and the rationale behind choosing specific approaches.
-
----
 
 ## Model architectures
 
