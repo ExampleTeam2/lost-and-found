@@ -336,11 +336,11 @@ To solve this we came up with a custom set of helpers called "data-loader". This
 
 Behind the scenes, it writes a text file ("data-list") to the repository listing all of the files used. This file is meant to be committed to the repository and ensures that all future runs of this setup will get the exact same files, otherwise throw an error. If some files are still missing locally, they are automatically downloaded from our server before returning the paths.
 
-Once we had this running, we could easily deploy this on persistent cloud environments like HSLU's GPUHub, however, we also wanted to be able to deploy it on [Google Colab](https://colab.google/). which does not have persistent storage. To address this, we wrote a shell script to automatically clone our git repository from [GitLab](https://gitlab.com/exampleteam2/dspro2), install dependencies using[ "Poetry"](https://python-poetry.org/), convert the training notebook to plain Python, and run it.
+Once we had this running, we could easily deploy this on persistent cloud environments like HSLU's GPUHub, however, we also wanted to be able to deploy it on [Google Colab](https://colab.google/) for access to larger GPUs and more memory, which we needed for some of our experiments. which does not have persistent storage. To address this, we wrote a shell script to automatically clone our git repository from [GitLab](https://gitlab.com/exampleteam2/dspro2), install dependencies using[ "Poetry"](https://python-poetry.org/), convert the training notebook to plain Python, and run it.
 
-(Even with the script, setup was still slow because hundreds of thousands of files had to be downloaded from our server first. To solve this, we mounted a [Google Drive ](https://www.google.com/intl/en/drive/), and stored our files there. However, since the drive adapter is slow and ceases to work with a lot of files, we had to take a couple of measures to address this.
+Even with the script, setup was still slow because hundreds of thousands of files had to be downloaded from our server first. To solve this, we mounted a [Google Drive ](https://www.google.com/intl/en/drive/), and stored our files there. However, since the drive adapter is slow and ceases to work with a lot of files, we had to take a couple of measures to address this.
 
-Firstly, we stored our downloaded files in nested directories, containing the first and second characters in the "game ids" of the files. Secondly, we store a list of all files present in the Google Drive, preventing a slow file listing, and lastly, we store the files in a zip file, copy the entire file, and uncompress it on the local storage of the runner. This allowed us to quickly deploy our model training to Google Colab, which gave us the chance to rain on more powerful GPUs.)
+Firstly, we stored our downloaded files in nested directories, containing the first and second characters in the "game ids" of the files. Secondly, we store a list of all files present in the Google Drive, preventing a slow file listing, and lastly, we store the files in a zip file, copy the entire file, and uncompress it on the local storage of the runner. This allowed us to quickly deploy our model training to Google Colab, which gave us the chance to rain on more powerful GPUs.
 
 To speed up training in other environments as well, especially when using a lot of transformations for data augmentation, we cache the prepared dataset using pytorch right before training. The dataset is saved to a file named after the preprocessing parameters, as well as a hash of all file names to ensure consistency. A file only containing the test data after the split is also saved to make calculating the metrics quicker.
 
@@ -639,6 +639,7 @@ $$
 \end{array} \\ & ^1 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\
 \end{aligned}
 $$
+
 # Conclusions and Future Work
 
 ## General findings
