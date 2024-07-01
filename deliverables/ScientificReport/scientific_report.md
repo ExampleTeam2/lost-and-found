@@ -564,7 +564,7 @@ $$
 \text{EfficientNet-B1} & \text{332,786}^2 & \text{TRUE} & \text{3.00\%} & \text{3.33\%} & \text{1.96\%}\\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Test accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
+& \text{}^1 \text{ Test accuracy of mapped is based on fewer countries than unmapped. Even with equal,  }
 \\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
 \\ & ^2 \text{ The dataset is not farily distributed. }
 \end{aligned}
