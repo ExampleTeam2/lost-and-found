@@ -414,10 +414,10 @@ $$
 & \text{Table 1.2. Best validation performances for predicting countries.} \\
 &\begin{array}{ccc|cc|cccc}
 \hline
- \text{Settings} && & \text{ Validation} & \text{Accuracy } & \text{Validation balanced} & \text{Accuracy }
+ \text{Settings} && & \text{ Validation} & \text{accuracy } & \text{Validation balanced} & \text{accuracy }
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 Mapped}^1 & \text{Top-1}
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 mapped}^1 & \text{Top-1}
 \\
 \hline
 \text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{63.18\%} & \text{89.90\%} & \text{63.43\%} & \text{-}\\
@@ -442,10 +442,10 @@ $$
 & \text{Table 1.3. Best validation performances for predicting regions.} \\
 &\begin{array}{ccc|cc|cc}
 \hline
- \text{Settings} && & \text{ Validation} & \text{Accuracy } & \text{Validation balanced}
+ \text{Settings} && & \text{ Validation} & \text{accuracy } & \text{Validation balanced}
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median Distance}^1 & \text{Top-1 Acc.}
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1 acc.}
 \\
 \hline
 \text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{0.97\%} & \text{2.97\%} & \text{6,126.90} & \text{0.39\%} \\
@@ -468,10 +468,10 @@ $$
 & \text{Table 1.4. Best validation performances for predicting countries with region prediction model.} \\
 &\begin{array}{ccc|c|cc}
 \hline
- \text{Settings} && & \text{ Validation Accuracy}  & \text{Validation balanced} & \text{Accuracy }
+ \text{Settings} && & \text{ Validation accuracy}  & \text{Validation balanced} & \text{accuracy }
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-1 Mapped}^1 & \text{Top-1}
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-1 mapped}^1 & \text{Top-1}
 \\
 \hline
 \text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{2.84\%} & \text{4.23\%} & \text{-} \\
@@ -520,7 +520,7 @@ $$
 & \text{Table 2.2. Best test performances for predicting countries.} \\
 &\begin{array}{ccc|cc|cc}
 \hline
- \text{Settings} && & \text{ Test} & \text{Accuracy } & \text{Test balanced} & \text{Accuracy }
+ \text{Settings} && & \text{ Test} & \text{accuracy } & \text{Test balanced} & \text{accuracy }
 \\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 Mapped}^1 & \text{Top-1}
@@ -545,10 +545,10 @@ $$
 & \text{Table 2.3. Best test performances for predicting regions.} \\
 &\begin{array}{ccc|cc|cc}
 \hline
- \text{Settings} && & \text{ Test} & \text{Accuracy } & \text{Test balanced}
+ \text{Settings} && & \text{ Test} & \text{accuracy } & \text{Test balanced}
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median Distance}^1 & \text{Top-1 Acc.}
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1 acc.}
 \\
 \hline
 \text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{58.35\%} & \text{89.11\%} & \text{385.55} & \text{8.45\%}\\
@@ -566,10 +566,10 @@ $$
 & \text{Table 2.4. Best test performances for predicting countries with region prediction model.} \\
 &\begin{array}{ccc|c|cc}
 \hline
- \text{Settings} && & \text{ Test Accuracy}  & \text{Test balanced} & \text{Accuracy }
+ \text{Settings} && & \text{ Test accuracy}  & \text{Test balanced} & \text{accuracy }
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-1 Mapped}^1 & \text{Top-1}
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-1 mapped}^1 & \text{Top-1}
 \\
 \hline
 \text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{64.73\%} & \text{54.69\%} & \text{41.61\%}\\
@@ -598,19 +598,19 @@ $$
 \text{Order} & \text{Countryname} & \text{Accuracy} & \text{Order} & \text{Countryname} & \text{Accuracy}
 \\
 \hline
-\text{1} & \text{Austria} & \text{100.00\%} & \text{1} & \text{India} & \text{94.95\%} \\
-\text{2} & \text{Senegal} & \text{91.60\%} & \text{2} & \text{United States} & \text{89.72\%} \\
-\text{3} & \text{Kenya} & \text{88.40\%} & \text{3} & \text{Japan} & \text{89.49\%} \\
+\text{1} & \text{Kenya} & \text{83.56\%} & \text{1} & \text{India} & \text{94.95\%} \\
+\text{2} & \text{Senegal} & \text{83.44\%} & \text{2} & \text{United States} & \text{89.72\%} \\
+\text{3} & \text{Lesotho} & \text{77.06\%} & \text{3} & \text{Japan} & \text{89.49\%} \\
 \hline
-\text{-5} & \text{Lao People's Democratic Republic} & \text{33.33\%} & \text{54} & \text{Lao People's Democratic Republic} & \text{50.00\%} \\
-\text{-4} & \text{Czechia} & \text{32.19\%} & \text{-36} & \text{Czechia} & \text{28.71\%} \\
+\text{-5} & \text{Latvia} & \text{24.36\%} & \text{-32} & \text{Latvia} & \text{24.67\%} \\
+\text{-4} & \text{Czechia} & \text{21.46\%} & \text{-36} & \text{Czechia} & \text{28.71\%} \\
 \hline
-\text{-3} & \text{Latvia} & \text{22.07\%} & \text{-3} & \text{Maldives} & \text{0.00\%} \\
-\text{-2} & \text{Slovenia} & \text{21.56\%} & \text{-2} & \text{Lebanon} & \text{0.00\%} \\
-\text{-1} & \text{Slovakia} & \text{20.31\%} & \text{-1} & \text{China} & \text{0.00\%} \\
+\text{-3} & \text{Slovenia} & \text{16.98\%} & \text{-3} & \text{Maldives} & \text{0.00\%} \\
+\text{-2} & \text{Lao People's Democratic Republic} & \text{13.95\%} & \text{-2} & \text{Lebanon} & \text{0.00\%} \\
+\text{-1} & \text{Slovakia} & \text{12.21\%} & \text{-1} & \text{China} & \text{0.00\%} \\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Model: EfficientNet-B1, 79,000, without augmentation } \\
+& \text{}^1 \text{ Model: EfficientNet-B1, 332,786, without augmentation } \\
 & ^2 \text{ Model: EfficientNet-B1, 332,786, without augmentation}
 \end{aligned}
 $$
@@ -626,7 +626,7 @@ $$
 & \text{Table 2.6. Best test performances for predicting countries.} \\
 &\begin{array}{ccc|ccc}
 \hline
- \text{Settings} && & \text{ Test} & \text{balanced } & \text{Accuracy }
+ \text{Settings} && & \text{ Test} & \text{balanced } & \text{accuracy }
 \\
 \hline
 \text{Best Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-3 } & \text{Top-5 }
