@@ -358,7 +358,11 @@ Our dataset, consisting of 81,505 (and sometimes reduced to 79,000) data points,
 
 Although our filtering process aimed to create fairly distributed data, it did not maintain an exact balance, as we aimed to inherit the distribution from GeoGuessr multiplayer and prioritized retaining as much data as possible without excessive deletion. The «balanced_accuracy_score» provides a balanced accuracy measure even for models trained on the smaller dataset, enabling us to compare the performance empirically and smoothly.
 
-## Validation results
+Larger image size go brrr
+
+As outlined above in [Training and Fine-Tuning](#Training%20and%20Fine-Tuning), we also tried to train different types of predictions on the most promising different types of models, before settling for EfficientNet-B1, which consistently performed the best or on par with other models.
+
+### Hyperparameter-tuning
 
 ### Predicting coordinates
 
@@ -371,14 +375,14 @@ $$
 \hline
  \text{Settings} & & & \text{Validation}\\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Median distance}^1 & \text{Mean distance}^1
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Mean distance}^1 & \text{Median distance}^1
 \\
 \hline
-\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{809.41} & \text{1,728.09} \\
-\text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{1,022.05} & \text{2,417.70} \\
-\text{EfficientNet-B1} & \text{81,505}^3 & \text{TRUE}  & \text{1,127.23} & \text{2,695.30} \\
-\text{EfficientNet-B1} & \text{332,786}^4 & \text{FALSE} & \text{706.81} & \text{1,850.84} \\
-\text{ResNet50} & \text{332,786}^4 & \text{TRUE} & \text{1,019.94} & \text{2,549.33} \\
+\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{1,728.09} & \text{809.41} \\
+\text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{2,417.70} & \text{1,022.05} \\
+\text{EfficientNet-B1} & \text{81,505}^3 & \text{TRUE}  & \text{2,695.30} & \text{1,127.23} \\
+\text{EfficientNet-B1} & \text{332,786}^4 & \text{FALSE} & \text{1,850.84} & \text{706.81} \\
+\text{ResNet50} & \text{332,786}^4 & \text{TRUE} & \text{2,549.33} & \text{1,019.94} \\
 \hline
 \end{array} \\
 & \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }  \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not fairly distributed. }
@@ -482,11 +486,11 @@ $$
 \hline
  \text{Settings} & & & \text{Test}\\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Median distance}^1 & \text{Mean distance}^1
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Mean distance}^1 & \text{Median distance}^1
 \\
 \hline
-\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{706.76} & \text{1,815.74} \\
-\text{ResNet50} & \text{332,786}^2 & \text{TRUE} & \text{1,015.33} & \text{2,552.98} \\
+\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{1,815.74} & \text{706.76} \\
+\text{ResNet50} & \text{332,786}^2 & \text{TRUE} & \text{2,552.98} & \text{1,015.33} \\
 \hline
 \end{array} \\
 & \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ The dataset is not fairly distributed. }
@@ -525,12 +529,12 @@ Follows...DO different tables to see the differences for training validation? Sh
 $$
 \begin{aligned}
 & \text{Table 2.3. Best test performances for predicting regions.} \\
-&\begin{array}{ccc|cc|cc}
+&\begin{array}{ccc|cc|c|c}
 \hline
- \text{Settings} && & \text{ Test} & \text{accuracy } & \text{Test balanced accuracy} & \text{ }
+ \text{Settings} && & \text{ Test} & \text{accuracy } & \text{Test metric} & \text{Test balanced accuracy}
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1 acc.}
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1}
 \\
 \hline
 \text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{58.35\%} & \text{89.11\%} & \text{385.55} & \text{8.45\%}\\
@@ -566,9 +570,9 @@ $$
 
 ### Mapped versus unmapped
 
-As shown in Table 2.5, the model trained on mapped data achieved at least 20.31% correct guesses for all countries, with no country falling below this threshold, as seen on the left side of the table. In contrast, the right side reveals that the model trained on unmapped data had to guess more countries, increasing complexity. Some countries had no correct guesses, indicating the model struggled to learn from certain regions.
+As shown in Table 2.5, the model trained on mapped data achieved at least **BLALALA**% correct guesses for all countries, with no country falling below this threshold, as seen on the left side of the table. In contrast, the right side reveals that the model trained on unmapped data had to guess more countries, increasing complexity. Some countries had no correct guesses, indicating the model struggled to learn from certain regions.
 
-Additionally, in the middle of Table 2.5, it is evident that two countries had higher accuracy in the model trained with mapped data. This suggests that higher data quality leads to better performance in the existing cases, with reduced complexity due to fewer countries needing to be predicted.
+Unmapped stronger giving same image size, better also for weakest in mapped
 
 $$
 \begin{aligned}
@@ -651,9 +655,19 @@ Our Hypothesis: The main goal of this student project is to determine if an Imag
 
 # Conclusions and Future Work
 
-Write also that we found out that a bigger data size matters more than bigger images for all of the prediction models, which is a really nice catch and learning.
+## General findings
 
-Follows...
+More data = better
+
+But: More size = even more better
+
+Could try both in future?
+
+Write also that we found out that a bigger data size matters more than bigger images **FOR REGIONS** for all of the prediction models, which is a really nice catch and learning.
+
+I follow, I follow you
+
+Limititions and future reasearch
 
 ---
 
