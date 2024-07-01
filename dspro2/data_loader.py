@@ -278,8 +278,14 @@ def _get_list_from_html_file(download_link):
     # get list of files from nginx or apache html file
     http = urllib3.PoolManager()
     print("Getting files list from remote")
-    response = http.request("GET", download_link)
-    html = response.data.decode("utf-8")
+    try:
+        response = http.request("GET", download_link)
+        html = response.data.decode("utf-8")
+    except Exception as e:
+        if download_link == DEFAULT_DOWNLOAD_LINK:
+            print("Either your connection to the internet is restricted or disrupted, or our remote server is no longer available, please use your own server.")
+            raise ConnectionError("Either your connection to the internet is restricted or disrupted, or our remote server is no longer available, please use your own server or train locally.")
+        raise e
     print("Got files list from remote")
     files = []
     if not html:
@@ -866,6 +872,8 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
     if download_link == "default":
         download_link = DEFAULT_DOWNLOAD_LINK
     download_link = resolve_env_variable(download_link, "DOWNLOAD_LINK", allow_download_link_env)
+    if download_link == DEFAULT_DOWNLOAD_LINK:
+        print("Warning: Downloading from our server will soon no longer be supported, please provide a different download link (DOWNLOAD_LINK in .env) or use local data (SKIP_REMOTE in .env), the dataset is accessible (though with different file names) at https://www.kaggle.com/datasets/killusions/street-location-images/ and the scaping script can be used to collect your own data.")
     skip_remote = resolve_env_variable(str(False), "SKIP_REMOTE", True)
     skip_remote = skip_remote is not None and skip_remote and skip_remote.lower() != "false" and skip_remote.lower() != "0"
     skip_checks = resolve_env_variable(str(False), "SKIP_CHECKS", True)
