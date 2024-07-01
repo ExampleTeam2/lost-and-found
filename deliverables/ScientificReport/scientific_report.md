@@ -166,7 +166,7 @@ _Figure 5: Heatmap of the distribution around the world, 2024_
 
 We can't train the classifier using images in a high resolution, because our resources are limited, and often images (like of missing persons) can be of a very low quality. So we decided to reduce the resolution, at the beginning of the processing, to about 1/4 of the original resolution of 1280p × 720p. This also helps to move the images for learning to a server for easy distribution and deployment and reduces processing time for future steps.
 
-### Country Enriching
+### Country enriching
 
 In our project, we focused on collecting images from GeoGuessr in singleplayer mode to ensure we obtained locations with precise coordinates. In contrast, images collected in multiplayer mode mostly only provide the country name without the exact coordinates. Additionally, we faced a ban from multiplayer mode due to webpage injections, which triggered GeoGuessr's automated anti-cheating system.
 
@@ -176,7 +176,7 @@ We also faced difficulties mapping the correct country to the provided data when
 
 To enhance the efficiency of processing our large dataset, we employed multiple workers to handle the data concurrently. This approach significantly improved the processing speed.
 
-### Region Enriching (Source, Mapping)
+### Region enriching
 
 To get the region of our image samples, we first searched for a list of regions around the world. And decide to use [a data source file from Natural Earth](https://www.naturalearthdata.com/downloads/110m-cultural-vectors/#:~:text=Issues%20%7C%20Version%20History%20%C2%BB-,Admin,-1%20%E2%80%93%20States%2C%20Provinces), which we then converted to GeoJSON for ease of use.
 For each region, we had a list of coordinates, which mark the border of the region, but for our predictions, we had to get the middle point of each one. This is where the Python library "geopandas" comes in handy.
@@ -274,7 +274,7 @@ To develop a robust and efficient image classification model for predicting the 
 
 By leveraging these advanced CNN architectures, using their pre-trained weights, and fine-tuning them on our custom dataset, we aim to develop a well-performing, efficient model capable of accurately predicting the geographical origin of images with minimal hardware resources.
 
-## Training and Fine-Tuning
+## Training and fine-tuning
 
 For our project, we use the following models from selected architectures:
 
@@ -296,7 +296,7 @@ To evaluate the impact of data augmentation, we will train our model with and wi
 - **Random Rotation**: This augmentation randomly rotates the image by up to 10 degrees. It helps the model become invariant to slight rotations, which is important since objects in Google Street View images can appear slightly rotated due to changes in the car's movement or camera alignment.
 - **Color Jitter**: This augmentation randomly changes the brightness, contrast, saturation, and hue of the image. For example, varying the brightness can simulate different times of day (e.g., night vs. bright daylight), while adjusting the hue and saturation can account for different weather conditions or camera sensor variations. This makes the model more robust to lighting and color changes that are common in real-world scenarios.
 
-#### Some Examples:
+#### Some examples:
 
 |                                |                               |
 | ------------------------------ | ----------------------------- |
@@ -346,9 +346,9 @@ To speed up training in other environments as well, especially when using a lot 
 
 For monitoring and deploying we log and push all of our run data, including our indices and region data, to "Weights and Biases", which allows us to plot and compare many runs, as well as automatically do hyperparameter-tuning. After each training, we also push the model weights as well as the test data, if it has not been saved before, otherwise a link to it. This allows us to deploy a model and calculate the final metrics in seconds.
 
-# Experiments and Results
+# Experiments and results
 
-### Validation and Testing Methodologies
+### Validation and testing methodologies
 
 Originally we intended to only train on our smaller, evenly distributed dataset. However, after some time we thought it might be a waste of the rest of our data and a missed opportunity to not try training on our entire dataset, even if it is not fairly distributed and would take more resources for training. We speculated that, even though it might not be able to learn to predict all classes quite as well, the increase in data would at least allow us to match and maybe even exceed it in the cases included in the smaller dataset.
 
@@ -431,7 +431,7 @@ $$
  \text{Settings} && & \text{ Validation} & \text{accuracy } & \text{Validation balanced accuaracy} & \text{ }
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1 acc.}
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1}
 \\
 \hline
 \text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{0.97\%} & \text{2.97\%} & \text{6,126.90} & \text{0.39\%} \\
