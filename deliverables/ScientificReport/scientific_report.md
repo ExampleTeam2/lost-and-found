@@ -366,7 +366,7 @@ As outlined above in [Training and Fine-Tuning](#Training%20and%20Fine-Tuning), 
 
 ### Predicting coordinates
 
-Follows...
+For predicting coordinates, the EfficientNet-B1 outperformed all other models, with only the ResNet50 coming close in comparison. As shown in Table 1.1, the most promising model was the EfficientNet-B1 without data augmentation. These models could learn patterns to predict the correct coordinates effectively. This indicates that a larger dataset or higher-resolution images could lead to significantly better performance compared to using a smaller, fairly distributed dataset.
 
 $$
 \begin{aligned}
@@ -391,9 +391,7 @@ $$
 
 ### Predicting country
 
-Our best model, EfficientNet-B1 trained on 332,786 images without augmentation, achieves a remarkable Top-5 accuracy of 91.71% and a Top-1 Mapped accuracy of 71.66% and for the balanced accuracy it is 59.61%. Which shows that it can predict it not bad even if the distribution is even.
-
-follows...
+EfficientNet-B1, trained on 332,786 images without augmentation, achieves a remarkable Top-5 accuracy of 91.71%, a Top-1 mapped accuracy of 71.66%, and a balanced accuracy of 59.61%. However, when comparing balanced accuracy, the model with the larger image size performs better. The higher resolution allows the model to learn the correct features from the images more easily. The increased information and reduced task complexity, compared to predicting coordinates, significantly boost the model's performance.
 
 $$
 \begin{aligned}
@@ -413,7 +411,7 @@ $$
 \text{EfficientNet-B1} & \text{332,786}^4 & \text{TRUE} & \text{64.89\%} & \text{88.24\%} & \text{51.42\%} & \text{40.83\%}\\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Validation accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
+& \text{}^1 \text{ Validation accuracy of mapped is based on fewer countries than unmapped. Even with equal,  }
 \\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
 \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not farily distributed. }
 \end{aligned}
@@ -421,7 +419,9 @@ $$
 
 ### Predicting region
 
-Our best model achieves a Top-5 accuracy of approximately 42%, which is quite impressive given the circumstances. Additionally, the median distance of false predictions is around 382 km, roughly equivalent to the length of Switzerland. Considering that our predictions span the entire globe and the images we use are of very low resolution, this performance is noteworthy.
+The best model from the tuning process achieves a Top-5 accuracy of approximately 42% for the regions task, which is quite impressive given the circumstances. Additionally, the median distance error is around 382 km, roughly equivalent to the length of Switzerland. This further suggests that a larger dataset significantly impacts model performance. Considering that our predictions span the entire globe and the images we use are of very low resolution, this performance is noteworthy.
+
+Compared to the country task, it is evident that the larger image size increases the complexity for the model. This added complexity makes it extremely challenging for the model to learn additional classifications for all regions with the larger image sizes. To address this, a larger dataset representing this complexity would be necessary to help the model learn more patterns and make more accurate predictions.
 
 $$
 \begin{aligned}
@@ -447,7 +447,7 @@ $$
 \end{aligned}
 $$
 
-Our best model, EfficientNet-B1 trained on a larger, non-augmented dataset of 332,786 samples, achieves a Top-1 validation accuracy of 64.72% and a balanced Top-1 mapped accuracy of 53.99%, with an overall accuracy of 41.77%. This performance is notable given the dataset's unequal distribution and the restrictions on the subset of countries.
+Interestingly, the regions can also be adapted to countries, allowing for a comparison of these predictions. As shown in Table 1.4, EfficientNet-B1, which was trained on a large, non-augmented dataset of 332,786 samples, achieves a Top-1 validation accuracy of 64.72% and a balanced Top-1 mapped accuracy of 53.99%, with an overall accuracy of 41.77%. This performance is notable given the dataset's unequal distribution and the restrictions on the subset of countries.
 
 $$
 \begin{aligned}
@@ -467,7 +467,7 @@ $$
 \text{EfficientNet-B1} & \text{332,786}^4 & \text{TRUE} & \text{3.69\%} & \text{4.05\%} & \text{2.49\%}\\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Validation accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
+& \text{}^1 \text{ Validation accuracy of mapped is based on fewer countries than unmapped. Even with equal,  }
 \\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
 \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not fairly distributed. }
 \end{aligned}
@@ -477,7 +477,7 @@ $$
 
 ### Predicting coordinates
 
-Follows...
+The best model performed similarly on the test set as it did on the validation set, indicating a well-distributed dataset with good data quality. As a further step, it would be important and worthwhile to test the models on different external datasets. Although the model trained without augmentation outperforms the model trained with augmentation on this dataset, the augmented model might generalize better to external datasets.
 
 $$
 \begin{aligned}
@@ -516,7 +516,7 @@ $$
 \text{EfficientNet-B1} & \text{332,786}^4 & \text{TRUE} & \text{64.96\%} & \text{88.39\%} & \text{51.04\%} & \text{39.73\%}\\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Test accuracy of Mapped is based on fewer countries than Unmapped. Even with equal,  }
+& \text{}^1 \text{ Test accuracy of mapped is based on fewer countries than unmapped. Even with equal,  }
 \\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
 \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not fairly distributed. }
 \end{aligned}
