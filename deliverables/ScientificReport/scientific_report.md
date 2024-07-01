@@ -354,44 +354,19 @@ Originally we intended to only train on our smaller, evenly distributed dataset.
 
 This revealed that models trained with more data showed improved learning capabilities and provided an initial indication that a larger dataset could significantly impact performance, even more so than a smaller, fairly distributed dataset. Additionally, we also compared metrics for models trained with and without data augmentation. This comparison allowed us to assess the tradeoff of data augmentation regarding performance on our task, as opposed to on external datasets, particularly given their poorer performance on our dataset.
 
-Our dataset, consisting of 81,505 (and sometimes reduced to 79,000) data points, is fairly distributed based on our data preparation workflow. However, larger datasets posed a problem due to their uneven distribution. For instance, the United States represented over 20% of the entire dataset, significantly affecting our metrics and preventing us from comparing different models. To address this issue, we calculated a [balanced accuracy](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.balanced_accuracy_score.html) , for larger datasets also on the same subset of countries our smaller datasets consist of. This approach allowed us to compare the models' test performances more accurately. To calculate this we used the «balanced_accuracy_score» method of the «scikit-learn» library.
+Our dataset, consisting of 81,505 (and sometimes reduced to 79,000) data points, is fairly distributed based on our data preparation workflow. However, larger datasets posed a problem due to their uneven distribution. For instance, the United States represented over 20% of the entire dataset, significantly affecting our metrics and preventing us from comparing different models. To address this issue, we calculated a [balanced accuracy](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.balanced_accuracy_score.html) , for larger datasets also on the same subset of countries our smaller datasets consist of. This approach allowed us to compare the models' test performances more accurately. To calculate this we used the "balanced_accuracy_score" method of the "scikit-learn" library.
 
-Although our filtering process aimed to create fairly distributed data, it did not maintain an exact balance, as we aimed to inherit the distribution from GeoGuessr multiplayer and prioritized retaining as much data as possible without excessive deletion. The «balanced_accuracy_score» provides a balanced accuracy measure even for models trained on the smaller dataset, enabling us to compare the performance empirically and smoothly.
+Although our filtering process aimed to create fairly distributed data, it did not maintain an exact balance, as we aimed to inherit the distribution from GeoGuessr multiplayer and prioritized retaining as much data as possible without excessive deletion. The "balanced_accuracy_score" provides a balanced accuracy measure even for models trained on the smaller dataset, enabling us to compare the performance empirically and smoothly.
 
-We also tried training with larger image sizes, namely our original downscaled size of 320 × 180, instead of 130 × 80. This would be impossible with our full dataset for all of the GPU's we had access to, but by using our smaller dataset and reducing it further to 79,000 data points, we were able to train to see if we were severely limited by by our image size or if the amount of data was more of a concern.
+We also tried training with larger image sizes, namely our original downscaled size of 320 × 180, instead of 130 × 80. This would be impossible with our full dataset for all of the GPUs we had access to, but by using our smaller dataset and reducing it further to 79,000 data points, we were able to train to see if we were severely limited by our image size or if the amount of data was more of a concern.
 
 As outlined above in [Training and Fine-Tuning](#Training%20and%20Fine-Tuning), we also tried to train different types of predictions on the most promising different types of models, before settling for EfficientNet-B1, which consistently performed the best or on par with other models.
 
-### Hyperparameter-tuning
-
-### Predicting coordinates
-
-For predicting coordinates, the EfficientNet-B1 outperformed all other models, with only the ResNet50 coming close in comparison. As shown in Table 1.1, the most promising model was the EfficientNet-B1 without data augmentation. These models could learn patterns to predict the correct coordinates effectively. This indicates that a larger dataset or higher-resolution images could lead to significantly better performance compared to using a smaller, fairly distributed dataset.
-
-$$
-\begin{aligned}
-& \text{Table 1.1. Best validation performances for predicting coordinates.} \\
-&\begin{array}{ccc|cc}
-\hline
- \text{Settings} & & & \text{Validation}\\
-\hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Mean distance}^1 & \text{Median distance}^1
-\\
-\hline
-\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{1,728.09} & \text{809.41} \\
-\text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{2,417.70} & \text{1,022.05} \\
-\text{EfficientNet-B1} & \text{81,505}^3 & \text{TRUE}  & \text{2,695.30} & \text{1,127.23} \\
-\text{EfficientNet-B1} & \text{332,786}^4 & \text{FALSE} & \text{1,850.84} & \text{706.81} \\
-\text{ResNet50} & \text{332,786}^4 & \text{TRUE} & \text{2,549.33} & \text{1,019.94} \\
-\hline
-\end{array} \\
-& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }  \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not fairly distributed. }
-\end{aligned}
-$$
+### Comparing hyperparameters
 
 ### Predicting country
 
-EfficientNet-B1, trained on 332,786 images without augmentation, achieves a remarkable Top-5 accuracy of 91.71%, a Top-1 mapped accuracy of 71.66%, and a balanced accuracy of 59.61%. However, when comparing balanced accuracy, the model with the larger image size performs better. The higher resolution allows the model to learn the correct features from the images more easily. The increased information and reduced task complexity, compared to predicting coordinates, significantly boost the model's performance.
+EfficientNet-B1, trained on 332,786 images without augmentation, achieves a remarkable Top-5 accuracy of 91.71%, a Top-1 mapped accuracy of 71.66%, and a balanced accuracy of 59.61%. However, when comparing balanced accuracy, the model trained on the larger image size with less data performs better. The higher resolution allows the model to learn the correct features from the images more easily. The increased information and reduced task complexity, compared to predicting coordinates, significantly boost the model's performance. The model with more data, however, is able to predict more countries than the one with larger image sizes.
 
 $$
 \begin{aligned}
@@ -419,9 +394,9 @@ $$
 
 ### Predicting region
 
-The best model from the tuning process achieves a Top-5 accuracy of approximately 42% for the regions task, which is quite impressive given the circumstances. Additionally, the median distance error is around 382 km, roughly equivalent to the length of Switzerland. This further suggests that a larger dataset significantly impacts model performance. Considering that our predictions span the entire globe and the images we use are of very low resolution, this performance is noteworthy.
+The best model from the tuning process achieves a Top-5 accuracy of approximately 42% for the region prediction task, which is quite impressive given the circumstances. The results further suggest that a larger dataset significantly impacts model performance and even more data could be needed. Considering that our predictions span the entire globe and the images we use are of very low resolution, this performance is noteworthy.
 
-Compared to the country task, it is evident that the larger image size increases the complexity for the model. This added complexity makes it extremely challenging for the model to learn additional classifications for all regions with the larger image sizes. To address this, a larger dataset representing this complexity would be necessary to help the model learn more patterns and make more accurate predictions.
+Compared to the country task, it is evident that the larger image size increases the complexity of the task the model. This added complexity makes it extremely challenging for the model to learn additional classifications for all regions with larger image sizes, especially since it is trained with less data. To address this, a larger dataset would help the model learn more patterns and make more accurate predictions.
 
 $$
 \begin{aligned}
@@ -447,7 +422,7 @@ $$
 \end{aligned}
 $$
 
-Interestingly, the regions can also be adapted to countries, allowing for a comparison of these predictions. As shown in Table 1.4, EfficientNet-B1, which was trained on a large, non-augmented dataset of 332,786 samples, achieves a Top-1 validation accuracy of 64.72% and a balanced Top-1 mapped accuracy of 53.99%, with an overall accuracy of 41.77%. This performance is notable given the dataset's unequal distribution and the restrictions on the subset of countries.
+Interestingly, the regions can also be adapted to countries, allowing for a comparison of these predictions. As shown in Table 1.4, EfficientNet-B1, which was trained on a large, non-augmented dataset of 332,786 samples, achieves a Top-1 validation accuracy of 64.72% and a balanced Top-1 mapped accuracy of 53.99%, with an overall accuracy of 41.77%. This performance is notable given the dataset's unequal distribution and more difficult task, at least being competitive with some of the country prediction models.
 
 $$
 \begin{aligned}
@@ -473,33 +448,36 @@ $$
 \end{aligned}
 $$
 
-## Test results on best models
-
 ### Predicting coordinates
 
-The best model performed similarly on the test set as it did on the validation set, indicating a well-distributed dataset with good data quality. As a further step, it would be important and worthwhile to test the models on different external datasets. Although the model trained without augmentation outperforms the model trained with augmentation on this dataset, the augmented model might generalize better to external datasets.
+For predicting coordinates, the EfficientNet-B1 outperformed all other models, with only the ResNet50 coming close in comparison. As shown in Table 1.1, the most promising model was the EfficientNet-B1 without data augmentation. The results show that a larger dataset or higher-resolution images could lead to significantly better performance compared to using a smaller, fairly distributed dataset. Even though performance was not quite up to our expectations, the learning behavior was promising and showed that, given more data, better performance could be achieved.
 
 $$
 \begin{aligned}
-& \text{Table 2.1. Best test performances for predicting coordinates.} \\
+& \text{Table 1.1. Best validation performances for predicting coordinates.} \\
 &\begin{array}{ccc|cc}
 \hline
- \text{Settings} & & & \text{Test}\\
+ \text{Settings} & & & \text{Validation}\\
 \hline
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Mean distance}^1 & \text{Median distance}^1
 \\
 \hline
-\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{1,815.74} & \text{706.76} \\
-\text{ResNet50} & \text{332,786}^2 & \text{TRUE} & \text{2,552.98} & \text{1,015.33} \\
+\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{1,728.09} & \text{809.41} \\
+\text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{2,417.70} & \text{1,022.05} \\
+\text{EfficientNet-B1} & \text{81,505}^3 & \text{TRUE}  & \text{2,695.30} & \text{1,127.23} \\
+\text{EfficientNet-B1} & \text{332,786}^4 & \text{FALSE} & \text{1,850.84} & \text{706.81} \\
+\text{ResNet50} & \text{332,786}^4 & \text{TRUE} & \text{2,549.33} & \text{1,019.94} \\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ The dataset is not fairly distributed. }
+& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). }  \\ & ^3 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\ & ^4 \text{ The dataset is not fairly distributed. }
 \end{aligned}
 $$
 
+## Test results on best models
+
 ### Predicting country
 
-The best model also shows good performance in predicting countries. When comparing the results with the validation data, the models performed slightly worse, but they still maintained strong overall performance. Interestingly, the EfficientNet-B1 model, which was trained on a larger image size and without augmentation, performed only 6.44% worse in the balanced Top-1 metric. This suggests that with sufficient data, augmentation becomes increasingly beneficial. The model requires some structure and stability in the training data. With smaller datasets, overly aggressive augmentation can lead to poor performance if the augmentation is too strongly applied.
+The best model shows very promising performance on the test set when predicting countries. When comparing the results with the validation data, the models performed slightly worse, but they still maintained strong overall performance. Interestingly, the EfficientNet-B1 model, which was trained on a larger image size and without augmentation, performed only 6.44% better in the balanced Top-1 metric, compared to the one with augmentation and more data. This suggests that with sufficient data, augmentation becomes increasingly beneficial and that the current amount of data is not yet sufficient. With smaller datasets, overly aggressive augmentation can lead to poor performance if the augmentation is applied too strongly, whereas slight augmentation defeats its purpose.
 
 $$
 \begin{aligned}
@@ -524,7 +502,7 @@ $$
 
 ### Predicting region
 
-We see that augmentation is not always a benefit, using augmentation on region it make the prediction unusable. But the model without augmentation can predict the region not bad. Especially when we look to the median distance, it is only 385km off, which is about the distance of Switzerland, consider that we predict the hole world, i think it is very good.
+On this more difficult task, the performance was still in line with the performance on the validation set. Reaching promising performance, which might be improved given more data. But this comparison also shows that augmentation makes this task too difficult given the amount of data, with the model barely having learned at all. Additionally, the median distance error is around 382 km, roughly equivalent to the length of Switzerland, which is not too bad
 
 $$
 \begin{aligned}
@@ -541,13 +519,13 @@ $$
 \text{EfficientNet-B1} & \text{332,786}^2 & \text{TRUE} & \text{0.81\%} & \text{2.03\%} & \text{7883.03} & \text{0.13\%}\\
 \hline
 \end{array} \\
-& \text{}^1 \text{ To measure the distance for each region, the midpoint of the region was used, and the median  }
-\\ & \text{ } \text{ } \text{ distance was calculated in kilometers (km).}
+& \text{}^1 \text{ To measure the distance for each region, the midpoint of the regions are used, and the median  }
+\\ & \text{ } \text{ } \text{ distance is calculated in kilometers (km).}
 \\ & ^2 \text{ The dataset is not fairly distributed. }
 \end{aligned}
 $$
 
-To use our region model to predict the country is a good idea, since the model without augmentation can predict it over 50% which is very near to the country model. In addition this region model can predict the region which is of course a plus point, especially for larger countries.
+Using the region predictor for our country prediction task is a viable alternative if the best accuracy is not required, as it reaches a balanced accuracy of over 54%, getting close to some of our country predictor models. For combined use, this can be useful, as only one model needs to be deployed.
 
 $$
 \begin{aligned}
@@ -567,6 +545,28 @@ $$
 & \text{}^1 \text{ Test accuracy of mapped is based on fewer countries than unmapped. Even with equal,  }
 \\ & \text{ } \text{ } \text{ distribution balanced accuracy should be considered.}
 \\ & ^2 \text{ The dataset is not farily distributed. }
+\end{aligned}
+$$
+
+### Predicting coordinates
+
+The best model performed similarly on the test set as it did on the validation set, indicating no structural difference between the test and validation split. However, it still does not show exceptional performance on this task, supporting the previous thesis of requiring more data. As a further step, it would also be important and worthwhile to test the models on different external datasets. Although the model trained without augmentation outperforms the model trained with augmentation on this dataset, the augmented model might generalize better to external datasets. Additionally, the median distance error is around 382 km, roughly equivalent to the length of Switzerland.
+
+$$
+\begin{aligned}
+& \text{Table 2.1. Best test performances for predicting coordinates.} \\
+&\begin{array}{ccc|cc}
+\hline
+ \text{Settings} & & & \text{Test}\\
+\hline
+\text{Network} & \text{Datasize} & \text{Augmented} & \text{Mean distance}^1 & \text{Median distance}^1
+\\
+\hline
+\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{1,815.74} & \text{706.76} \\
+\text{ResNet50} & \text{332,786}^2 & \text{TRUE} & \text{2,552.98} & \text{1,015.33} \\
+\hline
+\end{array} \\
+& \text{}^1 \text{ Distances are in kilometers (km). } \\ & ^2 \text{ The dataset is not fairly distributed. }
 \end{aligned}
 $$
 
@@ -609,7 +609,7 @@ $$
 
 To compare the model with a human baseline, we created a script to track correct and incorrect guesses, establishing a representative baseline measurement. Linus, an experienced GeoGuessr player, served as an advanced baseline, while Yutaro and Lukas, who had not played the game, acted as amateur baselines. This mix provided a good comparison against the best model for country prediction.
 
-The main goal of this project is to determine if an image classification model can outperform humans in guessing the countries or regions of images based solely on the images themselves, without additional information. As shown in Table 2.6, the pretrained and fine-tuned model significantly outperforms all three players, exceeding their top accuracies by more than 30%.
+The main goal of this project is to determine if an image classification model can outperform humans in guessing the countries or regions of images based solely on the images themselves, without additional information. As shown in Table 2.6, the pre-trained and fine-tuned model significantly outperforms all three players, exceeding their top accuracies by more than 30%.
 
 $$
 \begin{aligned}
