@@ -106,11 +106,11 @@ Our contributions make the task of image geolocation more accessible, making it 
 
 When it comes to relatively uniform street imagery, there are not many sources. [Google Street View](https://www.google.com/intl/en/streetview/) being by far the biggest. But instead of sourcing our images directly from Google, we wanted to have a more representative distribution, as well as a more interactive demonstration.
 
-For this reason, we instead opted for the online Geography game called [Geoguessr](https://www.geoguessr.com/). This has the advantage of not manually having to source where there is coverage, at what density, and decide on a distribution. The game revolves around being “dropped” into a random location on Google Street View, and having to guess where it is located.
+For this reason, we instead opted for the online geography game called [GeoGuessr](https://www.geoguessr.com/). This has the advantage of not manually having to source where there is coverage, at what density, and decide on a distribution. The game revolves around being “dropped” into a random location on Google Street View, and having to guess where it is located.
 
 Originally the player is allowed to move around, but there are modified modes to create a higher difficulty level, which prevent the moving or even the panning of the camera, which is what we'll be opting for. This will also allow it to generalize more to other static pictures than if we were using the 360° spheres.
 
-Because different countries are of different sizes, but also have different amounts of Google Street View coverage, deciding on a representative distribution for generalization would be very difficult. Instead, we opted to play the Geoguessr multiplayer game mode called "Battle Royale: Countries". This game mode revolves around trying to guess the country of a location before the opponents do. It has a much more even distribution of countries, while still taking into account the densities of different places.
+Because different countries are of different sizes, but also have different amounts of Google Street View coverage, deciding on a representative distribution for generalization would be very difficult. Instead, we opted to play the GeoGuessr multiplayer game mode called "Battle Royale: Countries". This game mode revolves around trying to guess the country of a location before the opponents do. It has a much more even distribution of countries, while still taking into account the densities of different places.
 
 ![multiplayer_graph|400](./images/multiplayer_graph.png)
 _Figure 1: Graph of all countries of the multiplayer dataset, 2024_
@@ -168,9 +168,9 @@ We can't train the classifier using images in a high resolution, because our res
 
 ### Country Enriching
 
-In our project, we focused on collecting images from Geoguessr in singleplayer mode to ensure we obtained locations with precise coordinates. In contrast, images collected in multiplayer mode mostly only provide the country name without the exact coordinates. Additionally, we faced a ban from multiplayer mode due to webpage injections, which triggered Geoguessr's automated anti-cheating system.
+In our project, we focused on collecting images from GeoGuessr in singleplayer mode to ensure we obtained locations with precise coordinates. In contrast, images collected in multiplayer mode mostly only provide the country name without the exact coordinates. Additionally, we faced a ban from multiplayer mode due to webpage injections, which triggered GeoGuessr's automated anti-cheating system.
 
-Our objective is to explore different approaches using low-resolution images to evaluate their effectiveness in predicting coordinates, regions, and countries. For this purpose, we require all three types of information for each image, enabling us to train models with accurate predictions. Throughout the process, we encountered various challenges. Reverse geocoding allowed us to derive country information from coordinates, but the "pycountry" module did not always provide comprehensive location data. For example, Kosovo is not officially recognized by pycountry, necessitating its manual addition to our country list. This adjustment was crucial since Geoguessr included pictures from Kosovo, which was not covered by the "reverse_geocoder" and "pycountry" modules.
+Our objective is to explore different approaches using low-resolution images to evaluate their effectiveness in predicting coordinates, regions, and countries. For this purpose, we require all three types of information for each image, enabling us to train models with accurate predictions. Throughout the process, we encountered various challenges. Reverse geocoding allowed us to derive country information from coordinates, but the "pycountry" module did not always provide comprehensive location data. For example, Kosovo is not officially recognized by pycountry, necessitating its manual addition to our country list. This adjustment was crucial since GeoGuessr included pictures from Kosovo, which was not covered by the "reverse_geocoder" and "pycountry" modules.
 
 We also faced difficulties mapping the correct country to the provided data when names were derived from multiplayer mode. To address this, we used a fuzzy matching algorithm to find the best match for a sample based on the given country name, ensuring accurate country assignment.
 
@@ -208,7 +208,7 @@ Additionally, we realized that some rounds were in the exact same locations, so 
 
 The initial approach we took was to predict the exact coordinates of a location. We initially believed this would be easier since coordinate prediction is a basic method. To remove biases and scaling difficulties, we decided to project our coordinates into a cartesian (x,y,z) system for prediction. However, after a few training iterations, we realized this approach was more challenging than predicting countries or regions due to several issues.
 
-The first problem was the distribution of our dataset compared to the actual distribution of locations on Earth. From Geoguessr, we collected 81,505 mapped images, with a fairly even distribution after filtering, and a total of 332,786 images without checked distribution. Despite our efforts to ensure even distribution, the dataset was not uniformly spread across the globe. This imbalance meant that incorrect model predictions often resulted in large geographical errors, increasing the loss significantly.
+The first problem was the distribution of our dataset compared to the actual distribution of locations on Earth. From GeoGuessr, we collected 81,505 mapped images, with a fairly even distribution after filtering, and a total of 332,786 images without checked distribution. Despite our efforts to ensure even distribution, the dataset was not uniformly spread across the globe. This imbalance meant that incorrect model predictions often resulted in large geographical errors, increasing the loss significantly.
 
 We observed that while the network performed well on the training set for the first 10 epochs, the validation accuracy for distance was poor. The model struggled to predict the correct continent in the validation set, resulting in a high mean loss. We used Mean Squared Error (MSE) and the spherical distance to calculate the loss, as explained in the "Regions with Custom Loss" subsection. Although we had a mean distance metric, it was unclear why and where exactly the model was making incorrect predictions.
 
@@ -288,7 +288,7 @@ Additionally, we considered integrating all possible countries into the models f
 
 ## Data augmentation
 
-Data augmentation is crucial for computer vision tasks, especially when using CNN networks. While CNNs are very powerful in identifying objects and patterns, they struggle with variations in rotation, perspective, or view. To address this, it is essential to augment the training data to make the model more robust to different image transformations. This prepares the model to recognize identical objects from different angles or if they are stretched or squeezed. For our Geoguessr images, data augmentation is particularly important. The images are consistently taken by a Google car with the same height and camera settings. This consistency helps the model learn from a uniform perspective, improving accuracy. However, it also means the model might generalize poorly to other datasets not taken from Google Street View.
+Data augmentation is crucial for computer vision tasks, especially when using CNN networks. While CNNs are very powerful in identifying objects and patterns, they struggle with variations in rotation, perspective, or view. To address this, it is essential to augment the training data to make the model more robust to different image transformations. This prepares the model to recognize identical objects from different angles or if they are stretched or squeezed. For our GeoGuessr images, data augmentation is particularly important. The images are consistently taken by a Google car with the same height and camera settings. This consistency helps the model learn from a uniform perspective, improving accuracy. However, it also means the model might generalize poorly to other datasets not taken from Google Street View.
 
 To evaluate the impact of data augmentation, we will train our model with and without augmentation, while also testing it on images outside of our dataset. For our specific case with Google Street View images, we applied the following augmentations to the training data:
 
@@ -304,7 +304,7 @@ To evaluate the impact of data augmentation, we will train our model with and wi
 | ![](./images/tmp2l10v9sw1.png) | ![](./images/tmpa7gecexf.png) |
 | ![](./images/tmpjh2k2i3h.png)  |                               |
 
-_Figure 7-11: 5 example images of augmentation, 2024_
+_Figures 7-11: 5 example images of augmentation, 2024_
 
 ## Hyperparameter tuning
 
@@ -364,13 +364,17 @@ For monitoring and deploying we log and push all of our run data, including our 
 
 ---
 
-# Experiments and Results (and also discussions)
+# Experiments and Results
 
 ### Validation and Testing Methodologies
 
-To represent the entire process and all the findings from our hyperparameter tuning, we included the unmapped dataset in the results. This approach revealed that models trained with more data showed improved learning capabilities. This observation provided an initial indication that a larger dataset could significantly impact performance, even more so than a smaller, fairly distributed dataset. To evaluate how the best networks perform with our scraped dataset, we also compared metrics for models trained with and without data augmentation. This comparison allowed us to assess the benefit of data augmentation on external datasets, particularly given their poorer performance on our dataset.
+Originally we intended to only train on our smaller, evenly distributed dataset. However, after some time we thought it might be a waste of the rest of our data and a missed opportunity to not try training on our entire dataset, even if it is not fairly distributed and would take more resources for training. We speculated that, even though it might not be able to learn to predict all classes quite as well, the increase in data would at least allow us to match and maybe even exceed it in the cases included in the smaller dataset.
 
-Our dataset, consisting of 79,000 and 81,505 data points, is fairly distributed based on our data preparation workflow. However, larger datasets posed a problem due to their uneven distribution. For instance, the United States represented 20% of the dataset, significantly affecting the testing results. To address this issue, we filtered these datasets to create fairly distributed test sets, removing non-existent countries and regions from the already fairly distributed datasets. This approach allowed us to compare the models' test performances more accurately. To further ensure fair testing performance, we introduced the «balanced_accuracy_score» method from the «scikit-learn» library. Although our filtering process aimed to create fairly distributed data, it did not maintain an exact balance, as we prioritized retaining as much data as possible without excessive deletion. The «balanced_accuracy_score» provides a balanced accuracy measure, enabling us to compare the best performances empirically and smoothly.
+This revealed that models trained with more data showed improved learning capabilities and provided an initial indication that a larger dataset could significantly impact performance, even more so than a smaller, fairly distributed dataset. Additionally, we also compared metrics for models trained with and without data augmentation. This comparison allowed us to assess the tradeoff of data augmentation regarding performance on our task, as opposed to on external datasets, particularly given their poorer performance on our dataset.
+
+Our dataset, consisting of 81,505 (and sometimes reduced to 79,000) data points, is fairly distributed based on our data preparation workflow. However, larger datasets posed a problem due to their uneven distribution. For instance, the United States represented over 20% of the entire dataset, significantly affecting our metrics and preventing us from comparing different models. To address this issue, we calculated a [balanced accuracy](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.balanced_accuracy_score.html) , for larger datasets also on the same subset of countries our smaller datasets consist of. This approach allowed us to compare the models' test performances more accurately. To calculate this we used the «balanced_accuracy_score» method of the «scikit-learn» library.
+
+Although our filtering process aimed to create fairly distributed data, it did not maintain an exact balance, as we aimed to inherit the distribution from GeoGuessr multiplayer and prioritized retaining as much data as possible without excessive deletion. The «balanced_accuracy_score» provides a balanced accuracy measure even for models trained on the smaller dataset, enabling us to compare the performance empirically and smoothly.
 
 ## Validation results
 
@@ -613,7 +617,7 @@ $$
 
 ### Comparison to human performances
 
-To compare the model with a human baseline, we created a script to track correct and incorrect guesses, establishing a representative baseline measurement. Linus, an experienced Geoguessr player, served as an advanced baseline, while Yutaro and Lukas, who had not played the game, acted as amateur baselines. This mix provided a good comparison against the best model for country prediction.
+To compare the model with a human baseline, we created a script to track correct and incorrect guesses, establishing a representative baseline measurement. Linus, an experienced GeoGuessr player, served as an advanced baseline, while Yutaro and Lukas, who had not played the game, acted as amateur baselines. This mix provided a good comparison against the best model for country prediction.
 
 The main goal of this project is to determine if an image classification model can outperform humans in guessing the countries or regions of images based solely on the images themselves, without additional information. As shown in Table 2.6, the pretrained and fine-tuned model significantly outperforms all three players, exceeding their top accuracies by more than 30%.
 
@@ -643,7 +647,7 @@ $$
 \text{Lukas} & \text{50}^1 \text{ }^2 & \text{FALSE} & \text{8.00\%} & \text{22.00\%} & \text{30.00\%}\\
 \hline
 \end{array} \\
-& \text{}^1 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^2 \text{ The dataset is evenly distributed. }\\
+& \text{}^1 \text{ Trained on a larger image size of 320x180 instead of 130x80 (width x height). } \\ & ^2 \text{ The dataset is fairly distributed and restricted to a subset of countries. }\\
 \end{aligned}
 $$
 
