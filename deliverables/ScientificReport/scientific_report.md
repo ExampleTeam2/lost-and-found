@@ -502,7 +502,7 @@ $$
 
 ### Predicting region
 
-On this more difficult task, the performance was still in line with the performance on the validation set. Reaching promising performance, which might be improved given more data. But this comparison also shows that augmentation makes this task too difficult given the amount of data, with the model barely having learned at all. Additionally, the median distance error is around 382 km, roughly equivalent to the length of Switzerland, which is not too bad
+On this more difficult task, the performance was still in line with the performance on the validation set. Reaching promising performance, which might be improved given more data. But this comparison also shows that augmentation makes this task too difficult given the amount of data, with the model barely having learned at all. Additionally, the median distance error is around 382 km, roughly equivalent to the length of Switzerland, which is decent performance.
 
 $$
 \begin{aligned}
@@ -550,7 +550,7 @@ $$
 
 ### Predicting coordinates
 
-The best model performed similarly on the test set as it did on the validation set, indicating no structural difference between the test and validation split. However, it still does not show exceptional performance on this task, supporting the previous thesis of requiring more data. As a further step, it would also be important and worthwhile to test the models on different external datasets. Although the model trained without augmentation outperforms the model trained with augmentation on this dataset, the augmented model might generalize better to external datasets. Additionally, the median distance error is around 382 km, roughly equivalent to the length of Switzerland.
+The best model performed similarly on the test set as it did on the validation set, indicating no structural difference between the test and validation split. However, it still does not show exceptional performance on this task, supporting the previous thesis of requiring more data. As a further step, it would also be important and worthwhile to test the models on different external datasets. Although the model trained without augmentation outperforms the model trained with augmentation on this dataset, the augmented model might generalize better to external datasets.
 
 $$
 \begin{aligned}
