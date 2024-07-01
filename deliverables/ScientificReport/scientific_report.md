@@ -524,8 +524,7 @@ $$
 
 ### Predicting region
 
-Follows...DO different tables to see the differences for training validation? Show also the models... the different we tried...
-
+We see that augmentation is not always a benefit, using augmentation on region it make the prediction unusable. But the model without augmentation can predict the region not bad. Especially when we look to the median distance, it is only 385km off, which is about the distance of Switzerland, consider that we predict the hole world, i think it is very good. 
 $$
 \begin{aligned}
 & \text{Table 2.3. Best test performances for predicting regions.} \\
@@ -546,6 +545,8 @@ $$
 \\ & ^2 \text{ The dataset is not fairly distributed. }
 \end{aligned}
 $$
+
+To use our region model to predict the country is a good idea, since the model without augmentation can predict it over 50% which is very near to the country model. In addition this region model can predict the region which is of course a plus point, especially for larger countries.
 
 $$
 \begin{aligned}
@@ -657,15 +658,7 @@ Our Hypothesis: The main goal of this student project is to determine if an Imag
 
 ## General findings
 
-More data = better
-
-But: More size = even more better
-
-Could try both in future?
-
-Write also that we found out that a bigger data size matters more than bigger images **FOR REGIONS** for all of the prediction models, which is a really nice catch and learning.
-
-I follow, I follow you
+Our research has revealed that significantly increasing the amount of data enhances the quality of our models more effectively than simply enlarging image size. This trend holds true across all our prediction models except for country prediction, where image size remains crucial for optimal performance. This insight is key, suggesting that for most models, prioritizing data quantity leads to better results. Moving forward, we should focus on acquiring more data to develop superior and more generalized models.
 
 Limititions and future reasearch
 
