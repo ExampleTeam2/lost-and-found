@@ -66,7 +66,7 @@ M2GPS, developed by Hays and Efros, is another significant baseline in scalable 
 
 Banerjee’s work emphasizes the classification task of predicting image location solely based on pixel data. Their research highlights the use of CNNs and transfer learning to achieve high-accuracy models capable of superhuman performance. CNNs are particularly effective due to their ability to capture low-level and complex spatial patterns [@banerjee2023image].
 
-Dayton et al. explored a similar task by using a ResNet-50 CNN pre-trained on ImageNet for classifying street view images from the game GeoGuessr. Their model utilized transfer learning to refine the pre-trained network on a dataset specifically curated for the task, resizing images to 224x224 pixels for input. By fine-tuning the last layers of ResNet-50, they achieved a test accuracy of over 70% for 20 different countries, highlighting the efficacy of leveraging pre-trained models for geolocation tasks [@dayton2023cnn].
+Dayton et al. explored a similar task by using a ResNet-50 CNN pre-trained on ImageNet for classifying street view images from the game GeoGuessr. Their model utilized transfer learning to refine the pre-trained network on a dataset specifically curated for the task, resizing images to 224 × 224 pixels for input. By fine-tuning the last layers of ResNet-50, they achieved a test accuracy of over 70% for 20 different countries, highlighting the efficacy of leveraging pre-trained models for geolocation tasks [@dayton2023cnn].
 
 Another notable model is PIGEON, which combines semantic geocell creation with multi-task contrastive pretraining and a novel loss function. PIGEON is trained on, among others, GeoGuessr data and demonstrates the capability to place over 40% of its guesses within 25 kilometers of the target location globally, which is remarkable. This model highlights the importance of using diverse datasets and innovative training techniques to enhance geolocation accuracy [@haas2024pigeon].
 
@@ -358,7 +358,7 @@ Our dataset, consisting of 81,505 (and sometimes reduced to 79,000) data points,
 
 Although our filtering process aimed to create fairly distributed data, it did not maintain an exact balance, as we aimed to inherit the distribution from GeoGuessr multiplayer and prioritized retaining as much data as possible without excessive deletion. The «balanced_accuracy_score» provides a balanced accuracy measure even for models trained on the smaller dataset, enabling us to compare the performance empirically and smoothly.
 
-Larger image size go brrr
+We also tried training with larger image sizes, namely our original downscaled size of 320 × 180, instead of 130 × 80. This would be impossible with our full dataset for all of the GPU's we had access to, but by using our smaller dataset and reducing it further to 79,000 data points, we were able to train to see if we were severely limited by by our image size or if the amount of data was more of a concern.
 
 As outlined above in [Training and Fine-Tuning](#Training%20and%20Fine-Tuning), we also tried to train different types of predictions on the most promising different types of models, before settling for EfficientNet-B1, which consistently performed the best or on par with other models.
 
@@ -524,7 +524,8 @@ $$
 
 ### Predicting region
 
-We see that augmentation is not always a benefit, using augmentation on region it make the prediction unusable. But the model without augmentation can predict the region not bad. Especially when we look to the median distance, it is only 385km off, which is about the distance of Switzerland, consider that we predict the hole world, i think it is very good. 
+We see that augmentation is not always a benefit, using augmentation on region it make the prediction unusable. But the model without augmentation can predict the region not bad. Especially when we look to the median distance, it is only 385km off, which is about the distance of Switzerland, consider that we predict the hole world, i think it is very good.
+
 $$
 \begin{aligned}
 & \text{Table 2.3. Best test performances for predicting regions.} \\
@@ -571,9 +572,11 @@ $$
 
 ### Mapped versus unmapped
 
-As shown in Table 2.5, the model trained on mapped data achieved at least **BLALALA**% correct guesses for all countries, with no country falling below this threshold, as seen on the left side of the table. In contrast, the right side reveals that the model trained on unmapped data had to guess more countries, increasing complexity. Some countries had no correct guesses, indicating the model struggled to learn from certain regions.
+As shown in Table 2.5, the model trained on mapped data achieved at least 12.21% correct guesses for every country, with no country falling below this threshold, as seen on the left side of the table. In contrast, the right side reveals that the model trained on unmapped data had to guess more countries, increasing complexity. Some countries had no correct guesses, indicating the model struggled to learn underrepresented countries.
 
-Unmapped stronger giving same image size, better also for weakest in mapped
+But it also showed that, given the same image size, using more data not only performed better on average but also for the best and (previously) weakest countries. Even though it did not manage to learn all of the additional countries, it predicted the countries from the mapped dataset more accurately and even managed to predict some more countries.
+
+The fact that all of our models were eventually limited by overfitting suggests that more data is not only helpful because it necessitates more training, but that, even given more training or a bigger model, the smaller balanced dataset would not be able to match the performance of the bigger one.
 
 $$
 \begin{aligned}
@@ -582,7 +585,7 @@ $$
 \hline
  \text{Mapped}^1 & & & \text{Unmapped}^2\\
 \hline
-\text{Order} & \text{Country} & \text{Accuracy} & \text{Order} & \text{Country} & \text{Accuracy}
+\text{Order} & \text{Country} & \text{Validation accuracy} & \text{Order} & \text{Country} & \text{Validation accuracy}
 \\
 \hline
 \text{1} & \text{Kenya} & \text{83.56\%} & \text{1} & \text{India} & \text{94.95\%} \\
@@ -593,7 +596,7 @@ $$
 \text{-4} & \text{Czechia} & \text{21.46\%} & \text{-36} & \text{Czechia} & \text{28.71\%} \\
 \hline
 \text{-3} & \text{Slovenia} & \text{16.98\%} & \text{-3} & \text{Maldives} & \text{0.00\%} \\
-\text{-2} & \text{Lao People's Democratic Republic} & \text{13.95\%} & \text{-2} & \text{Lebanon} & \text{0.00\%} \\
+\text{-2} & \text{Laos} & \text{13.95\%} & \text{-2} & \text{Lebanon} & \text{0.00\%} \\
 \text{-1} & \text{Slovakia} & \text{12.21\%} & \text{-1} & \text{China} & \text{0.00\%} \\
 \hline
 \end{array} \\
@@ -660,12 +663,14 @@ Our Hypothesis: The main goal of this student project is to determine if an Imag
 
 Our research has revealed that significantly increasing the amount of data enhances the quality of our models more effectively than simply enlarging image size. This trend holds true across all our prediction models except for country prediction, where image size remains crucial for optimal performance. This insight is key, suggesting that for most models, prioritizing data quantity leads to better results. Moving forward, we should focus on acquiring more data to develop superior and more generalized models.
 
-Limititions and future reasearch
+## Limitations and future research
 
----
+By far our biggest limitations were technical, most of them related to memory, storage, and transfer times. Although we were limited by GPU memory, even given the funds for more our time would have been too limited, especially due to long transfer and training times.
 
-Here we should discuss the implications of our results, our limitations, and possible further research possibilities. We should be very honest especially about limitations.
+The same goes for our preprocessing, where we chose a not only quick-to-implement but a quick-to-execute approach, which left some potential performance on the table.
 
----
+Given more time and resources, combining the best of our approaches, so a larger image size and our bigger dataset, as well as optimizing our preprocessing for accuracy would surely yield improved results.
+
+Additionally, we would have liked to optimize our model for more generalized performance by not only improving our data augmentation but also potentially introducing different training datasets as well as introducing a workflow for easier testing on third-party datasets.
 
 # References
