@@ -643,7 +643,13 @@ $$
 
 ## General findings
 
-Our research has revealed that significantly increasing the amount of data enhances the quality of our models more effectively than simply enlarging image size. This trend holds true across all our prediction models except for country prediction, where image size remains crucial for optimal performance. This insight is key, suggesting that for most models, prioritizing data quantity leads to better results. Moving forward, we should focus on acquiring more data to develop superior and more generalized models.
+Our research has revealed both increasing the amount of data as well as increasing the size of the images has a noticeable impact on performance, even when accounted for imbalance.
+
+Generally, we saw that the task of country prediction was significantly easier than predicting coordinates or regions. Whereas regions showed promising performance, coordinates only reached a very mediocre level of performance, not reaching an acceptable level of accuracy.
+
+Our country prediction model performs well on our core task but is not able to generalize as well as we had hoped for. However, it shows that for an easier task like this, increasing the image size yielded better performance than increasing the amount of data. On more difficult tasks this did not hold true, as even a bigger amount of data was not yet enough.
+
+This shows that, even given the same data, minor changes in the task differ in behavior and possible improvements.
 
 ## Limitations and future research
 
