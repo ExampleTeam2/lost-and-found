@@ -2,13 +2,13 @@
 
 ## General
 
-This is a project for DSPRO 2.
+This is a project for HSLU (DSPRO 2).
 
-It uses Markdown, python and Node.js.
+It consists of a codebase, a report [scientific report](./deliverables/ScientificReport/scientific_report.pdf) ([source](./deliverables/ScientificReport/scientific_report.md)), and a [published dataset](https://www.kaggle.com/datasets/killusions/street-location-images/).
 
-It uses Obsidian (Markdown) for documentation and planning, it can also be viewed with any other markdown viewer (including GitLab).
+The project uses Markdown, python and Node.js.
 
-[Link to documentation](./Overview.md)
+It uses Obsidian (Markdown) for [documentation](./Overview.md) and planning, it can also be viewed with any other markdown viewer (including GitHub/GitLab).
 
 For python dependency management it uses [poetry](https://python-poetry.org/).
 
@@ -33,7 +33,7 @@ Within this module we are supervised by the following course coaches:
 - [Dr. Umberto Michelucci](https://www.hslu.ch/en/lucerne-university-of-applied-sciences-and-arts/about-us/people-finder/profile/?pid=5426)
 - [Dr. Ludovic Amruthalingam](https://www.hslu.ch/en/lucerne-university-of-applied-sciences-and-arts/about-us/people-finder/profile/?pid=5381)
 - [Dr. Daniela Wolff](https://www.linkedin.com/in/daniela-wolff?originalSubdomain=ch)
-- [Aygul Zagidullina](https://elearning.hslu.ch/ilias/ilias.php?baseClass=ilrepositorygui&cmdNode=yo:mw:9l:17l:xt&cmdClass=ilPublicUserProfileGUI&cmd=getHTML&ref_id=6109722&back_cmd=jump2UsersGallery&user=6566820)
+- [Aygul Zagidullina (internal link)](https://elearning.hslu.ch/ilias/ilias.php?baseClass=ilrepositorygui&cmdNode=yo:mw:9l:17l:xt&cmdClass=ilPublicUserProfileGUI&cmd=getHTML&ref_id=6109722&back_cmd=jump2UsersGallery&user=6566820)
 
 ## Authors and acknowledgment
 
