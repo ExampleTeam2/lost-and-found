@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Only use when data is generated using scraping (and using our naming convention)
+
 # Directory containing the files
 directory="./dspro2/1_data_collection/data/"
 

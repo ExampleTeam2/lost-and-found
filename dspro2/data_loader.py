@@ -828,7 +828,7 @@ def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_e
             new_var = os.environ.get(alt_env)
         if do_not_enforce_but_allow_env is None and new_var is None:
             raise ValueError("Environment variable " + env_name + " not set")
-        if set_none and (new_var.lower() == "None" or len(new_var) == 0):
+        if set_none and new_var is not None and (new_var.lower() == "None" or len(new_var) == 0):
             new_var = None
         elif new_var is not None:
             return str(new_var)
@@ -875,7 +875,7 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
         download_link = DEFAULT_DOWNLOAD_LINK
     download_link = resolve_env_variable(download_link, "DOWNLOAD_LINK", allow_download_link_env, None, True)
     if download_link == DEFAULT_DOWNLOAD_LINK:
-        print("Warning: Downloading from our server will soon no longer be supported, please provide a different download link (DOWNLOAD_LINK in .env) or use local data (DOWNLOAD_LINK=None in .env), the dataset is accessible (though with different file names) at https://www.kaggle.com/datasets/killusions/street-location-images/ and the scaping script can be used to collect your own data.")
+        print("Warning: Downloading from our server will soon no longer be supported, please provide a different download link (DOWNLOAD_LINK in .env) or use local data (DOWNLOAD_LINK=None in .env), the dataset is accessible at https://www.kaggle.com/datasets/killusions/street-location-images/ (put unzipped files into 1_data_collection/.data and run yarn data:import on a unix based system, then the import.ipynb notebook) and the scaping script can be used to collect your own data.")
     skip_remote = resolve_env_variable(str(False), "SKIP_REMOTE", True)
     skip_remote = skip_remote is not None and skip_remote and skip_remote.lower() != "false" and skip_remote.lower() != "0"
     skip_checks = resolve_env_variable(str(False), "SKIP_CHECKS", True)
