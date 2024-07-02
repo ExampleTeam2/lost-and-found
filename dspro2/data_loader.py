@@ -1000,6 +1000,7 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
     if has_loading_file:
         files_to_load = files_from_loading_file
     elif not allow_new_file_creation:
+        print("No loading file at location, disable allow_new_file_creation to create a new one, afterwards commit this file for reproducibility")
         raise ValueError("No loading file at location, disable allow_new_file_creation to create a new one, afterwards commit this file for reproducibility")
 
     if not len(files_to_load):
@@ -1029,6 +1030,7 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
         if file not in basenames_set:
             previous_missing_files += 1
             if previous_missing_files > allowed_missing_files:
+                print("Missing file " + file + ", to use just your own local files make sure allow_new_file_creation is enabled and delete " + loading_file + ", afterwards commit this file for reproducibility")
                 raise ValueError("Missing file " + file + ", to use just your own local files make sure allow_new_file_creation is enabled and delete " + loading_file + ", afterwards commit this file for reproducibility")
             else:
                 continue
