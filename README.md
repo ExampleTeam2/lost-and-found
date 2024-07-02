@@ -6,11 +6,11 @@ This is a project for HSLU (DSPRO 2).
 
 It consists of a codebase, a report [scientific report](./deliverables/ScientificReport/scientific_report.pdf) ([source](./deliverables/ScientificReport/scientific_report.md)), and a [published dataset](https://www.kaggle.com/datasets/killusions/street-location-images/).
 
-The project uses Markdown, python and Node.js.
+The project uses Markdown (and LaTeX), Python and Node.js with Typescript.
 
 It uses Obsidian (Markdown) for [documentation](./Overview.md) and planning, it can also be viewed with any other markdown viewer (including GitHub/GitLab).
 
-For python dependency management it uses [poetry](https://python-poetry.org/).
+For Python dependency management it uses [poetry](https://python-poetry.org/).
 
 To set it up do `poetry install`, to add dependencies use `poetry add`.
 
@@ -24,7 +24,7 @@ To set it up simply type `yarn`.
 
 To see available commands, check out the `scripts` section of the `package.json` and run them using `yarn <command>`.
 
-All project relevant commands are handled via yarn, including formatting our python code and generating our report from our Markdown source.
+All project relevant commands are handled via yarn, including formatting our Python, Typescript, and Markdown files and generating our report from our Markdown source.
 
 ## Course Coaches
 

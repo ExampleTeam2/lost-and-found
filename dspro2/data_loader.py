@@ -819,7 +819,7 @@ def _get_files_list(file_location, json_file_location=None, image_file_location=
     return basenames, basenames_to_locations_map, non_downloaded_files, pre_downloaded_new_files
 
 
-def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_env=None):
+def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_env=None, set_none=False):
     if var == "env" or do_not_enforce_but_allow_env == True and var is not None:
         if do_not_enforce_but_allow_env == False:
             raise ValueError("Prefer providing a default file location and setting <name>_allow_env=True")
@@ -828,6 +828,8 @@ def resolve_env_variable(var, env_name, do_not_enforce_but_allow_env=None, alt_e
             new_var = os.environ.get(alt_env)
         if do_not_enforce_but_allow_env is None and new_var is None:
             raise ValueError("Environment variable " + env_name + " not set")
+        if set_none and (new_var.lower() == "None" or len(new_var) == 0):
+            new_var = None
         elif new_var is not None:
             return str(new_var)
     return var
@@ -871,9 +873,9 @@ def _get_file_locations(file_location, json_file_location=None, image_file_locat
 def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.path.dirname(__file__), "1_data_collection/.data"), json_file_location=None, image_file_location=None, filter_text="singleplayer", type="", limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16, allow_num_download_connections_env=True, countries_map_cached_basenames_to_countries={}, return_basenames_too=False, return_load_and_additional_save_callback=False):
     if download_link == "default":
         download_link = DEFAULT_DOWNLOAD_LINK
-    download_link = resolve_env_variable(download_link, "DOWNLOAD_LINK", allow_download_link_env)
+    download_link = resolve_env_variable(download_link, "DOWNLOAD_LINK", allow_download_link_env, None, True)
     if download_link == DEFAULT_DOWNLOAD_LINK:
-        print("Warning: Downloading from our server will soon no longer be supported, please provide a different download link (DOWNLOAD_LINK in .env) or use local data (SKIP_REMOTE in .env), the dataset is accessible (though with different file names) at https://www.kaggle.com/datasets/killusions/street-location-images/ and the scaping script can be used to collect your own data.")
+        print("Warning: Downloading from our server will soon no longer be supported, please provide a different download link (DOWNLOAD_LINK in .env) or use local data (DOWNLOAD_LINK=None in .env), the dataset is accessible (though with different file names) at https://www.kaggle.com/datasets/killusions/street-location-images/ and the scaping script can be used to collect your own data.")
     skip_remote = resolve_env_variable(str(False), "SKIP_REMOTE", True)
     skip_remote = skip_remote is not None and skip_remote and skip_remote.lower() != "false" and skip_remote.lower() != "0"
     skip_checks = resolve_env_variable(str(False), "SKIP_CHECKS", True)
@@ -998,7 +1000,7 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
     if has_loading_file:
         files_to_load = files_from_loading_file
     elif not allow_new_file_creation:
-        raise ValueError("No loading file at location")
+        raise ValueError("No loading file at location, disable allow_new_file_creation to create a new one, afterwards commit this file for reproducibility")
 
     if not len(files_to_load):
         raise ValueError("No files to load, did you forget to specify the type? Otherwise unpaired files will be ignored")
@@ -1027,7 +1029,7 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
         if file not in basenames_set:
             previous_missing_files += 1
             if previous_missing_files > allowed_missing_files:
-                raise ValueError("Missing file " + file)
+                raise ValueError("Missing file " + file + ", to use just your own local files make sure allow_new_file_creation is enabled and delete " + loading_file + ", afterwards commit this file for reproducibility")
             else:
                 continue
         else:
