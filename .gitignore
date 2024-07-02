@@ -29,13 +29,14 @@ dspro2/1_data_collection/data/cookies.json
 .obsidian/workspace.json
 .obsidian/graph.json
 .obsidian/plugins/various-complements/histories.json
-/test-results/
+dspro2/.obsidian
 
 # Playwright
 /playwright-report/
 /blob-report/
 /playwright/.cache/
 /scraping/reports/
+/test-results/
 
 # Wandb
 /dspro2/4_modeling/wandb/
@@ -45,6 +46,7 @@ dspro2/1_data_collection/data/cookies.json
 /scraping/tmp/
 /dspro2/1_data_collection/tmp/
 /deliverables/ScientificReport/scientific_report_temp.md
+/deliverables/240310_Proposal & Commitment/Commitment_document_group_ExampleTeam.pdf
 
 # Data
 /scraping/data/
