@@ -106,7 +106,7 @@ const removeCookieBanner = async (page: Page, timeout = 15000, allowSkipping = t
   // Check if element with id "onetrust-consent-sdk" exists
   const cookieBanner = getCookieBanner(page);
   if (allowSkipping) {
-    page.waitForTimeout(3000);
+    page.waitForTimeout(timeout);
     if ((await cookieBanner.count()) === 0) {
       return;
     }
@@ -512,7 +512,7 @@ const roundMultiplayer = async (page: Page, gameId: string, roundNumber: number,
   const coordinates = await getCoordinates(page);
   const resultText = await result.textContent();
   // The sentence is like "[.]?[...] right answer was [in | indeed | actually | ...] [country].[...][.]?", parse the country.
-  const country = resultText?.split('right answer was')[1].split('.')[0].trim();
+  const country = resultText?.split('right answer was')[1].split('.')[0].replace('indeed', '').replace('actually', '').trim();
   log('It was ' + country, identifier);
   const resultJson = {
     country,
@@ -558,9 +558,10 @@ const gameStart = async (page: Page, mode: typeof MODE, waitText: string, waitTi
     }
     await page.getByText(waitText).nth(0).waitFor({ state: 'hidden', timeout: waitTime });
   }
-  // Get the game ID from the URL (https://www.geoguessr.com/de/battle-royale/<ID>)
+  // Get the game ID from the URL (https://www.geoguessr.com/battle-royale/<ID>)
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
   if (
+    MODE !== 'demo' &&
     !resume &&
     fs
       .readFileSync(TEMP_PATH + mode + '-games', 'utf8')
@@ -575,7 +576,9 @@ const gameStart = async (page: Page, mode: typeof MODE, waitText: string, waitTi
     }
     return;
   }
-  fs.appendFileSync(TEMP_PATH + mode + '-games', gameId + '\n');
+  if (MODE !== 'demo') {
+    fs.appendFileSync(TEMP_PATH + mode + '-games', gameId + '\n');
+  }
   log('Starting game - ' + gameId, identifier);
   return gameId;
 };
@@ -595,17 +598,34 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
   let rounds = 0;
   await roundMultiplayer(page, gameId, rounds, identifier);
   await page.waitForTimeout(1000);
-  if (await clickButtonIfFound(page, 'Spectate')) {
+  if (MODE === 'demo' || (await clickButtonIfFound(page, 'Spectate'))) {
+    if (MODE === 'demo') {
+      if ((await page.getByText('Correct').count()) === 0) {
+        await clickButtonIfFound(page, 'Spectate');
+      }
+    }
     rounds++;
-    await page.getByText('Next round starts in').waitFor({ state: 'visible' });
-    await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
+    if (MODE !== 'demo') {
+      await page.getByText('Next round starts in').waitFor({ state: 'visible' });
+      await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
+    } else {
+      await page.getByText('Correct').or(page.getByText('Next round starts in')).waitFor({ state: 'visible' });
+      await page.getByText('Correct').or(page.getByText('Next round starts in')).waitFor({ state: 'hidden', timeout: 60000 });
+    }
     await roundMultiplayer(page, gameId, rounds, identifier);
     rounds++;
     // Remove footer to improve vision and avoid second "Play again" button
-    await page.locator('footer').evaluate((el) => el.remove());
-    while (rounds < MAX_ROUNDS && (await page.getByText('Next round starts').count()) > 0) {
-      await page.getByText('Next round starts in').waitFor({ state: 'visible' });
-      await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
+    if (MODE !== 'demo') {
+      await page.locator('footer').evaluate((el) => el.remove());
+    }
+    while ((rounds < MAX_ROUNDS && MODE !== 'demo' && (await page.getByText('Next round starts').count()) > 0) || (MODE === 'demo' && (await page.getByText('Correct').or(page.getByText('Next round starts')).count()) > 0)) {
+      if (MODE !== 'demo') {
+        await page.getByText('Next round starts in').waitFor({ state: 'visible' });
+        await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
+      } else {
+        await page.getByText('Correct').or(page.getByText('Next round starts in')).waitFor({ state: 'visible' });
+        await page.getByText('Correct').or(page.getByText('Next round starts in')).waitFor({ state: 'hidden', timeout: 60000 });
+      }
       await roundMultiplayer(page, gameId, rounds, identifier);
       rounds++;
       await page.waitForTimeout(1000);
@@ -650,22 +670,22 @@ const playStart = async (page: Page, i: number, identifier?: string) => {
     await removeCookieBanner(page);
     await logIn(page, identifier);
   } else {
-    await removeCookieBanner(page, 3000, true);
+    await removeCookieBanner(page, 10000, true);
     log('Already logged in', identifier);
   }
   page.setDefaultTimeout(5000);
 };
 const playGame = async (page: Page, mode: typeof MODE, i: number, identifier?: string) => {
   let games = 1;
-  await (mode ? gameSingleplayer(page, i, identifier) : gameMultiplayer(page, i, identifier));
+  await (mode === 'singleplayer' ? gameSingleplayer(page, i, identifier) : gameMultiplayer(page, i, identifier));
   await page.waitForTimeout(1000);
-  while (games < MAX_GAMES && (await clickButtonIfFound(page, 'Play again'))) {
-    await (mode ? gameSingleplayer(page, i, identifier) : gameMultiplayer(page, i, identifier));
+  while (games < (MODE === 'demo' ? 1 : MAX_GAMES) && (await clickButtonIfFound(page, 'Play again'))) {
+    await (mode === 'singleplayer' ? gameSingleplayer(page, i, identifier) : gameMultiplayer(page, i, identifier));
     games++;
     await page.waitForTimeout(3000);
   }
   // Retry if ended early
-  if (games !== MAX_GAMES) {
+  if (games !== MAX_GAMES && MODE !== 'demo') {
     log('Could not start next game', identifier);
     fs.appendFileSync(TEMP_PATH + 'other-restarts', i + '\n');
     await page.waitForTimeout(STAGGER_INSTANCES);
@@ -698,7 +718,17 @@ const playSingleplayer = async (page: Page, i: number, identifier?: string) => {
 };
 
 // Shadow given game, can not be used with multiple instances.
-const shadowGame = async (page: Page, gameId: string) => {};
+const shadowGame = async (page: Page, gameId: string) => {
+  log('Loading game - ' + gameId);
+  await page.goto('https://www.geoguessr.com/battle-royale/' + gameId, { timeout: 60000 });
+  await page.waitForTimeout(1000);
+  if ((await page.getByText('not found').or(page.getByText('nicht gefunden')).count()) > 0) {
+    log('Game not found: ' + gameId);
+    // Go to the next game if the current one is not found
+    return;
+  }
+  await playGame(page, 'multiplayer', 0);
+};
 
 // Shadow given games, can not be used with multiple instances.
 const shadowGames = async (page: Page) => {
@@ -731,11 +761,11 @@ const shadowGames = async (page: Page) => {
         }
         return;
       }
-      if (!gameUrl.startsWith('https://www.geoguessr.com/de/battle-royale/')) {
+      if (!gameUrl.startsWith('https://www.geoguessr.com/battle-royale/')) {
         console.error('Game URL is not of correct mode:', gameUrl);
         return;
       }
-      const gameId = gameUrl.replace('https://www.geoguessr.com/de/battle-royale/', '').replace(/\?.*/, '');
+      const gameId = gameUrl.replace('https://www.geoguessr.com/battle-royale/', '').replace(/\?.*/, '');
       if (!gameId || gameId.includes('/') || gameId.includes('?') || gameId.includes('#')) {
         console.error('Invalid game URL:', gameUrl);
         return;
@@ -903,6 +933,8 @@ describe('Geoguessr', () => {
       });
     }
   } else {
+    // Shadow games for demo.
+    // TODO: For now only works if joined at beginning of game.
     if (NUMBER_OF_INSTANCES > 1) {
       throw new Error('Demo mode can only be run with one instance');
     }
