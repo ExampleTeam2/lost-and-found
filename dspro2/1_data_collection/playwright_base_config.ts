@@ -17,6 +17,8 @@ type Mode = 'multiplayer' | 'singleplayer' | 'results' | 'demo';
 // Demo only runs a single instance
 export const MODE: Mode = !process.env.PLAYWRIGHT_MODE ? 'singleplayer' : (process.env.PLAYWRIGHT_MODE as Mode);
 export const GAMES = (MODE as any) === 'results' ? fs.readFileSync(DATA_PATH + 'games', 'utf-8').split('\n') : [];
-// To allow for a small sidebar, wider than multiplayer, for same width use 992 + 1
+// 1 to allow for a small sidebar, wider than multiplayer, for same width use 992 + 1
 export const SINGLEPLAYER_WIDTH = 1280 + 1;
+// To allow for 16:9 even with the multiplayer sidebar, wider than normal multiplayer, for same width use 1280
+export const DEMO_WIDTH = 1568;
 export const getTimestampString = () => new Date().toISOString().replace(/[:.]/g, '-');

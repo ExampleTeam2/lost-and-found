@@ -3,7 +3,7 @@ import fs from 'fs';
 import 'dotenv/config';
 import { Page } from 'playwright-core';
 import { describe } from 'node:test';
-import { DATA_PATH, DEMO_DATA_PATH, GAMES, LOCATION_FILE, LOCATION_FILE_EXTENSION, MAX_GAMES, MAX_MINUTES, MAX_ROUNDS, MODE, NUMBER_OF_INSTANCES, RESULT_FILE, RESULT_FILE_EXTENSION, SINGLEPLAYER_WIDTH, STAGGER_INSTANCES, TEMP_PATH, getTimestampString } from './playwright_base_config';
+import { DATA_PATH, DEMO_DATA_PATH, DEMO_WIDTH, GAMES, LOCATION_FILE, LOCATION_FILE_EXTENSION, MAX_GAMES, MAX_MINUTES, MAX_ROUNDS, MODE, NUMBER_OF_INSTANCES, RESULT_FILE, RESULT_FILE_EXTENSION, SINGLEPLAYER_WIDTH, STAGGER_INSTANCES, TEMP_PATH, getTimestampString } from './playwright_base_config';
 import checkDiskSpace from 'check-disk-space';
 import path from 'path';
 import { watch } from 'chokidar';
@@ -942,6 +942,7 @@ describe('Geoguessr', () => {
     test('shadow countries battle royale', async ({ page }) => {
       stopIfCrashedBefore();
       try {
+        page.setViewportSize({ width: DEMO_WIDTH, height: page.viewportSize()?.height ?? 0 });
         test.setTimeout(60000 * MAX_MINUTES);
         await shadowGames(page);
       } catch (e: unknown) {
