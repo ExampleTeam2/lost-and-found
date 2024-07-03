@@ -111,8 +111,8 @@ const removeCookieBanner = async (page: Page, timeout = 15000) => {
 const logIn = async (page: Page, identifier?: string) => {
   log('Log in needed', identifier);
   // Fail the test if the environment variables are not set
-  expect(process.env.GEOGUESSR_EMAIL).toBeTruthy();
-  expect(process.env.GEOGUESSR_PASSWORD).toBeTruthy();
+  expect(process.env.GEOGUESSR_EMAIL, 'Please set a `GEOGUESSR_EMAIL` and `GEOGUESSR_PASSWORD` in your .env').toBeTruthy();
+  expect(process.env.GEOGUESSR_PASSWORD, 'Please set a `GEOGUESSR_PASSWORD` in your .env').toBeTruthy();
   // Will never reach this point if the environment variables are not set, but for type checking.
   if (process.env.GEOGUESSR_EMAIL === undefined || process.env.GEOGUESSR_PASSWORD === undefined) return;
   log('Navigating to login page', identifier);

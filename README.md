@@ -26,6 +26,19 @@ To see available commands, check out the `scripts` section of the `package.json`
 
 All project relevant commands are handled via yarn, including formatting our Python, Typescript, and Markdown files and generating our report from our Markdown source.
 
+## Loading data from our published dataset
+
+To load the data from our [published dataset](https://www.kaggle.com/datasets/killusions/street-location-images/):
+
+- Ignore our server check (`DOWNLOAD_LINK=None` in `.env`)
+- Put the unzipped `data(_mapped)` directory (if you want both start with mapped) into `dspro2/1_data_collection/.data`.
+- Run `yarn data:import` on a unix based system (or rename them to `geoguessr_location_******.png` and `geoguessr_result_******.json`, and copy all the JSON files into `dspro2/3_data_preparation/01_enriching/.data`).
+- Execute the `dspro2/3_data_preparation/99_importing/import.ipynb` notebook (make sure to set the `MAPPED` parameter correctly and only the relevant data is inside the directory).
+
+## Collecting data
+
+Simply run `yarn scrape:prepare`, set `GEOGUESSR_EMAIL` and `GEOGUESSR_PASSWORD` in your `.env` file, then `yarn scrape:ui` (for local testing), `yarn scrape` or `scrape:deploy` (for multiple parallel instances).
+
 ## Course Coaches
 
 Within this module we are supervised by the following course coaches:
