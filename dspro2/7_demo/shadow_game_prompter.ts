@@ -10,9 +10,14 @@ if (process.argv.length > 2) {
   process.exit(0);
 }
 
-// Wait for the user answer to the prompt, then write synchronously to the file TEMP_PATH + 'shadow_game' the answer.
-const url = prompter('Enter the URL of the game you want to shadow: ');
+let url: string | null = null;
 
-if (url) {
-  fs.writeFileSync(TEMP_PATH + 'shadow_game', url);
-}
+// Repeatedly prompt the user for the URL of the game they want to shadow.
+do {
+  // Wait for the user answer to the prompt, then write synchronously to the file TEMP_PATH + 'shadow_game' the answer.
+  url = prompter('Enter the URL of the game you want to shadow: ');
+
+  if (url) {
+    fs.writeFileSync(TEMP_PATH + 'shadow_game', url);
+  }
+} while (url !== null);
