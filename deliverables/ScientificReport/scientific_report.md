@@ -370,7 +370,7 @@ EfficientNet-B1, trained on 332,786 images without augmentation, achieves a rema
 
 $$
 \begin{aligned}
-& \text{Table 1.2. Best validation performances for predicting countries.} \\
+& \text{Table 1.1. Best validation performances for predicting countries.} \\
 &\begin{array}{ccc|cc|cccc}
 \hline
  \text{Settings} && & \text{ Validation} & \text{accuracy } & \text{Validation balanced  accuracy} & \text{ }
@@ -400,7 +400,7 @@ Compared to the country task, it is evident that the larger image size increases
 
 $$
 \begin{aligned}
-& \text{Table 1.3. Best validation performances for predicting regions.} \\
+& \text{Table 1.2. Best validation performances for predicting regions.} \\
 &\begin{array}{ccc|cc|cc}
 \hline
  \text{Settings} && & \text{ Validation} & \text{accuracy } & \text{Validation balanced accuaracy} & \text{ }
@@ -426,7 +426,7 @@ Interestingly, the regions can also be adapted to countries, allowing for a comp
 
 $$
 \begin{aligned}
-& \text{Table 1.4. Best validation performances for predicting countries with region prediction model.} \\
+& \text{Table 1.3. Best validation performances for predicting countries with region prediction model.} \\
 &\begin{array}{ccc|c|cc}
 \hline
  \text{Settings} && & \text{ Validation accuracy}  & \text{Validation balanced accuracy} & \text{ }
@@ -454,7 +454,7 @@ For predicting coordinates, the EfficientNet-B1 outperformed all other models, w
 
 $$
 \begin{aligned}
-& \text{Table 1.1. Best validation performances for predicting coordinates.} \\
+& \text{Table 1.4. Best validation performances for predicting coordinates.} \\
 &\begin{array}{ccc|cc}
 \hline
  \text{Settings} & & & \text{Validation}\\
@@ -481,7 +481,7 @@ The best model shows very promising performance on the test set when predicting 
 
 $$
 \begin{aligned}
-& \text{Table 2.2. Best test performances for predicting countries.} \\
+& \text{Table 2.1. Best test performances for predicting countries.} \\
 &\begin{array}{ccc|cc|cc}
 \hline
  \text{Settings} && & \text{ Test} & \text{accuracy } & \text{Test balanced accuracy} & \text{ }
@@ -506,7 +506,7 @@ On this more difficult task, the performance was still in line with the performa
 
 $$
 \begin{aligned}
-& \text{Table 2.3. Best test performances for predicting regions.} \\
+& \text{Table 2.2. Best test performances for predicting regions.} \\
 &\begin{array}{ccc|cc|c|c}
 \hline
  \text{Settings} && & \text{ Test} & \text{accuracy } & \text{Test metric} & \text{Test balanced accuracy}
@@ -515,7 +515,7 @@ $$
 \text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1}
 \\
 \hline
-\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{58.35\%} & \text{89.11\%} & \text{385.55} & \text{8.45\%}\\
+\text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{20.05\%} & \text{41.53\%} & \text{385.55} & \text{8.45\%}\\
 \text{EfficientNet-B1} & \text{332,786}^2 & \text{TRUE} & \text{0.81\%} & \text{2.03\%} & \text{7883.03} & \text{0.13\%}\\
 \hline
 \end{array} \\
@@ -529,7 +529,7 @@ Using the region predictor for our country prediction task is a viable alternati
 
 $$
 \begin{aligned}
-& \text{Table 2.4. Best test performances for predicting countries with region prediction model.} \\
+& \text{Table 2.3. Best test performances for predicting countries with region prediction model.} \\
 &\begin{array}{ccc|c|cc}
 \hline
  \text{Settings} && & \text{ Test accuracy}  & \text{Test balanced accuracy} & \text{ }
@@ -554,7 +554,7 @@ The best model performed similarly on the test set as it did on the validation s
 
 $$
 \begin{aligned}
-& \text{Table 2.1. Best test performances for predicting coordinates.} \\
+& \text{Table 2.4. Best test performances for predicting coordinates.} \\
 &\begin{array}{ccc|cc}
 \hline
  \text{Settings} & & & \text{Test}\\
