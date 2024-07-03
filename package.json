@@ -12,7 +12,8 @@
     "start": "npm run build && node dist/index.js",
     "scrape:prepare": "playwright install",
     "scrape:environment": "npm run build && node 'dist/1_data_collection/playwright_setup_environment.js'",
-    "scrape": "npm run scrape:environment && playwright test --config='dspro2/1_data_collection/playwright.config.ts' --project=chromium-stealth",
+    "scrape:direct": "playwright test --config='dspro2/1_data_collection/playwright.config.ts' --project=chromium-stealth",
+    "scrape": "npm run scrape:environment && npm run scrape:direct",
     "scrape:ui": "npm run scrape:environment && playwright test --config='dspro2/1_data_collection/playwright.config.ts' --project=chromium-stealth --ui",
     "scrape:deploy": "export CI=true && npm run scrape:environment && playwright test --config='dspro2/1_data_collection/playwright.config.ts' --project=chromium-stealth",
     "scrape:cleanup": "chmod +x 'dspro2/1_data_collection/delete_leftover.sh' && './dspro2/1_data_collection/delete_leftover.sh'",
@@ -20,6 +21,8 @@
     "scrape:cleanup:all": "rm -rf 'dspro2/1_data_collection/.data/'",
     "scrape:count": "find 'dspro2/1_data_collection/.data/' -name 'geoguessr_result_singleplayer*' | wc -l && find 'dspro2/1_data_collection/.data/' -name 'geoguessr_result_multiplayer*' | wc -l",
     "scrape:count:images": "find 'dspro2/1_data_collection/.data/' -name 'geoguessr_location_singleplayer*' | wc -l && find 'dspro2/1_data_collection/.data/' -name 'geoguessr_location_multiplayer*' | wc -l",
+    "demo:queue": "npm run build && node 'dist/7_demo/shadow_game_prompter.js'",
+    "demo:run": "echo \"server running, run yarn demo:queue to queue a game\" && cross-env PLAYWRIGHT_MODE=demo npm run scrape:environment > nul 2>&1 || cross-env PLAYWRIGHT_MODE=demo npm run scrape:environment > /dev/null 2>&1 && cross-env PW_TEST_HTML_REPORT_OPEN=never PLAYWRIGHT_MODE=demo npm run scrape:direct",
     "data:import": "chmod +x 'dspro2/1_data_collection/import.sh' && './dspro2/1_data_collection/import.sh'",
     "format": "prettier --write . --print-width 2000 --prose-wrap preserve --single-quote",
     "python:prepare": "pip3 install poetry \"black[jupyter]\"",
@@ -38,6 +41,8 @@
   "devDependencies": {
     "@playwright/test": "^1.41.2",
     "@types/node": "^20.11.20",
+    "@types/prompt-sync": "^4.2.3",
+    "cross-env": "^7.0.3",
     "playwright-extra": "^4.3.6",
     "prettier": "^3.3.2",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
@@ -47,6 +52,8 @@
   },
   "dependencies": {
     "check-disk-space": "^3.4.0",
-    "dotenv": "^16.4.5"
+    "chokidar": "^3.6.0",
+    "dotenv": "^16.4.5",
+    "prompt-sync": "^4.2.0"
   }
 }

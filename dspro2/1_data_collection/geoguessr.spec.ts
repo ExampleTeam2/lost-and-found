@@ -3,9 +3,10 @@ import fs from 'fs';
 import 'dotenv/config';
 import { Page } from 'playwright-core';
 import { describe } from 'node:test';
-import { DATA_PATH, GAMES, LOCATION_FILE, LOCATION_FILE_EXTENSION, MAX_GAMES, MAX_MINUTES, MAX_ROUNDS, MODE, NUMBER_OF_INSTANCES, RESULT_FILE, RESULT_FILE_EXTENSION, SINGLEPLAYER_WIDTH, STAGGER_INSTANCES, TEMP_PATH, getTimestampString } from './playwright_base_config';
+import { DATA_PATH, DEMO_DATA_PATH, GAMES, LOCATION_FILE, LOCATION_FILE_EXTENSION, MAX_GAMES, MAX_MINUTES, MAX_ROUNDS, MODE, NUMBER_OF_INSTANCES, RESULT_FILE, RESULT_FILE_EXTENSION, SINGLEPLAYER_WIDTH, STAGGER_INSTANCES, TEMP_PATH, getTimestampString } from './playwright_base_config';
 import checkDiskSpace from 'check-disk-space';
 import path from 'path';
+import { watch } from 'chokidar';
 
 let logProgressInterval: ReturnType<typeof setInterval> | undefined;
 
@@ -472,19 +473,21 @@ const roundStartAndCapture = async <const T>(page: Page, mode: typeof MODE, game
     const pageWidth = await page.evaluate(() => window.innerWidth);
     await page.mouse.move(pageWidth - 1, 1);
   }
-  await viewer?.screenshot({ path: DATA_PATH + LOCATION_FILE + mode + '_' + gameId + '_' + roundNumber + LOCATION_FILE_EXTENSION });
+  await viewer?.screenshot({ path: (MODE !== 'demo' ? DATA_PATH : DEMO_DATA_PATH) + LOCATION_FILE + mode + '_' + gameId + '_' + roundNumber + LOCATION_FILE_EXTENSION });
   await removeElement(css);
   return [startTime, additionalResults, sidebar];
 };
 
 const roundEndAndSave = (mode: typeof MODE, result: unknown, gameId: string, roundNumber: number, identifier?: string) => {
-  fs.writeFile(DATA_PATH + RESULT_FILE + mode + '_' + gameId + '_' + roundNumber + RESULT_FILE_EXTENSION, JSON.stringify(result), (e) => {
-    const timestamp = getTimestampString();
-    if (e) {
-      error(`Error occurred while saving game results at ${timestamp}:`, identifier);
-      console.error(e);
-    }
-  });
+  if (MODE !== 'demo') {
+    fs.writeFile(DATA_PATH + RESULT_FILE + mode + '_' + gameId + '_' + roundNumber + RESULT_FILE_EXTENSION, JSON.stringify(result), (e) => {
+      const timestamp = getTimestampString();
+      if (e) {
+        error(`Error occurred while saving game results at ${timestamp}:`, identifier);
+        console.error(e);
+      }
+    });
+  }
 };
 
 const roundMultiplayer = async (page: Page, gameId: string, roundNumber: number, identifier?: string) => {
@@ -685,6 +688,27 @@ const playSingleplayer = async (page: Page, i: number, identifier?: string) => {
   await playGame(page, 'singleplayer', i, identifier);
 };
 
+const shadowGames = async (page: Page, i: number, identifier?: string) => {
+  // Wait for a TEMP_PATH + 'shadow_game' file to be created and print its content
+  const watcher = watch(TEMP_PATH, { persistent: true });
+
+  watcher.on('add', async (path) => {
+    if (path.endsWith('/shadow_game')) {
+      try {
+        const content = fs.readFileSync(path, { encoding: 'utf8' });
+        console.log(`Shadowing game at ${content}`);
+        // Delete the file after reading it
+        fs.unlinkSync(path);
+      } catch (error) {
+        console.error('Error reading file:', error);
+      }
+    }
+  });
+
+  // Never resolve the promise to keep the watcher running forever
+  return new Promise<void>(() => {});
+};
+
 const acceptGoogleCookies = async (page: Page) => {
   // load google maps and accept cookies
   await page.goto('https://www.google.com/maps', { timeout: 60000 });
@@ -796,7 +820,7 @@ describe('Geoguessr', () => {
       gamesToCheck = gamesToCheck.slice(runnerIndex, runnerIndexEnd);
     }
     // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
-    test('play ' + (MODE === 'singleplayer' ? 'world' : MODE === 'multiplayer' ? 'countries battle royale' : 'results') + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
+    test('play ' + (MODE === 'singleplayer' ? 'world' : MODE === 'multiplayer' || MODE === 'demo' ? 'countries battle royale' : 'results') + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
       if (fs.readFileSync(TEMP_PATH + 'stop', 'utf8') === 'true') {
         process.exit(1);
       }
@@ -806,7 +830,7 @@ describe('Geoguessr', () => {
       }
       try {
         test.setTimeout(60000 * MAX_MINUTES);
-        await (MODE === 'singleplayer' ? playSingleplayer(page, i, identifier) : MODE === 'multiplayer' ? playMultiplayer(page, i, identifier) : getResults(page, gamesToCheck, i, identifier));
+        await (MODE === 'singleplayer' ? playSingleplayer(page, i, identifier) : MODE === 'multiplayer' ? playMultiplayer(page, i, identifier) : MODE === 'results' ? getResults(page, gamesToCheck, i, identifier) : MODE === 'demo' ? shadowGames(page, i, identifier) : Promise.reject('Invalid mode'));
       } catch (e: unknown) {
         const timestamp = getTimestampString();
         // If messages includes 'Target crashed', exit program, otherwise log an error message that an Error occurred in this instance at this time and rethrow

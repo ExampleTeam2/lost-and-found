@@ -42,6 +42,7 @@ dspro2/.obsidian
 /dspro2/4_modeling/wandb/
 
 # Temp
+/nul
 /tmp/
 /scraping/tmp/
 /dspro2/1_data_collection/tmp/
