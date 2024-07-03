@@ -12,13 +12,14 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 class DeployImageDataHandler(InferenceImageDataHandler):
-    def __init__(self, country_to_index_path="./country_to_index.json", region_to_index_path="./region_to_index.json", region_index_to_middle_point_path="./region_index_to_middle_point.json", region_index_to_country_index_path="./region_index_to_country_index.json", base_transform=None, max_batch_size=100):
+    def __init__(self, country_to_index_path="./country_to_index.json", region_to_index_path="./region_to_index.json", region_index_to_middle_point_path="./region_index_to_middle_point.json", region_index_to_country_index_path="./region_index_to_country_index.json", base_transform=None, max_batch_size=100, join_to_current_dir=None):
         super().__init__(country_to_index_path, region_to_index_path, region_index_to_middle_point_path, region_index_to_country_index_path)
         self.base_transform = base_transform
         self.max_batch_size = max_batch_size
+        self.current_dir = CURRENT_DIR if join_to_current_dir is None else os.path.join(CURRENT_DIR, join_to_current_dir)
 
     def load_images(self, unscaled_image_paths):
-        paths = [os.path.join(CURRENT_DIR, path) for path in unscaled_image_paths]
+        paths = [os.path.join(self.current_dir, path) for path in unscaled_image_paths]
         images = load_image_files(paths)
         # if aspect ratio is not 16:9, crop the image
         for i, image in enumerate(images):
@@ -36,3 +37,6 @@ class DeployImageDataHandler(InferenceImageDataHandler):
 
     def load_single_image(self, unscaled_image_path):
         return self.load_images([unscaled_image_path])
+
+    def path_from_current_dir(self, path):
+        return os.path.join(self.current_dir, path)
