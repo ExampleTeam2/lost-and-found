@@ -22,7 +22,7 @@
     "scrape:count": "find 'dspro2/1_data_collection/.data/' -name 'geoguessr_result_singleplayer*' | wc -l && find 'dspro2/1_data_collection/.data/' -name 'geoguessr_result_multiplayer*' | wc -l",
     "scrape:count:images": "find 'dspro2/1_data_collection/.data/' -name 'geoguessr_location_singleplayer*' | wc -l && find 'dspro2/1_data_collection/.data/' -name 'geoguessr_location_multiplayer*' | wc -l",
     "demo:queue": "npm run build && node 'dist/7_demo/shadow_game_prompter.js'",
-    "demo:run": "echo \"server running, run yarn demo:queue to queue a game\" && cross-env PLAYWRIGHT_MODE=demo npm run scrape:environment > nul 2>&1 || cross-env PLAYWRIGHT_MODE=demo npm run scrape:environment > /dev/null 2>&1 && cross-env PW_TEST_HTML_REPORT_OPEN=never PLAYWRIGHT_MODE=demo npm run scrape:direct",
+    "demo:run": "echo \"server running, run yarn demo:queue to queue a game\" && cross-env PLAYWRIGHT_MODE=demo npm run scrape:environment > nul 2>&1 || cross-env PLAYWRIGHT_MODE=demo npm run scrape:environment > /dev/null 2>&1 && cross-env PLAYWRIGHT_MODE=demo npm run scrape:direct",
     "data:import": "chmod +x 'dspro2/1_data_collection/import.sh' && './dspro2/1_data_collection/import.sh'",
     "format": "prettier --write . --print-width 2000 --prose-wrap preserve --single-quote",
     "python:prepare": "pip3 install poetry \"black[jupyter]\"",

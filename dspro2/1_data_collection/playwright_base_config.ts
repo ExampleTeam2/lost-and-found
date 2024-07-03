@@ -14,6 +14,7 @@ export const MAX_RETRIES = process.env.CI ? 10000 : 0;
 export const NUMBER_OF_INSTANCES = process.env.CI ? 5 : 1;
 export const STAGGER_INSTANCES = 40000;
 type Mode = 'multiplayer' | 'singleplayer' | 'results' | 'demo';
+// Demo only runs a single instance
 export const MODE: Mode = !process.env.PLAYWRIGHT_MODE ? 'singleplayer' : (process.env.PLAYWRIGHT_MODE as Mode);
 export const GAMES = (MODE as any) === 'results' ? fs.readFileSync(DATA_PATH + 'games', 'utf-8').split('\n') : [];
 // To allow for a small sidebar, wider than multiplayer, for same width use 992 + 1

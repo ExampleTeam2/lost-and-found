@@ -14,6 +14,8 @@ const error = (message: string, i?: string) => {
   console.error((i ? i + ' - ' : '') + message);
 };
 
+let progressLogDisabled = false;
+
 // Log a message, print a dot (on the same line) every 10 seconds in a background process to get progress indication until another message is logged
 const log = (message: string, i?: string) => {
   console.log((i ? i + ' - ' : '') + message);
@@ -21,7 +23,7 @@ const log = (message: string, i?: string) => {
     if (logProgressInterval) {
       clearInterval(logProgressInterval);
     }
-    logProgressInterval = setInterval(() => process.stdout.write('.'), 10000);
+    logProgressInterval = setInterval(() => (!progressLogDisabled ? process.stdout.write('.') : undefined), 10000);
   }
 };
 
@@ -100,10 +102,16 @@ const getCookieBanner = (page: Page) => {
 };
 
 // Create function which checks for a cookie banner and removes it
-const removeCookieBanner = async (page: Page, timeout = 15000) => {
+const removeCookieBanner = async (page: Page, timeout = 15000, allowSkipping = true) => {
   // Check if element with id "onetrust-consent-sdk" exists
   const cookieBanner = getCookieBanner(page);
-  await cookieBanner.waitFor({ state: 'attached', timeout: 15000 });
+  if (allowSkipping) {
+    page.waitForTimeout(3000);
+    if ((await cookieBanner.count()) === 0) {
+      return;
+    }
+  }
+  await cookieBanner.waitFor({ state: 'attached', timeout: timeout });
   await getButtonWithText(page, 'Accept').or(page.getByText('Accept all')).first().click();
   page.waitForTimeout(1000);
   await cookieBanner.evaluate((el) => el.remove());
@@ -572,6 +580,13 @@ const gameStart = async (page: Page, mode: typeof MODE, waitText: string, waitTi
   return gameId;
 };
 
+// Stop if a crash happened before or by another instance.
+const stopIfCrashedBefore = () => {
+  if (fs.readFileSync(TEMP_PATH + 'stop', 'utf8') === 'true') {
+    process.exit(1);
+  }
+};
+
 const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
   const gameId = await gameStart(page, 'multiplayer', 'Game starting in', 60000, i, identifier);
   if (!gameId) {
@@ -596,9 +611,7 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
       await page.waitForTimeout(1000);
     }
   }
-  if (fs.readFileSync(TEMP_PATH + 'stop', 'utf8') === 'true') {
-    process.exit(1);
-  }
+  stopIfCrashedBefore();
 };
 
 const gameSingleplayer = async (page: Page, i: number, identifier?: string, resume = false, roundNumber = 0) => {
@@ -618,15 +631,11 @@ const gameSingleplayer = async (page: Page, i: number, identifier?: string, resu
   const resultsButton = getButtonWithText(page, 'View results');
   await resultsButton.click();
   await resultsButton.waitFor({ state: 'hidden', timeout: 10000 });
-  if (fs.readFileSync(TEMP_PATH + 'stop', 'utf8') === 'true') {
-    process.exit(1);
-  }
+  stopIfCrashedBefore();
 };
 
 const playStart = async (page: Page, i: number, identifier?: string) => {
-  if (fs.readFileSync(TEMP_PATH + 'stop', 'utf8') === 'true') {
-    process.exit(1);
-  }
+  stopIfCrashedBefore();
   await page.waitForTimeout(STAGGER_INSTANCES * (fs.readFileSync(TEMP_PATH + 'initial', 'utf8') === 'true' ? i : 0));
   if (i === NUMBER_OF_INSTANCES - 1) {
     fs.writeFileSync(TEMP_PATH + 'initial', 'false');
@@ -641,7 +650,7 @@ const playStart = async (page: Page, i: number, identifier?: string) => {
     await removeCookieBanner(page);
     await logIn(page, identifier);
   } else {
-    await removeCookieBanner(page, 3000);
+    await removeCookieBanner(page, 3000, true);
     log('Already logged in', identifier);
   }
   page.setDefaultTimeout(5000);
@@ -688,25 +697,76 @@ const playSingleplayer = async (page: Page, i: number, identifier?: string) => {
   await playGame(page, 'singleplayer', i, identifier);
 };
 
-const shadowGames = async (page: Page, i: number, identifier?: string) => {
-  // Wait for a TEMP_PATH + 'shadow_game' file to be created and print its content
+// Shadow given game, can not be used with multiple instances.
+const shadowGame = async (page: Page, gameId: string) => {};
+
+// Shadow given games, can not be used with multiple instances.
+const shadowGames = async (page: Page) => {
+  await playStart(page, 0);
+  await page.waitForTimeout(1000);
+  await acceptGoogleCookies(page);
+
+  progressLogDisabled = true;
+
+  // Wait for a TEMP_PATH + 'shadow_game' file to be created and print its content.
   const watcher = watch(TEMP_PATH, { persistent: true });
 
+  console.log('Waiting for multiplayer game URLs to be queued...');
+
   watcher.on('add', async (path) => {
-    if (path.endsWith('/shadow_game')) {
-      try {
-        const content = fs.readFileSync(path, { encoding: 'utf8' });
-        console.log(`Shadowing game at ${content}`);
-        // Delete the file after reading it
-        fs.unlinkSync(path);
-      } catch (error) {
-        console.error('Error reading file:', error);
+    try {
+      let gameUrl: string | undefined = undefined;
+      if (path.endsWith('/shadow_game')) {
+        try {
+          gameUrl = fs.readFileSync(path, { encoding: 'utf8' }).replace(/\s/g, '');
+          // Delete the file after reading it.
+          fs.unlinkSync(path);
+        } catch (error) {
+          console.error('Error reading game URL:', error);
+        }
       }
+      if (!gameUrl) {
+        if (gameUrl === '') {
+          console.error('No game URL provided.');
+        }
+        return;
+      }
+      if (!gameUrl.startsWith('https://www.geoguessr.com/de/battle-royale/')) {
+        console.error('Game URL is not of correct mode:', gameUrl);
+        return;
+      }
+      const gameId = gameUrl.replace('https://www.geoguessr.com/de/battle-royale/', '').replace(/\?.*/, '');
+      if (!gameId || gameId.includes('/') || gameId.includes('?') || gameId.includes('#')) {
+        console.error('Invalid game URL:', gameUrl);
+        return;
+      }
+      progressLogDisabled = false;
+      console.log(`Shadowing game ${gameId}`);
+      await shadowGame(page, gameId);
+      progressLogDisabled = true;
+    } catch (e: unknown) {
+      handleErrors(e);
     }
   });
 
   // Never resolve the promise to keep the watcher running forever
   return new Promise<void>(() => {});
+};
+
+const handleErrors = (e: unknown, identifier?: string) => {
+  const timestamp = getTimestampString();
+  // If messages includes 'Target crashed', exit program, otherwise log an error message that an Error occurred in this instance at this time and rethrow
+  if (typeof e === 'object' && e instanceof Error && (e.message.includes('Target crashed') || e.message.includes('exited unexpectedly'))) {
+    fs.appendFileSync(TEMP_PATH + 'crashes', timestamp + '\n');
+    fs.writeFileSync(TEMP_PATH + 'stop', 'true');
+    error(`Crash occurred at ${timestamp}, stopping:`, identifier);
+    console.error(e);
+    process.exit(1);
+  } else {
+    error(`Error occurred at ${timestamp}:`, identifier);
+    console.error(e);
+    throw e;
+  }
 };
 
 const acceptGoogleCookies = async (page: Page) => {
@@ -786,9 +846,7 @@ const getResult = async (page: Page, gameId: string, i: number, identifier?: str
 
   fs.appendFileSync(TEMP_PATH + 'results-games', gameId + '\n');
 
-  if (fs.readFileSync(TEMP_PATH + 'stop', 'utf8') === 'true') {
-    process.exit(1);
-  }
+  stopIfCrashedBefore();
 };
 
 const getResults = async (page: Page, games: string[], i: number, identifier?: string) => {
@@ -800,51 +858,62 @@ const getResults = async (page: Page, games: string[], i: number, identifier?: s
   }
 };
 
+// Get games to check for results mode.
+const getGamesToCheck = (i: number) => {
+  let gamesToCheck = GAMES;
+  if (gamesToCheck.length) {
+    // Get already checked games by listing files in data folder
+    let checkedGames = new Set(
+      fs
+        .readFileSync(TEMP_PATH + 'results-games', 'utf8')
+        ?.split(/\n/g)
+        .filter((file) => file),
+    );
+    // Filter out already checked games
+    gamesToCheck = gamesToCheck.filter((game) => !checkedGames.has(game));
+    // Segment into runners
+    const runnerIndex = Math.round(gamesToCheck.length / NUMBER_OF_INSTANCES) * i;
+    const runnerIndexEnd = i === NUMBER_OF_INSTANCES - 1 ? gamesToCheck.length : Math.round(gamesToCheck.length / NUMBER_OF_INSTANCES) * (i + 1);
+    gamesToCheck = gamesToCheck.slice(runnerIndex, runnerIndexEnd);
+  }
+  return gamesToCheck;
+};
+
 describe('Geoguessr', () => {
-  for (let i = 0; i < NUMBER_OF_INSTANCES; i++) {
-    const identifier = NUMBER_OF_INSTANCES > 1 ? String(i + 1) : '';
-    let gamesToCheck = MODE === 'results' ? GAMES : [];
-    if (gamesToCheck.length) {
-      // Get already checked games by listing files in data folder
-      let checkedGames = new Set(
-        fs
-          .readFileSync(TEMP_PATH + 'results-games', 'utf8')
-          ?.split(/\n/g)
-          .filter((file) => file),
-      );
-      // Filter out already checked games
-      gamesToCheck = gamesToCheck.filter((game) => !checkedGames.has(game));
-      // Segment into runners
-      const runnerIndex = Math.round(gamesToCheck.length / NUMBER_OF_INSTANCES) * i;
-      const runnerIndexEnd = i === NUMBER_OF_INSTANCES - 1 ? gamesToCheck.length : Math.round(gamesToCheck.length / NUMBER_OF_INSTANCES) * (i + 1);
-      gamesToCheck = gamesToCheck.slice(runnerIndex, runnerIndexEnd);
+  if (MODE !== 'demo') {
+    for (let i = 0; i < NUMBER_OF_INSTANCES; i++) {
+      const identifier = NUMBER_OF_INSTANCES > 1 ? String(i + 1) : '';
+
+      // Get games to check for results mode.
+      const gamesToCheck = MODE === 'results' ? getGamesToCheck(i) : [];
+
+      // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file, (or just get the results of a previous game), and repeat.
+      test('play ' + (MODE === 'singleplayer' ? 'world' : MODE === 'multiplayer' ? 'countries battle royale' : 'results') + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
+        stopIfCrashedBefore();
+        // Set viewport size in singleplayer mode to align with multiplayer mode
+        if (MODE === 'singleplayer') {
+          page.setViewportSize({ width: SINGLEPLAYER_WIDTH, height: page.viewportSize()?.height ?? 0 });
+        }
+        try {
+          test.setTimeout(60000 * MAX_MINUTES);
+          await (MODE === 'singleplayer' ? playSingleplayer(page, i, identifier) : MODE === 'multiplayer' ? playMultiplayer(page, i, identifier) : MODE === 'results' ? getResults(page, gamesToCheck, i, identifier) : Promise.reject('Invalid mode'));
+        } catch (e: unknown) {
+          handleErrors(e, identifier);
+        }
+      });
     }
-    // Go to "geoguessr.com", log in, play a game, take a screenshot of the viewer and save the game result into a file.
-    test('play ' + (MODE === 'singleplayer' ? 'world' : MODE === 'multiplayer' || MODE === 'demo' ? 'countries battle royale' : 'results') + (identifier ? ' - ' + identifier : ''), async ({ page }) => {
-      if (fs.readFileSync(TEMP_PATH + 'stop', 'utf8') === 'true') {
-        process.exit(1);
-      }
-      // Set viewport size in singleplayer mode to align with multiplayer mode
-      if (MODE === 'singleplayer') {
-        page.setViewportSize({ width: SINGLEPLAYER_WIDTH, height: page.viewportSize()?.height ?? 0 });
-      }
+  } else {
+    if (NUMBER_OF_INSTANCES > 1) {
+      throw new Error('Demo mode can only be run with one instance');
+    }
+    // Go to "geoguessr.com", log in, shadow given game, take a screenshot of the viewer and save into a file in the demo data folder, and repeat.
+    test('shadow countries battle royale', async ({ page }) => {
+      stopIfCrashedBefore();
       try {
         test.setTimeout(60000 * MAX_MINUTES);
-        await (MODE === 'singleplayer' ? playSingleplayer(page, i, identifier) : MODE === 'multiplayer' ? playMultiplayer(page, i, identifier) : MODE === 'results' ? getResults(page, gamesToCheck, i, identifier) : MODE === 'demo' ? shadowGames(page, i, identifier) : Promise.reject('Invalid mode'));
+        await shadowGames(page);
       } catch (e: unknown) {
-        const timestamp = getTimestampString();
-        // If messages includes 'Target crashed', exit program, otherwise log an error message that an Error occurred in this instance at this time and rethrow
-        if (typeof e === 'object' && e instanceof Error && (e.message.includes('Target crashed') || e.message.includes('exited unexpectedly'))) {
-          fs.appendFileSync(TEMP_PATH + 'crashes', timestamp + '\n');
-          fs.writeFileSync(TEMP_PATH + 'stop', 'true');
-          error(`Crash occurred at ${timestamp}, stopping:`, identifier);
-          console.error(e);
-          process.exit(1);
-        } else {
-          error(`Error occurred at ${timestamp}:`, identifier);
-          console.error(e);
-          throw e;
-        }
+        handleErrors(e);
       }
     });
   }

@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
-import { MAX_RETRIES, NUMBER_OF_INSTANCES, getTimestampString } from './playwright_base_config';
+import { MAX_RETRIES, MODE, NUMBER_OF_INSTANCES, getTimestampString } from './playwright_base_config';
 
 const timestamp = getTimestampString();
 
@@ -35,7 +35,7 @@ export default defineConfig({
     // baseURL: 'http://127.0.0.1:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: process.env.CI ? 'off' : 'retain-on-failure',
+    trace: process.env.CI || MODE === 'demo' ? 'off' : 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
 
