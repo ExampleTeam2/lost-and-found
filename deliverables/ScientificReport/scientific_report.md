@@ -376,7 +376,7 @@ $$
  \text{Settings} && & \text{ Validation} & \text{accuracy } & \text{Validation balanced  accuracy} & \text{ }
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 mapped}^1 & \text{Top-1}
+\text{Network} & \text{Data size} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 mapped}^1 & \text{Top-1}
 \\
 \hline
 \text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{63.18\%} & \text{89.90\%} & \text{63.43\%} & \text{-}\\
@@ -406,7 +406,7 @@ $$
  \text{Settings} && & \text{ Validation} & \text{accuracy } & \text{Validation balanced accuaracy} & \text{ }
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1}
+\text{Network} & \text{Data size} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1}
 \\
 \hline
 \text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{0.97\%} & \text{2.97\%} & \text{6,126.90} & \text{0.39\%} \\
@@ -432,7 +432,7 @@ $$
  \text{Settings} && & \text{ Validation accuracy}  & \text{Validation balanced accuracy} & \text{ }
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-1 mapped}^1 & \text{Top-1}
+\text{Network} & \text{Data size} & \text{Augmented} & \text{Top-1} & \text{Top-1 mapped}^1 & \text{Top-1}
 \\
 \hline
 \text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{2.84\%} & \text{4.23\%} & \text{-} \\
@@ -459,7 +459,7 @@ $$
 \hline
  \text{Settings} & & & \text{Validation}\\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Mean distance}^1 & \text{Median distance}^1
+\text{Network} & \text{Data size} & \text{Augmented} & \text{Mean distance}^1 & \text{Median distance}^1
 \\
 \hline
 \text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{1,728.09} & \text{809.41} \\
@@ -487,7 +487,7 @@ $$
  \text{Settings} && & \text{ Test} & \text{accuracy } & \text{Test balanced accuracy} & \text{ }
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 mapped}^1 & \text{Top-1}
+\text{Network} & \text{Data size} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Top-1 mapped}^1 & \text{Top-1}
 \\
 \hline
 \text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{58.35\%} & \text{89.11\%}  & \text{57.48\%} & \text{-}\\
@@ -512,7 +512,7 @@ $$
  \text{Settings} && & \text{ Test} & \text{accuracy } & \text{Test metric} & \text{Test balanced accuracy}
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1}
+\text{Network} & \text{Data size} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1}
 \\
 \hline
 \text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{20.05\%} & \text{41.53\%} & \text{385.55} & \text{8.45\%}\\
@@ -535,7 +535,7 @@ $$
  \text{Settings} && & \text{ Test accuracy}  & \text{Test balanced accuracy} & \text{ }
 \\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-1 mapped}^1 & \text{Top-1}
+\text{Network} & \text{Data size} & \text{Augmented} & \text{Top-1} & \text{Top-1 mapped}^1 & \text{Top-1}
 \\
 \hline
 \text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{64.73\%} & \text{54.69\%} & \text{41.61\%}\\
@@ -559,7 +559,7 @@ $$
 \hline
  \text{Settings} & & & \text{Test}\\
 \hline
-\text{Network} & \text{Datasize} & \text{Augmented} & \text{Mean distance}^1 & \text{Median distance}^1
+\text{Network} & \text{Data size} & \text{Augmented} & \text{Mean distance}^1 & \text{Median distance}^1
 \\
 \hline
 \text{EfficientNet-B1} & \text{332,786}^2 & \text{FALSE} & \text{1,815.74} & \text{706.76} \\
@@ -619,18 +619,18 @@ $$
  \text{Settings} && & \text{ } & \text{Test accuracy} & \text{ }
 \\
 \hline
-\text{Best Network} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-3 } & \text{Top-5 }
+\text{Best Network} & \text{Data size} & \text{Augmented} & \text{Top-1} & \text{Top-3 } & \text{Top-5 }
 \\
 \hline
 \text{EfficientNet-B1} & \text{79,000} \text{ }^1 & \text{FALSE} & \text{58.35\%} & \text{81.61\%} & \text{89.11\%}\\
 \hline
 \hline
-\text{Advanced Player} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-3 } & \text{Top-5 }
+\text{Advanced Player} & \text{Data size} & \text{Augmented} & \text{Top-1} & \text{Top-3 } & \text{Top-5 }
 \\
 \hline
 \text{Linus} & \text{30} \text{ }^1 & \text{FALSE} & \text{26.67\%} & \text{43.33\%} & \text{56.67\%} \\
 \hline
-\text{Amateur Player} & \text{Datasize} & \text{Augmented} & \text{Top-1} & \text{Top-3 } & \text{Top-5 }
+\text{Amateur Player} & \text{Data size} & \text{Augmented} & \text{Top-1} & \text{Top-3 } & \text{Top-5 }
 \\
 \hline
 \text{Yutaro } & \text{30} \text{ }^1 & \text{FALSE} & \text{10.00\%} & \text{13.33\%} & \text{20.00\%} \\
