@@ -70,7 +70,7 @@ const clickButtonWithText = async (page: Page, text: string, wait = 0, only = fa
   return await button.click();
 };
 
-const clickButtonIfFound = async (page: Page, text: string, only = false, first = false, last = false) => {
+const clickButtonIfFound = async (page: Page, text: string, only = false, first = false, last = false, noWaitAfter = false) => {
   let button = getButtonWithText(page, text, only);
   if (first) {
     button = button.first();
@@ -79,7 +79,7 @@ const clickButtonIfFound = async (page: Page, text: string, only = false, first 
     button = button.last();
   }
   if ((await button.count()) > 0) {
-    await button.click();
+    await button.click({ noWaitAfter });
     return true;
   }
   return false;
@@ -546,9 +546,9 @@ const roundSingleplayer = async (page: Page, gameId: string, roundNumber: number
 };
 
 const gameStart = async (page: Page, mode: typeof MODE, waitText: string, waitTime: number, i: number, identifier?: string, resume = false) => {
-  await waitForFreeDiskSpace(identifier);
   if (!resume || (await page.getByText('World', { exact: true }).count()) === 0) {
     await page.getByText(waitText).or(page.getByText('Rate limit')).nth(0).waitFor({ state: 'visible', timeout: 60000 });
+    await waitForFreeDiskSpace(identifier);
     if ((await page.getByText('Rate limit').count()) > 0) {
       log('Rate-limited', identifier);
       fs.appendFileSync(TEMP_PATH + 'rate-limits', i + '\n');
@@ -557,6 +557,8 @@ const gameStart = async (page: Page, mode: typeof MODE, waitText: string, waitTi
       return;
     }
     await page.getByText(waitText).nth(0).waitFor({ state: 'hidden', timeout: waitTime });
+  } else {
+    await waitForFreeDiskSpace(identifier);
   }
   // Get the game ID from the URL (https://www.geoguessr.com/battle-royale/<ID>)
   const gameId = page.url().split('/').pop() ?? 'no_id_' + randomUUID();
@@ -643,7 +645,7 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
 };
 
 const gameSingleplayer = async (page: Page, i: number, identifier?: string, resume = false, roundNumber = 0) => {
-  const gameId = await gameStart(page, 'singleplayer', 'Loading', 10000, i, identifier, resume);
+  const gameId = await gameStart(page, 'singleplayer', 'Loading location', 10000, i, identifier, resume);
   if (!gameId) {
     return;
   }
@@ -687,7 +689,7 @@ const playGame = async (page: Page, mode: typeof MODE, i: number, identifier?: s
   let games = 1;
   await (mode === 'singleplayer' ? gameSingleplayer(page, i, identifier) : gameMultiplayer(page, i, identifier));
   await page.waitForTimeout(1000);
-  while (games < (MODE === 'demo' ? 1 : MAX_GAMES) && (await clickButtonIfFound(page, 'Play again'))) {
+  while (games < (MODE === 'demo' ? 1 : MAX_GAMES) && (await clickButtonIfFound(page, 'Play again', undefined, undefined, undefined, true))) {
     await (mode === 'singleplayer' ? gameSingleplayer(page, i, identifier) : gameMultiplayer(page, i, identifier));
     games++;
     await page.waitForTimeout(3000);
