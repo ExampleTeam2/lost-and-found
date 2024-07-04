@@ -624,7 +624,7 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
         await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
       } else {
         await page.getByText('Correct').or(page.getByText('Next round starts in')).waitFor({ state: 'visible' });
-        await page.getByText('Correct').or(page.getByText('Next round starts in')).waitFor({ state: 'hidden', timeout: 60000 });
+        await page.getByText('Correct').or(page.getByText('Next round starts in')).waitFor({ state: 'hidden', timeout: 120000 });
       }
       await roundMultiplayer(page, gameId, rounds, identifier);
       rounds++;
