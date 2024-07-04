@@ -609,7 +609,11 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
       await page.getByText('Next round starts in').waitFor({ state: 'visible' });
       await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
     } else {
-      await page.getByText('Correct').or(page.getByText('Next round starts in')).waitFor({ state: 'visible' });
+      await page.getByText('Correct').or(page.getByText('Next round starts in')).or(getButtonWithText(page, 'Spectate')).waitFor({ state: 'visible' });
+      if ((await page.getByText('Correct').count()) === 0) {
+        await clickButtonIfFound(page, 'Spectate');
+        await page.waitForTimeout(1000);
+      }
       await page.getByText('Correct').or(page.getByText('Next round starts in')).waitFor({ state: 'hidden', timeout: 120000 });
     }
     await roundMultiplayer(page, gameId, rounds, identifier);
@@ -623,7 +627,11 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
         await page.getByText('Next round starts in').waitFor({ state: 'visible' });
         await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
       } else {
-        await page.getByText('Correct').or(page.getByText('Next round starts in')).waitFor({ state: 'visible' });
+        await page.getByText('Correct').or(page.getByText('Next round starts in')).or(getButtonWithText(page, 'Spectate')).waitFor({ state: 'visible' });
+        if ((await page.getByText('Correct').count()) === 0) {
+          await clickButtonIfFound(page, 'Spectate');
+          await page.waitForTimeout(1000);
+        }
         await page.getByText('Correct').or(page.getByText('Next round starts in')).waitFor({ state: 'hidden', timeout: 120000 });
       }
       await roundMultiplayer(page, gameId, rounds, identifier);
