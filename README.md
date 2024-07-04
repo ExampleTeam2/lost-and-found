@@ -4,7 +4,7 @@
 
 This is a project for HSLU (DSPRO 2).
 
-It consists of a codebase, a report [scientific report](./deliverables/ScientificReport/scientific_report.pdf) ([source](./deliverables/ScientificReport/scientific_report.md)), and a [published dataset](https://www.kaggle.com/datasets/killusions/street-location-images/).
+It consists of a codebase, a [scientific report](./deliverables/ScientificReport/scientific_report.pdf) ([source](./deliverables/ScientificReport/scientific_report.md)), and a [published dataset](https://www.kaggle.com/datasets/killusions/street-location-images/).
 
 The project uses Markdown (and LaTeX), Python and Node.js with Typescript.
 
