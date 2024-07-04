@@ -409,11 +409,11 @@ $$
 \text{Network} & \text{Data size} & \text{Augmented} & \text{Top-1} & \text{Top-5 } & \text{Median distance}^1 & \text{Top-1}
 \\
 \hline
-\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{0.97\%} & \text{2.97\%} & \text{6,126.90} & \text{0.39\%} \\
-\text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{11.18\%} & \text{26.85\%} & \text{556.32} & \text{5.30\%}\\
-\text{EfficientNet-B1} & \text{81,505}^3 & \text{TRUE} & \text{0.67\%} & \text{1.77\%} & \text{6,271.56} & \text{0.13\%}\\
-\text{EfficientNet-B1} & \text{332,786}^4 & \text{FALSE} & \text{20.31\%} & \text{42.02\%} & \text{382.58} & \text{41.77\%}\\
-\text{EfficientNet-B1} & \text{332,786}^4 & \text{TRUE} & \text{0.55\%} & \text{2.09\%} & \text{7,411.92} & \text{0.23\%}\\
+\text{EfficientNet-B1} & \text{79,000}^2 \text{ }^3 & \text{FALSE} & \text{0.97\%} & \text{2.97\%} & \text{6,126.90} & \text{0.97\%} \\
+\text{EfficientNet-B1} & \text{81,505}^3 & \text{FALSE} & \text{11.18\%} & \text{26.85\%} & \text{556.32} & \text{11.67\%}\\
+\text{EfficientNet-B1} & \text{81,505}^3 & \text{TRUE} & \text{0.67\%} & \text{1.77\%} & \text{6,271.56} & \text{1.06\%}\\
+\text{EfficientNet-B1} & \text{332,786}^4 & \text{FALSE} & \text{20.31\%} & \text{42.02\%} & \text{382.58} & \text{20.31\%}\\
+\text{EfficientNet-B1} & \text{332,786}^4 & \text{TRUE} & \text{0.55\%} & \text{2.09\%} & \text{7,411.92} & \text{0.93\%}\\
 \hline
 \end{array} \\
 & \text{}^1 \text{ To measure the distance for each region, the midpoint of the region was used, and the median  }
