@@ -52,6 +52,6 @@ Within this module we are supervised by the following course coaches:
 
 The whole project was done by the following students:
 
-- [Linus Schlumberger](https://gitlab.com/Killusions)
-- [Lukas Stöckli](https://gitlab.com/Valairaa)
-- [Yutaro Sigrist](https://gitlab.com/yusigrist)
+- [Linus Schlumberger](https://github.com/Killusions)
+- [Lukas Stöckli](https://github.com/Valairaa)
+- [Yutaro Sigrist](https://github.com/yusigrist)

@@ -2,9 +2,9 @@
 
 ## Group Members
 
-[Linus Schlumberger](https://gitlab.com/Killusions)
-[Lukas Stöckli](https://gitlab.com/Valairaa)
-[Yutaro Sigrist](https://gitlab.com/yusigrist)
+[Linus Schlumberger](https://github.com/Killusions)
+[Lukas Stöckli](https://github.com/Valairaa)
+[Yutaro Sigrist](https://github.com/yusigrist)
 
 ## Short Project Description
 
