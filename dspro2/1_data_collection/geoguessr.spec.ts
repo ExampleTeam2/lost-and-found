@@ -592,19 +592,19 @@ const stopIfCrashedBefore = () => {
   }
 };
 
-const skipSpectating: Record<string, boolean> = {};
+const stopShadowing: Record<string, boolean> = {};
 
 const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
   const gameId = await gameStart(page, 'multiplayer', 'Game starting in', 60000, i, identifier);
   if (!gameId) {
     return;
   }
-  skipSpectating[gameId] = false;
+  stopShadowing[gameId] = false;
   try {
     let rounds = 0;
     await roundMultiplayer(page, gameId, rounds, identifier);
     await page.waitForTimeout(1000);
-    if (skipSpectating[gameId]) {
+    if (stopShadowing[gameId]) {
       return;
     }
     if (MODE === 'demo' || (await clickButtonIfFound(page, 'Spectate'))) {
@@ -616,15 +616,11 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
       rounds++;
       if (MODE !== 'demo') {
         await page.getByText('Next round starts in').waitFor({ state: 'visible' });
-        if (skipSpectating[gameId]) {
-          return;
-        }
         await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
       } else {
         await page.getByText('Correct').or(page.getByText('Next round starts in')).or(page.getByText('Next round to start')).or(getButtonWithText(page, 'Spectate')).first().waitFor({ state: 'visible' });
-        if ((await page.getByText('Correct').count()) === 0) {
-          await clickButtonIfFound(page, 'Spectate');
-          await page.waitForTimeout(1000);
+        if (stopShadowing[gameId]) {
+          return;
         }
         await page.getByText('Correct').or(page.getByText('Next round starts in')).or(page.getByText('Next round to start')).waitFor({ state: 'hidden', timeout: 120000 });
       }
@@ -635,22 +631,15 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
         await page.locator('footer').evaluate((el) => el.remove());
       }
       while ((rounds < MAX_ROUNDS && MODE !== 'demo' && (await page.getByText('Next round starts').count()) > 0) || (MODE === 'demo' && (await page.getByText('Correct').or(page.getByText('Next round starts')).count()) > 0)) {
-        if (skipSpectating[gameId]) {
+        if (stopShadowing[gameId]) {
           return;
         }
         if (MODE !== 'demo') {
           await page.getByText('Next round starts in').waitFor({ state: 'visible' });
-          if (skipSpectating[gameId]) {
-            return;
-          }
           await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
         } else {
           await page.getByText('Correct').or(page.getByText('Next round starts in')).or(page.getByText('Next round to start')).or(getButtonWithText(page, 'Spectate')).first().waitFor({ state: 'visible' });
-          if ((await page.getByText('Correct').count()) === 0) {
-            await clickButtonIfFound(page, 'Spectate');
-            await page.waitForTimeout(1000);
-          }
-          if (skipSpectating[gameId]) {
+          if (stopShadowing[gameId]) {
             return;
           }
           await page.getByText('Correct').or(page.getByText('Next round starts in')).or(page.getByText('Next round to start')).waitFor({ state: 'hidden', timeout: 120000 });
@@ -661,7 +650,7 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
       }
     }
   } catch (e: unknown) {
-    if (skipSpectating) {
+    if (stopShadowing) {
       stopIfCrashedBefore();
       return;
     } else {
@@ -757,8 +746,8 @@ const playSingleplayer = async (page: Page, i: number, identifier?: string) => {
 // Shadow given game, can not be used with multiple instances.
 const shadowGame = async (page: Page, gameId: string) => {
   // End previous games.
-  for (const gameId of Object.keys(skipSpectating)) {
-    skipSpectating[gameId] = true;
+  for (const gameId of Object.keys(stopShadowing)) {
+    stopShadowing[gameId] = true;
   }
   log('Loading game - ' + gameId);
   await page.goto('https://www.geoguessr.com/battle-royale/' + gameId, { timeout: 60000 });
