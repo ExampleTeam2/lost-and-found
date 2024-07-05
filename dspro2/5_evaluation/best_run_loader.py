@@ -3,6 +3,16 @@ import pandas as pd
 from wandb_downloader import WandbDownloader
 
 
+def GET_RUN_CONFIGURATIONS(name, image_size, original_image_size):
+    return [
+        {"project": f"dspro2-predicting-{name}", "data_augmentation": "base_augmentation", "datasize": 81505, "image_size": image_size},
+        {"project": f"dspro2-predicting-{name}", "data_augmentation": "full_augmentation_v2", "datasize": 81505, "image_size": image_size},
+        {"project": f"dspro2-predicting-{name}", "data_augmentation": "base_augmentation", "datasize": 332786, "image_size": image_size},
+        {"project": f"dspro2-predicting-{name}", "data_augmentation": "full_augmentation_v2", "datasize": 332786, "image_size": image_size},
+        {"project": f"dspro2-predicting-{name}", "data_augmentation": "base_augmentation", "datasize": 79000, "image_size": original_image_size},
+    ]
+
+
 class BestRunLoader:
     def __init__(self, entity, metric_name, project_names, file_names_to_download):
         self.entity = entity
@@ -17,13 +27,7 @@ class BestRunLoader:
         for name in self.project_names:
             original_image_size = [180, 320]
             image_size = [80, 130]
-            configurations[name] = [
-                {"project": f"dspro2-predicting-{name}", "data_augmentation": "base_augmentation", "datasize": 81505, "image_size": image_size},
-                {"project": f"dspro2-predicting-{name}", "data_augmentation": "full_augmentation_v2", "datasize": 81505, "image_size": image_size},
-                {"project": f"dspro2-predicting-{name}", "data_augmentation": "base_augmentation", "datasize": 332786, "image_size": image_size},
-                {"project": f"dspro2-predicting-{name}", "data_augmentation": "full_augmentation_v2", "datasize": 332786, "image_size": image_size},
-                {"project": f"dspro2-predicting-{name}", "data_augmentation": "base_augmentation", "datasize": 79000, "image_size": original_image_size},
-            ]
+            configurations[name] = GET_RUN_CONFIGURATIONS(name, image_size, original_image_size)
         return configurations
 
     def load_best_runs(self, project, data_augmentation, datasize, image_size):

@@ -5,9 +5,12 @@ import concurrent
 import sys
 
 sys.path.insert(0, "../../")
-from data_loader import resolve_env_variable, get_json_files, load_json_file, FILE_NAME_PART, JSON_FILE_NAME_PART, DEFAULT_SINGLEPLAYER_FILTER_TEXT
+from data_loader import resolve_env_variable, get_json_files, load_json_file, FILE_NAME_PART, JSON_FILE_NAME_PART, DEFAULT_FILTER_TEXT
 from countryconverter import convert_from_coordinates, convert_from_names
 from region_enricher import RegionEnricher
+
+
+DEFAULT_SINGLEPLAYER_FILTER_TEXT = DEFAULT_FILTER_TEXT
 
 
 # You can use the environment variables FILE_LOCATION and JSON_FILE_LOCATION to set the input and output directories
