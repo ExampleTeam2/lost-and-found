@@ -592,7 +592,11 @@ const stopIfCrashedBefore = () => {
   }
 };
 
+let skipSpectating = false;
+
 const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
+  // Start spectating the game again
+  skipSpectating = false;
   const gameId = await gameStart(page, 'multiplayer', 'Game starting in', 60000, i, identifier);
   if (!gameId) {
     return;
@@ -600,6 +604,9 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
   let rounds = 0;
   await roundMultiplayer(page, gameId, rounds, identifier);
   await page.waitForTimeout(1000);
+  if (skipSpectating) {
+    return;
+  }
   if (MODE === 'demo' || (await clickButtonIfFound(page, 'Spectate'))) {
     if (MODE === 'demo') {
       if ((await page.getByText('Correct').count()) === 0) {
@@ -609,6 +616,9 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
     rounds++;
     if (MODE !== 'demo') {
       await page.getByText('Next round starts in').waitFor({ state: 'visible' });
+      if (skipSpectating) {
+        return;
+      }
       await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
     } else {
       await page.getByText('Correct').or(page.getByText('Next round starts in')).or(getButtonWithText(page, 'Spectate')).first().waitFor({ state: 'visible' });
@@ -625,8 +635,14 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
       await page.locator('footer').evaluate((el) => el.remove());
     }
     while ((rounds < MAX_ROUNDS && MODE !== 'demo' && (await page.getByText('Next round starts').count()) > 0) || (MODE === 'demo' && (await page.getByText('Correct').or(page.getByText('Next round starts')).count()) > 0)) {
+      if (skipSpectating) {
+        return;
+      }
       if (MODE !== 'demo') {
         await page.getByText('Next round starts in').waitFor({ state: 'visible' });
+        if (skipSpectating) {
+          return;
+        }
         await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
       } else {
         await page.getByText('Correct').or(page.getByText('Next round starts in')).or(getButtonWithText(page, 'Spectate')).first().waitFor({ state: 'visible' });
@@ -729,6 +745,8 @@ const playSingleplayer = async (page: Page, i: number, identifier?: string) => {
 
 // Shadow given game, can not be used with multiple instances.
 const shadowGame = async (page: Page, gameId: string) => {
+  // End previous game.
+  skipSpectating = true;
   log('Loading game - ' + gameId);
   await page.goto('https://www.geoguessr.com/battle-royale/' + gameId, { timeout: 60000 });
   await page.waitForTimeout(1000);
