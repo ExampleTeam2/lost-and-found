@@ -11,6 +11,18 @@ from PIL import Image
 
 DEFAULT_DOWNLOAD_LINK = "http://49.12.197.1"
 
+# If this is in the file name, it is a geoguessr file, should be set
+FILE_NAME_PART = "geoguessr"
+
+# If not specified otherwise, expect this text to be in the file name, could also be empty
+DEFAULT_SINGLEPLAYER_FILTER_TEXT = "singleplayer"
+
+# If this is in the file name, it is a json file, could also be empty
+JSON_FILE_NAME_PART = "result"
+
+# If this is in the file name, it is a png file, could also be empty
+IMAGE_FILE_NAME_PART = "location"
+
 # load .env file
 from dotenv import load_dotenv
 
@@ -21,9 +33,9 @@ def get_counterpart(file):
     # Get the counterpart of a file (json or png)
     # Get the counterpart
     if file.endswith(".json"):
-        counterpart = file.replace("result", "location").replace(".json", ".png")
+        counterpart = file.replace(JSON_FILE_NAME_PART, IMAGE_FILE_NAME_PART).replace(".json", ".png")
     elif file.endswith(".png"):
-        counterpart = file.replace("location", "result").replace(".png", ".json")
+        counterpart = file.replace(IMAGE_FILE_NAME_PART, JSON_FILE_NAME_PART).replace(".png", ".json")
     else:
         raise ValueError("Invalid file type", file)
     return counterpart
@@ -36,7 +48,7 @@ def hash_filenames(file_names):
     # Concatenate all file names into one long string and update the hash object
     for name in file_names:
         # Ensure encoding to bytes, as hashlib requires bytes input
-        hash_object.update(_get_basename(name).encode("utf-8"))
+        hash_object.update(get_basename(name).encode("utf-8"))
 
     # Get the hexadecimal representation of the hash
     hash_digest = hash_object.hexdigest()
@@ -78,7 +90,7 @@ def get_cached_file_path(file_names, config, name="data", suffix=".pth"):
 def potentially_get_cached_file_path(file_names, config, name="data", suffix=".pth", cache_load_callback=None):
     file_path = get_cached_file_path(file_names, config, name=name, suffix=suffix)
     if cache_load_callback is not None:
-        file_name = _get_basename(file_path)
+        file_name = get_basename(file_path)
         print("Checking remote cache for " + file_name)
         cache_load_callback(file_name)
     if os.path.exists(file_path):
@@ -105,72 +117,8 @@ def _remove_unpaired_files(files):
     return paired_files
 
 
-# Initially converted Bermuda here, but it is just not included in the singleplayer data in the first place (but in the multiplayer data)
-country_groups = {}
-
-
-def get_countries_occurrences_from_files(files, basenames_to_locations_map=None, cached_basenames_to_countries={}):
-    # filter out-non json files
-    json_files = list(filter(lambda x: x.endswith(".json"), files))
-    json_basenames = [_get_basename(file) for file in json_files]
-
-    missing_json_files = [file for file, basename in zip(json_files, json_basenames) if basename not in cached_basenames_to_countries]
-
-    missing_json_files_full_paths = missing_json_files
-    if basenames_to_locations_map is not None:
-        missing_json_files_full_paths = _map_to_locations(missing_json_files, basenames_to_locations_map)
-
-    # load missing data
-    missing_json_data = load_json_files(missing_json_files_full_paths, allow_err=True)
-
-    json_data = []
-    for file in json_basenames:
-        if file in cached_basenames_to_countries:
-            country = cached_basenames_to_countries[file]
-            # technically 'country' is different from 'country_name' but it doesn't matter here
-            json_data.append({"country_name": country, "country": country})
-        else:
-            json_data.append(missing_json_data.pop(0))
-
-    # get all countries with their number of games
-    countries = {}
-    countries_to_files = {}
-    files_to_countries = {}
-    countries_to_basenames = {}
-    basenames_to_countries = {}
-    for file, game, basename in zip(json_files, json_data, json_basenames):
-        if game is None:
-            continue
-        if "country_name" not in game:
-            if "country" not in game:
-                print("Country not found in game: " + file)
-                continue
-            else:
-                raise ValueError("Country name not found in game, was not enriched: " + file)
-        country = game["country_name"]
-        # Convert to actual country
-        if country in country_groups:
-            country = country_groups[country]
-        if country in countries:
-            countries[country] += 1
-            countries_to_files[country].append(file)
-            countries_to_basenames[country].append(basename)
-        else:
-            countries[country] = 1
-            countries_to_files[country] = [file]
-            countries_to_basenames[country] = [basename]
-        files_to_countries[file] = country
-        basenames_to_countries[basename] = country
-
-    # sort countries by number of games
-    sorted_countries = sorted(countries.items(), key=lambda x: x[1], reverse=True)
-    # Update the dict to keep the order
-    countries = dict(sorted_countries)
-    return countries, countries_to_files, files_to_countries, len(json_data), countries_to_basenames, basenames_to_countries
-
-
 # Assuming either just json or png is give, also return the others (in a flat list all together)
-def _get_files_counterparts(files, all_files):
+def get_files_counterparts(files, all_files):
     files_counterparts = []
     for file in files:
         counterpart = get_counterpart(file)
@@ -183,13 +131,13 @@ def _get_files_counterparts(files, all_files):
 
 
 # Get the file name from a full path
-def _get_basename(file):
+def get_basename(file):
     return os.path.basename(file)
 
 
 # Replace one start of the file with another and create a map from the original files to the new ones, then return the new files and the map
 def _map_to_basenames(files, basenames_to_locations_map={}):
-    basenames = [_get_basename(file) for file in files]
+    basenames = [get_basename(file) for file in files]
     for file, basename in zip(files, basenames):
         if basename not in basenames_to_locations_map:
             basenames_to_locations_map[basename] = file
@@ -205,73 +153,8 @@ def _map_to_location_or_throw(file, basenames_to_locations_map):
 
 
 # From a list of files and a map, restore the original locations
-def _map_to_locations(files, basenames_to_locations_map, throw=False):
+def map_to_locations(files, basenames_to_locations_map, throw=False):
     return [_map_to_location(file, basenames_to_locations_map) for file in files] if not throw else [_map_to_location_or_throw(file, basenames_to_locations_map) for file in files]
-
-
-# Takes in a list of files and a occurrence map (from a different_dataset)), create an optimally mapped list of files where the occurrences correspond to the map (or are multiples of them)
-def map_occurrences_to_files(files, occurrence_map, countries_map_percentage_threshold, countries_map_slack_factor=None, allow_missing=False, basenames_to_locations_map=None, cached_basenames_to_countries={}):
-    # get the occurrences of the files itself
-    files_occurrences, _, _, num_files, countries_to_basenames, _ = get_countries_occurrences_from_files(files, basenames_to_locations_map=basenames_to_locations_map, cached_basenames_to_countries=cached_basenames_to_countries)
-    original_countries_to_basenames = {country: files for country, files in countries_to_basenames.items()}
-    original_occurrences = {country: num for country, num in files_occurrences.items()}
-    other_countries_to_basenames = {}
-    other_files_occurrences = {}
-    if countries_map_percentage_threshold:
-        # filter out countries with less than the threshold
-        countries_to_basenames = {country: files for country, files in countries_to_basenames.items() if len(files) / num_files >= countries_map_percentage_threshold}
-        other_countries_to_basenames = {country: files for country, files in original_countries_to_basenames.items() if country not in countries_to_basenames}
-        # and update the files occurrences
-        files_occurrences = {country: num for country, num in files_occurrences.items() if country in countries_to_basenames}
-        other_files_occurrences = {country: num for country, num in original_occurrences.items() if country in other_countries_to_basenames}
-    # get the factors between each of the countries (nan if not in the map)
-    all_countries = list(set([*occurrence_map.keys(), *files_occurrences.keys()]))
-    factors = [(files_occurrences[country] / occurrence_map[country]) if (country in occurrence_map and country in files_occurrences) else float("nan") for country in all_countries]
-    # if any of the factors is nan, raise an exception
-    if any([x != x for x in factors]):
-        if not allow_missing:
-            missing_countries = [country for country, factor in zip(all_countries, factors) if factor != factor]
-            # check if any of them are in the occurrence map
-            missing_countries = [country for country in missing_countries if country in occurrence_map]
-            if len(missing_countries):
-                print("Missing countries in the map:", missing_countries)
-                raise ValueError("Missing country in one of the maps")
-        # filter out the missing countries
-        factors = [x for x in factors if x == x]
-        print(f"Using {len(factors)} countries (out of {len(all_countries)} options)")
-    if allow_missing and len(factors) == 0:
-        raise ValueError("No countries in commmon between the maps")
-    # Get the lowest factor
-    factor = min(factors)
-    # Get the number of files to load by country
-    new_occurrences = {country: math.ceil(occurrence_map[country] * factor) for country in occurrence_map if country in files_occurrences}
-
-    # Optionally add the other countries fitting the slack factor
-    if countries_map_percentage_threshold and countries_map_slack_factor is not None:
-        other_countries = list(set([*occurrence_map.keys(), *other_files_occurrences.keys()]))
-        other_factors = [(other_files_occurrences[country] / occurrence_map[country]) if (country in occurrence_map and country in other_files_occurrences) else float("nan") for country in other_countries]
-        # set other factors to nan if they are below the slack factor
-        slacked_factors = [x * countries_map_slack_factor if x == x and ((x / factor) >= countries_map_slack_factor) else float("nan") for x in other_factors]
-        # get countries with factors above the slack factor
-        other_relevant_countries = [country for country, factor in zip(other_countries, slacked_factors) if factor == factor]
-        other_relevant_factors = [factor for factor in slacked_factors if factor == factor]
-        print(f"Slack factor included {len(other_relevant_countries)} additional countries (of {len(other_countries)} options)")
-        # add to the new occurrences map
-        for country, slacked_factor in zip(other_relevant_countries, other_relevant_factors):
-            new_occurrences[country] = math.ceil(occurrence_map[country] * slacked_factor)
-
-    # Get the files to load
-    files_to_load = []
-    for country in new_occurrences:
-        if allow_missing and (country not in countries_to_basenames and country not in other_countries_to_basenames):
-            continue
-        country_basenames = countries_to_basenames.get(country, None)
-        if country_basenames is None:
-            country_basenames = other_countries_to_basenames[country]
-        files_to_load.extend(country_basenames[: new_occurrences[country]])
-    # Get the pairs of files to load
-    files_with_counterparts = _get_files_counterparts(files_to_load, [*files, *countries_to_basenames.values(), *other_countries_to_basenames.values()])
-    return files_with_counterparts, len(files_to_load)
 
 
 def _get_list_from_html_file(download_link):
@@ -305,13 +188,13 @@ def _get_list_from_html_file(download_link):
     return files
 
 
-def _get_list_from_download_link(download_link, filter_text="singleplayer", type=""):
+def _get_list_from_download_link(download_link, filter_text=DEFAULT_SINGLEPLAYER_FILTER_TEXT, type=""):
     full_list = _get_list_from_html_file(download_link)
     all_files = [file for file in full_list if filter_text in file and (file.endswith(type) if type else (file.endswith(".json") or file.endswith(".png")))]
     return all_files
 
 
-# from geoguessr_location_singleplayer_<id>_<num>.png to <id>_<num>
+# from geoguessr_location_singleplayer_<id>_<num>.png (or similar) to <id>_<num>
 def _get_file_id(file):
     return "_".join(file.split("_")[-2:]).split(".")[0]
 
@@ -328,7 +211,7 @@ def _get_full_file_location(file_name, current_location, nested=False):
 
 
 def _map_download_locations_of_files(files, file_location, json_file_location=None, image_file_location=None, basenames_to_locations_map={}, nested=False):
-    basenames = [_get_basename(file) for file in files]
+    basenames = [get_basename(file) for file in files]
     for basename in basenames:
         if json_file_location is not None and basename.endswith(".json"):
             file_path = _get_full_file_location(basename, json_file_location, nested=nested)
@@ -379,7 +262,7 @@ def _list_dir_contents(file_location):
 
 
 def _filter_dir_contents(files):
-    return [file for file in files if "geoguessr" in file]
+    return [file for file in files if FILE_NAME_PART in file]
 
 
 def _get_id_dir(file_location, char, file_paths=[], depth=2, get_all=False):
@@ -568,7 +451,7 @@ def get_all_files(path, use_files_list=False, nested=False):
 
     if use_files_list and not found_files_list:
         # create file with all files
-        basenames = [_get_basename(file) for file in final_files]
+        basenames = [get_basename(file) for file in final_files]
         with open(stripped_path + "/files_list", "w") as file:
             file.write("\n".join(basenames) + "\n")
 
@@ -590,7 +473,7 @@ def get_image_files(path, use_files_list=False, nested=False):
     return [file for file in files if file.endswith(".png")]
 
 
-def _get_list_from_local_dir(file_location, json_file_location=None, image_file_location=None, filter_text="singleplayer", type="", basenames_to_locations_map={}, use_files_list=False, nested=False):
+def _get_list_from_local_dir(file_location, json_file_location=None, image_file_location=None, filter_text=DEFAULT_SINGLEPLAYER_FILTER_TEXT, type="", basenames_to_locations_map={}, use_files_list=False, nested=False):
     all_files = []
     if file_location is not None:
         all_files.extend(get_files(file_location, use_files_list=use_files_list, nested=nested))
@@ -610,7 +493,7 @@ def _get_list_from_local_dir(file_location, json_file_location=None, image_file_
     return all_files, basenames_to_locations_map
 
 
-def _get_list_from_remote(download_link, file_location, json_file_location=None, image_file_location=None, filter_text="singleplayer", type="", basenames_to_locations_map={}, nested=False):
+def _get_list_from_remote(download_link, file_location, json_file_location=None, image_file_location=None, filter_text=DEFAULT_SINGLEPLAYER_FILTER_TEXT, type="", basenames_to_locations_map={}, nested=False):
     all_files = _get_list_from_download_link(download_link, filter_text, type)
     # Filter None values
     all_files = [file for file in all_files if file is not None]
@@ -703,7 +586,7 @@ def _copy_other_files(path, files_list_path, additional_files_paths, move=False)
     for file in additional_files_paths:
         if file.endswith(".pth"):
             # Copy file to path
-            pth_basename = _get_basename(file)
+            pth_basename = get_basename(file)
             # If it has a long file name (100+) (probably unique), skip it if it is already in the path
             if len(pth_basename) > 100 and os.path.exists(os.path.join(path, pth_basename)):
                 print("Skipping copying " + pth_basename + " because it is already in the path")
@@ -717,7 +600,7 @@ def _copy_other_files(path, files_list_path, additional_files_paths, move=False)
             print("Copied " + pth_basename)
         elif file.endswith(".wandb"):
             # Copy file to path
-            wandb_basename = _get_basename(file)
+            wandb_basename = get_basename(file)
             print("Copying " + wandb_basename)
             if move:
                 print("Copying " + wandb_basename + " anyway because it is very small, and it could be used later")
@@ -779,7 +662,7 @@ def _save_to_zips_from_tmp(file_location, json_file_location=None, image_file_lo
         print("Skipped zipping and copying " + zip_name)
 
 
-def _get_files_list(file_location, json_file_location=None, image_file_location=None, filter_text="singleplayer", type="", download_link=None, pre_download=False, from_remote_only=False, dedupe_and_remove_unpaired=True, skip_checks=False, num_download_connections=16, use_files_list=False, nested=False, tmp_dir_and_zip=False):
+def _get_files_list(file_location, json_file_location=None, image_file_location=None, filter_text=DEFAULT_SINGLEPLAYER_FILTER_TEXT, type="", download_link=None, pre_download=False, from_remote_only=False, dedupe_and_remove_unpaired=True, skip_checks=False, num_download_connections=16, use_files_list=False, nested=False, tmp_dir_and_zip=False):
     basenames_to_locations_map = {}
     basenames = []
     remote_files = []
@@ -861,16 +744,14 @@ def _get_file_locations(file_location, json_file_location=None, image_file_locat
 # Set the environment variable "SKIP_REMOTE" to "true" to skip the remote files and only use the local files. (even if from_remote_only is set), only use this if you are sure the current files are already downloaded.
 # Set the environment variable "SKIP_CHECKS" to "true" to skip all of the checks and just use the files from the data-list. Only use this if you are sure the files are already downloaded and structured correctly.
 # Set allow_new_file_creation=False to only allow loading from the loading file, otherwise an error will be raised. This will improve loading performance.
-# If a countries map is given, the files will automatically be pre-downloaded.
-# The countries_map_percentage_threshold is the minimum percentage of games (of the total) a country should have to be included in the map, it only works if allow_missing_in_map is set to True.
-# If countries_map_slack_factor is set (only works if countries_map_percentage_threshold is set), it will allow countries to be included in the map if they are within the slack factor of the percentage threshold. This can also be set to 1 to include countries that can be mapped but do not match countries_map_percentage_threshold.
+# If a map_occurrences_to_files function is given (like the one returned by get_mapper in country_mapper), the files will be mapped and the files will automatically be pre-downloaded.
 # If `NESTED=true` is set, the files will be loaded from and saved into nested directories, this is useful for large datasets.
 # If `USE_FILES_LIST=true` is set, the names of the files will be loaded from and saved into a files_list file in the directory, this is useful for large datasets.
 # If `TMP_DIR_AND_ZIP=true` is set, the files will be loaded from a zip file into the tmp directory and saved to a zip file into the tmp directory. This is useful for large datasets and slow file systems like Google Colab.
 # In that case if in the file_location `.pth` files are found, they will be copied to the tmp directory and copied back after the files are loaded. This is used for caching.
 # If this is true and `USE_FILES_LIST=true` is set (and not mapping or pre-downloading), the copying of the `.zip` file will be skipped if `.pth` files are found.
 # If return_load_and_additional_save_callback is set to True, a callback function will be returned that can be used to load the zip file or a specified .pth file later if required, as well as a callback function that can be used to save the `.pth` files.
-def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.path.dirname(__file__), "1_data_collection/.data"), json_file_location=None, image_file_location=None, filter_text="singleplayer", type="", limit=0, allow_new_file_creation=True, countries_map=None, countries_map_percentage_threshold=0, countries_map_slack_factor=None, allow_missing_in_map=False, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16, allow_num_download_connections_env=True, countries_map_cached_basenames_to_countries={}, return_basenames_too=False, return_load_and_additional_save_callback=False):
+def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.path.dirname(__file__), "1_data_collection/.data"), json_file_location=None, image_file_location=None, filter_text=DEFAULT_SINGLEPLAYER_FILTER_TEXT, type="", limit=0, allow_new_file_creation=True, map_occurrences_to_files=None, passthrough_map=False, shuffle_seed=None, download_link=None, pre_download=False, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16, allow_num_download_connections_env=True, return_basenames_too=False, return_load_and_additional_save_callback=False):
     if download_link == "default":
         download_link = DEFAULT_DOWNLOAD_LINK
     download_link = resolve_env_variable(download_link, "DOWNLOAD_LINK", allow_download_link_env, None, True)
@@ -890,7 +771,7 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
         from_remote_only = False
         download_link = None
 
-    pre_download = pre_download or countries_map is not None
+    pre_download = pre_download or map_occurrences_to_files is not None
     always_load_zip = pre_download
 
     file_location, json_file_location, image_file_location, tmp_dir, current_dir, use_files_list, nested, tmp_dir_and_zip = _get_file_locations(file_location, json_file_location, image_file_location, allow_file_location_env, allow_json_file_location_env, allow_image_file_location_env)
@@ -941,12 +822,12 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
             raise ValueError("No loading file at location, but checks are skipped")
         pass
 
-    if countries_map and not passthrough_map:
+    if map_occurrences_to_files and not passthrough_map:
         if skip_checks:
-            raise ValueError("Countries map given, but checks are skipped")
+            raise ValueError("Map function given, but checks are skipped")
         if download_link is not None and not from_remote_only and not has_loading_file:
             print("Warning: If you add local files, this will not be reproducible, consider setting from_remote_only to True")
-        mapped_files, _ = map_occurrences_to_files(basenames, countries_map, countries_map_percentage_threshold, countries_map_slack_factor, allow_missing=allow_missing_in_map, basenames_to_locations_map=basenames_to_locations_map, cached_basenames_to_countries=countries_map_cached_basenames_to_countries)
+        mapped_files, _ = map_occurrences_to_files(basenames, basenames_to_locations_map=basenames_to_locations_map)
         mapped_files_set = set(mapped_files)
         basenames = [file for file in basenames if file in mapped_files_set]
         print("Mapped files: " + str(len(basenames)))
@@ -1017,7 +898,7 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
     basenames_set = set(basenames)
 
     if skip_checks:
-        actual_file_locations = _map_to_locations(files_to_load, basenames_to_locations_map, throw=True)
+        actual_file_locations = map_to_locations(files_to_load, basenames_to_locations_map, throw=True)
         if return_basenames_too:
             if return_load_and_additional_save_callback:
                 return actual_file_locations, files_to_load, load_callback, additional_save_callback
@@ -1052,10 +933,10 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
 
 
 # Update data based on factors
-def update_data_to_load(files_to_keep, old_loading_file="./data_list", new_loading_file="./updated_data_list", file_location=os.path.join(os.path.dirname(__file__), "1_data_collection/.data"), json_file_location=None, image_file_location=None, filter_text="singleplayer", type="", limit=0, shuffle_seed=None, download_link=None, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16):
+def update_data_to_load(files_to_keep, old_loading_file="./data_list", new_loading_file="./updated_data_list", file_location=os.path.join(os.path.dirname(__file__), "1_data_collection/.data"), json_file_location=None, image_file_location=None, filter_text=DEFAULT_SINGLEPLAYER_FILTER_TEXT, type="", limit=0, shuffle_seed=None, download_link=None, from_remote_only=False, allow_file_location_env=False, allow_json_file_location_env=False, allow_image_file_location_env=False, allow_download_link_env=False, num_download_connections=16):
     _, previous_files_to_load = get_data_to_load(old_loading_file, file_location, json_file_location, image_file_location, filter_text, type, limit, allow_new_file_creation=False, shuffle_seed=shuffle_seed, download_link=download_link, from_remote_only=from_remote_only, allow_file_location_env=allow_file_location_env, allow_json_file_location_env=allow_json_file_location_env, allow_image_file_location_env=allow_image_file_location_env, allow_download_link_env=allow_download_link_env, num_download_connections=num_download_connections, return_basenames_too=True)
     files_to_load = []
-    base_files_to_keep = set([_get_basename(file) for file in files_to_keep])
+    base_files_to_keep = set([get_basename(file) for file in files_to_keep])
     for previous_file_to_load in previous_files_to_load:
         if previous_file_to_load in base_files_to_keep:
             files_to_load.append(previous_file_to_load)
@@ -1093,7 +974,7 @@ def load_json_file(file, allow_err=False):
             return json.load(f)
         except json.JSONDecodeError as error:
             if allow_err:
-                print(f"JSONDecodeError in {_get_basename(file)}")
+                print(f"JSONDecodeError in {get_basename(file)}")
                 print(error)
                 return None
             else:
@@ -1132,11 +1013,3 @@ def load_image_files_raw(files, num_workers=16):
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
         results = list(executor.map(load_image_file_raw, files))
     return results
-
-
-# get countries occurrences from games
-def get_countries_occurrences(loading_file="./countries_map_data_list", file_location=os.path.join(os.path.dirname(__file__), "1_data_collection/.data"), filter_text="multiplayer", download_link=None, from_remote_only=False, allow_file_location_env=False, allow_image_file_location_env=False, allow_json_file_location_env=False, allow_download_link_env=False, num_download_connections=16):
-    files = get_data_to_load(loading_file=loading_file, file_location=file_location, filter_text=filter_text, type="json", download_link=download_link, from_remote_only=from_remote_only, allow_file_location_env=allow_file_location_env, allow_image_file_location_env=allow_image_file_location_env, allow_json_file_location_env=allow_json_file_location_env, allow_download_link_env=allow_download_link_env, num_download_connections=num_download_connections)
-    # map data
-    countries, countries_to_files, files_to_countries, num_games, countries_to_basenames, basenames_to_countries = get_countries_occurrences_from_files(files)
-    return countries, countries_to_files, files_to_countries, num_games, countries_to_basenames, basenames_to_countries

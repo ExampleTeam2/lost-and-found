@@ -5,7 +5,7 @@ import concurrent
 import sys
 
 sys.path.insert(0, "../../")
-from data_loader import resolve_env_variable, get_json_files, load_json_file
+from data_loader import resolve_env_variable, get_json_files, load_json_file, FILE_NAME_PART, JSON_FILE_NAME_PART, DEFAULT_SINGLEPLAYER_FILTER_TEXT
 from countryconverter import convert_from_coordinates, convert_from_names
 from region_enricher import RegionEnricher
 
@@ -21,9 +21,14 @@ class CountryEnricher:
         self.coordinates = []  # Batching for faster results, 5 x times faster now
         self.raw_countries = []
         self.file_map = {}  # Batching for faster results, 5 x times faster now
-        self.mode = "singleplayer" if not from_country else "multiplayer"
+        self.mode = DEFAULT_SINGLEPLAYER_FILTER_TEXT if not from_country else "multiplayer"
         self.pattern = r"singleplayer_(.+?)\.json" if not from_country else r"multiplayer_(.+?)\.json"
         self.from_country = from_country
+        self.file_name_prefix = FILE_NAME_PART
+        if JSON_FILE_NAME_PART:
+            self.file_name_prefix += "_" + JSON_FILE_NAME_PART
+        if self.mode:
+            self.file_name_prefix += "_" + self.mode
         # Only use if the mapping logic didn't change
         self.use_previous = use_previous
         self.region_enricher = RegionEnricher()
@@ -33,7 +38,8 @@ class CountryEnricher:
     def load_and_prepare_files(self, num_workers=16):
         json_paths = get_json_files(self.input_dir)
         # filter for mode
-        json_paths = [path for path in json_paths if self.mode in path]
+        if self.mode:
+            json_paths = [path for path in json_paths if self.mode in path]
         had_error = False
 
         def process_json_file(file_path):
@@ -97,7 +103,7 @@ class CountryEnricher:
         os.makedirs(self.output_dir, exist_ok=True)
 
         def save_json_file(image_id, data):
-            file_name = f"geoguessr_result_{self.mode}_" + image_id + ".json"
+            file_name = f"{self.file_name_prefix}_" + image_id + ".json"
             file_path = os.path.join(self.output_dir, file_name)
             with open(file_path, "w", encoding="utf8") as f:
                 json.dump(data, f, ensure_ascii=False)
