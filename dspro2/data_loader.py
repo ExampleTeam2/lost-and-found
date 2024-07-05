@@ -756,7 +756,7 @@ def get_data_to_load(loading_file="./data_list", file_location=os.path.join(os.p
         download_link = DEFAULT_DOWNLOAD_LINK
     download_link = resolve_env_variable(download_link, "DOWNLOAD_LINK", allow_download_link_env, None, True)
     if download_link == DEFAULT_DOWNLOAD_LINK:
-        print("Warning: Downloading from our server will soon no longer be supported, please use local data (DOWNLOAD_LINK=None in .env), the dataset is accessible at https://www.kaggle.com/datasets/killusions/street-location-images/ (put unzipped files into 1_data_collection/.data and run yarn data:import on a unix based system, then the import.ipynb notebook), provide a different download link (DOWNLOAD_LINK in .env) or the scaping script can be used to collect your own data.")
+        print("Warning: Downloading from our server will soon no longer be supported, please use local data (DOWNLOAD_LINK=None and `SKIP_REMOTE=true` in .env), the dataset is accessible at https://www.kaggle.com/datasets/killusions/street-location-images/ (put unzipped files into 1_data_collection/.data and run yarn data:import on a unix based system, then the import.ipynb notebook), provide a different download link (DOWNLOAD_LINK in .env) or the scaping script can be used to collect your own data.")
     skip_remote = resolve_env_variable(str(False), "SKIP_REMOTE", True)
     skip_remote = skip_remote is not None and skip_remote and skip_remote.lower() != "false" and skip_remote.lower() != "0"
     skip_checks = resolve_env_variable(str(False), "SKIP_CHECKS", True)

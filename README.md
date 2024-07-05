@@ -30,7 +30,7 @@ All project relevant commands are handled via yarn, including formatting our Pyt
 
 To load the data from our [published dataset](https://www.kaggle.com/datasets/killusions/street-location-images/):
 
-- Ignore our server check (`DOWNLOAD_LINK=None` in `.env`)
+- Ignore our server check (`DOWNLOAD_LINK=None` and `SKIP_REMOTE=true` in `.env`)
 - Put the unzipped `data(_mapped)` directory (if you want both start with mapped) into `dspro2/1_data_collection/.data`.
 - Run `yarn data:import` on a unix based system (or rename them to `geoguessr_location_******.png` and `geoguessr_result_******.json`, and copy all the JSON files into `dspro2/3_data_preparation/01_enriching/.data`).
 - Execute the `dspro2/3_data_preparation/99_importing/import.ipynb` notebook (make sure to set the `MAPPED` parameter correctly and only the relevant data is inside the directory).
