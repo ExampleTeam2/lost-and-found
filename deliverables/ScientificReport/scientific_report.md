@@ -1,6 +1,6 @@
 ---
 title: 'Lost & Found: Predicting Locations from Images'
-subtitle: 'Teamname: Example Team'
+subtitle: 'Team name: Example Team'
 author:
   - Linus Schlumberger
   - Lukas Stöckli
