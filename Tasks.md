@@ -1,19 +1,28 @@
 ---
+
 kanban-plugin: board
+
 ---
 
 ## Backlog
 
+
+
 ## Current
 
-- [ ] Create final presentation
+
 
 ## Doing
 
+
+
 ## Done
+
+
 
 ## Archive
 
+- [ ] Create final presentation
 - [ ] Create MLOps Part for Scientific Report #Deployment
 - [ ] Create Model Validation Part for Scientific Report #Evaluation
 - [ ] Create Methods we used for decision makings and include them into the Scientific Report #DataCollecting #DataPreparation #Modeling
@@ -55,10 +64,11 @@ kanban-plugin: board
 - [ ] Load pre-trained weights and do some transfer learning , freeze some layers and unfreeze dense layers #Modeling
 - [ ] Create Baseline Model #Modeling
 
-%% kanban:settings
 
+
+
+%% kanban:settings
 ```
 {"kanban-plugin":"board","date-colors":[{"isToday":false,"distance":1,"unit":"days","direction":"after"}],"tag-colors":[{"tagKey":"#BusinessUnderstanding","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(255, 247, 0, 0.75)"},{"tagKey":"#DataCollecting","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(72, 105, 34, 1)"},{"tagKey":"#DataUnderstanding","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(12, 60, 22, 1)"},{"tagKey":"#DataPreparation","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(25, 148, 139, 1)"},{"tagKey":"#Modeling","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(50, 94, 171, 1)"},{"tagKey":"#Evaluation","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(51, 39, 130, 1)"},{"tagKey":"#Deployment","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(115, 55, 133, 1)"},{"tagKey":"#BugDetected","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(255, 0, 0, 0.66)"},{"tagKey":"#WorkingPermanently","color":"rgba(255, 255, 255, 1)","backgroundColor":"rgba(196, 113, 22, 0.79)"}]}
 ```
-
 %%
