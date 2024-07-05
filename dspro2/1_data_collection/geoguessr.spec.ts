@@ -592,55 +592,31 @@ const stopIfCrashedBefore = () => {
   }
 };
 
-let skipSpectating = false;
+const skipSpectating: Record<string, boolean> = {};
 
 const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
-  // Start spectating the game again
-  skipSpectating = false;
   const gameId = await gameStart(page, 'multiplayer', 'Game starting in', 60000, i, identifier);
   if (!gameId) {
     return;
   }
-  let rounds = 0;
-  await roundMultiplayer(page, gameId, rounds, identifier);
-  await page.waitForTimeout(1000);
-  if (skipSpectating) {
-    return;
-  }
-  if (MODE === 'demo' || (await clickButtonIfFound(page, 'Spectate'))) {
-    if (MODE === 'demo') {
-      if ((await page.getByText('Correct').count()) === 0) {
-        await clickButtonIfFound(page, 'Spectate');
-      }
-    }
-    rounds++;
-    if (MODE !== 'demo') {
-      await page.getByText('Next round starts in').waitFor({ state: 'visible' });
-      if (skipSpectating) {
-        return;
-      }
-      await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
-    } else {
-      await page.getByText('Correct').or(page.getByText('Next round starts in')).or(page.getByText('Next round to start')).or(getButtonWithText(page, 'Spectate')).first().waitFor({ state: 'visible' });
-      if ((await page.getByText('Correct').count()) === 0) {
-        await clickButtonIfFound(page, 'Spectate');
-        await page.waitForTimeout(1000);
-      }
-      await page.getByText('Correct').or(page.getByText('Next round starts in')).or(page.getByText('Next round to start')).waitFor({ state: 'hidden', timeout: 120000 });
-    }
+  skipSpectating[gameId] = false;
+  try {
+    let rounds = 0;
     await roundMultiplayer(page, gameId, rounds, identifier);
-    rounds++;
-    // Remove footer to improve vision and avoid second "Play again" button
-    if (MODE !== 'demo') {
-      await page.locator('footer').evaluate((el) => el.remove());
+    await page.waitForTimeout(1000);
+    if (skipSpectating[gameId]) {
+      return;
     }
-    while ((rounds < MAX_ROUNDS && MODE !== 'demo' && (await page.getByText('Next round starts').count()) > 0) || (MODE === 'demo' && (await page.getByText('Correct').or(page.getByText('Next round starts')).count()) > 0)) {
-      if (skipSpectating) {
-        return;
+    if (MODE === 'demo' || (await clickButtonIfFound(page, 'Spectate'))) {
+      if (MODE === 'demo') {
+        if ((await page.getByText('Correct').count()) === 0) {
+          await clickButtonIfFound(page, 'Spectate');
+        }
       }
+      rounds++;
       if (MODE !== 'demo') {
         await page.getByText('Next round starts in').waitFor({ state: 'visible' });
-        if (skipSpectating) {
+        if (skipSpectating[gameId]) {
           return;
         }
         await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
@@ -654,7 +630,42 @@ const gameMultiplayer = async (page: Page, i: number, identifier?: string) => {
       }
       await roundMultiplayer(page, gameId, rounds, identifier);
       rounds++;
-      await page.waitForTimeout(1000);
+      // Remove footer to improve vision and avoid second "Play again" button
+      if (MODE !== 'demo') {
+        await page.locator('footer').evaluate((el) => el.remove());
+      }
+      while ((rounds < MAX_ROUNDS && MODE !== 'demo' && (await page.getByText('Next round starts').count()) > 0) || (MODE === 'demo' && (await page.getByText('Correct').or(page.getByText('Next round starts')).count()) > 0)) {
+        if (skipSpectating[gameId]) {
+          return;
+        }
+        if (MODE !== 'demo') {
+          await page.getByText('Next round starts in').waitFor({ state: 'visible' });
+          if (skipSpectating[gameId]) {
+            return;
+          }
+          await page.getByText('Next round starts in').waitFor({ state: 'hidden', timeout: 20000 });
+        } else {
+          await page.getByText('Correct').or(page.getByText('Next round starts in')).or(page.getByText('Next round to start')).or(getButtonWithText(page, 'Spectate')).first().waitFor({ state: 'visible' });
+          if ((await page.getByText('Correct').count()) === 0) {
+            await clickButtonIfFound(page, 'Spectate');
+            await page.waitForTimeout(1000);
+          }
+          if (skipSpectating[gameId]) {
+            return;
+          }
+          await page.getByText('Correct').or(page.getByText('Next round starts in')).or(page.getByText('Next round to start')).waitFor({ state: 'hidden', timeout: 120000 });
+        }
+        await roundMultiplayer(page, gameId, rounds, identifier);
+        rounds++;
+        await page.waitForTimeout(1000);
+      }
+    }
+  } catch (e: unknown) {
+    if (skipSpectating) {
+      stopIfCrashedBefore();
+      return;
+    } else {
+      throw e;
     }
   }
   stopIfCrashedBefore();
@@ -745,8 +756,10 @@ const playSingleplayer = async (page: Page, i: number, identifier?: string) => {
 
 // Shadow given game, can not be used with multiple instances.
 const shadowGame = async (page: Page, gameId: string) => {
-  // End previous game.
-  skipSpectating = true;
+  // End previous games.
+  for (const gameId of Object.keys(skipSpectating)) {
+    skipSpectating[gameId] = true;
+  }
   log('Loading game - ' + gameId);
   await page.goto('https://www.geoguessr.com/battle-royale/' + gameId, { timeout: 60000 });
   await page.waitForTimeout(1000);
